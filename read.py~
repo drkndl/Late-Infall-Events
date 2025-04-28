@@ -1,0 +1,134 @@
+import matplotlib.pyplot as plt
+import numpy as np
+from pathlib import Path
+#from matplotlib import cm
+#from mpl_toolkits.mplot3d import axes3d
+#from matplotlib.ticker import LinearLocator
+import astropy.constants as c
+au = c.au.cgs.value
+
+quantity = "dens"                       # Physical quantity
+folder = Path("leon_snapshot/")         # Folder with the output files
+it = 600                                # FARGO snapshot
+
+
+######## Domain stuff ###########
+
+# Getting the spherical coordinate values from the FARGO3D domain files
+domains_min = {}
+real_to_fargo = {'phi': 'x', 'r':'y', 'theta':'z'}
+for key in ["r", "phi", "theta"]:
+    domains_min[key] = np.loadtxt(folder / f"domain_{real_to_fargo[key]}.dat")
+    if key != "phi": domains_min[key] = domains_min[key][3:-3] # Ghost cells
+
+# Since domain values are at cell interfaces, centering the domains
+domains = {}
+for key in domains_min.keys():
+    domains[key] = (domains_min[key][1:] + domains_min[key][:-1]) / 2
+    
+############# theta = 100, r = 250, phi = 225 ###########
+#print(domains["theta"].shape)
+#print(domains["r"].shape)
+#print(domains["phi"].shape)
+
+# Converting spherical coords to Cartesian and Cylindrical coords
+THETA, R, PHI = np.meshgrid(domains["theta"], domains["r"], domains["phi"], indexing="ij")
+X = R * np.sin(THETA) * np.cos(PHI)
+Y = R * np.sin(THETA) * np.sin(PHI)
+RCYL = R * np.sin(THETA)
+ZCYL = R * np.cos(THETA)
+#print(X.shape, Y.shape, RCYL.shape, ZCYL.shape)
+
+
+
+# Obtaining and reshaping physical quantity from scalar field files
+def get_data(quant, iter, domains):
+    """
+    Obtain physical quantity from FARGO3D's scalar fields e.g. dens
+    
+    Inputs:
+    ------
+    quant:    Scalar field keyword (str)
+    iter:     Simulation snapshot (int)
+    domains:  Centered domain data from domain*.dat files
+    
+    Outputs:
+    -------
+    data:     3D physical scalar field data
+    """
+    
+    data = np.fromfile(folder / f"gas{quant}{iter}.dat").reshape(domains["theta"].size, domains["r"].size, domains["phi"].size)
+    return data
+
+
+def cyl_2D_plot(data, RCYL, ZCYL, irad, iphi):
+    """
+    Plot 2D vertical projection of a physical quantity at a particular azimuth angle and range of radii
+    
+    Inputs:
+    ------
+    data:        3D array of physical quantity
+    RCYL, ZCYL:  2D mesh of cylindrical coordinates' R and Z values
+    irad:        Index of final radius to be plotted (int)
+    iphi:        Index of azimuth angle to be plotted
+    
+    Outputs:
+    -------
+    plot
+    """
+
+    plt.figure()
+    plt.pcolormesh(RCYL[..., :irad, iphi]/au, ZCYL[..., :irad, iphi]/RCYL[..., :irad, iphi], np.log10(data[...,:irad, iphi]), cmap="viridis", vmin=-19, vmax=-11, rasterized=True)
+    plt.xlabel("rcyl / AU")
+    plt.ylabel("z / r")
+    plt.xscale("log")
+    plt.ylim(-1,1)
+    
+
+# 2D X-Y plot along the midplane
+def XY_2D_plot(data, X, Y, irad, itheta):
+    """
+    Plot 2D colormesh of a physical quantity along the X-Y plane for given polar angle theta and range of radii
+    
+    Inputs:
+    ------
+    data:     3D array of physical quantity
+    X, Y:     3D mesh of X, Y coordinates
+    irad:     Index of final radius to be plotted (int)
+    itheta:   Index of polar angle to be plotted
+    
+    Outputs:
+    -------
+    plot
+    """
+
+    plt.figure()
+    plt.pcolormesh(X[itheta, :irad, ...]/au, Y[itheta, :irad, ...]/au, np.log10(data[itheta, :irad, ...]), cmap="viridis", vmin=-19, vmax=-11, rasterized=True)
+    plt.gca().set_aspect("equal")
+    plt.xlabel("x / AU")
+    plt.ylabel("y / AU")
+
+
+#############  Main ##########
+# Get density values
+data = get_data(quantity, it, domains)
+
+#print(domains["r"]/au)
+#dsbjd
+itheta = 20
+iphi = 0
+#irad = 200
+irad = np.where(domains["r"]/au < 1200.)[0][-1]
+print(irad)
+
+cyl_2D_plot(data, RCYL, ZCYL, irad, iphi)
+plt.title(rf'Density R-Z Plane $\phi = $ {np.round(domains["phi"][iphi], 2)}')
+plt.colorbar(label = r"$\Sigma (g/cm^{2})$")
+plt.savefig(folder / f"dens_cyl_phi{iphi}_rad{irad}.png")
+plt.show()
+
+XY_2D_plot(data, X, Y, irad, itheta)
+plt.title(rf'Density X-Y Plane $\theta = $ {np.round(domains["theta"][itheta], 2)}')
+plt.colorbar(label = r"$\Sigma (g/cm^{2})$")
+plt.savefig(folder / f"dens_xy_theta{itheta}_rad{irad}.png")
+plt.show()
