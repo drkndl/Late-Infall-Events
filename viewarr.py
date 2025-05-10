@@ -160,8 +160,11 @@ def slicearr(data,indices=(0,1),x=None,y=None,zmin=None,zmax=None,idxnames=None,
     nx = data.shape[indices[0]]
     ny = data.shape[indices[1]]
     ###### start: added label params
-    xlabel = idxnames[indices[0]]
-    ylabel = idxnames[indices[1]]
+    xlabel = None
+    ylabel = None
+    if idxnames != None:
+        xlabel = idxnames[indices[0]]
+        ylabel = idxnames[indices[1]]
     ###### end: added label params
     paridx = list(np.arange(len(data.shape)))
     paridx.remove(indices[0])

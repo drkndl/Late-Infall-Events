@@ -57,4 +57,8 @@ rho_cart  = interp((r_box,theta_box,phi_box))
 # Now view
 
 slicearr(rho_cart,indices=(0,1))
+plt.ioff()
+plt.show()
 slicearr(rho_cart,indices=(1,2))
+plt.ioff()
+plt.show()

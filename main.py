@@ -51,7 +51,7 @@ labels = [r'$\pi - \theta$ [deg]',r'$\log r$ [AU]',r'$\phi$ [deg]']
 # interactive_2D(np.log10(rho[::-1,:,:]), (2,0), np.rad2deg(domains['phi']), np.rad2deg(domains['theta']), labels)
 # interactive_2D(np.log10(vsph[::-1,:,:]), (2,0), np.rad2deg(domains['phi']), np.rad2deg(domains['theta']), labels)
 irad=-1
-print(np.shape(rho[:, :, 1]), np.shape(R[:, :, 1]/au), np.shape(THETA[:, :, 1]))
+# print(np.shape(rho[:, :, 1]), np.shape(R[:, :, 1]/au), np.shape(THETA[:, :, 1]))
 
 # for iphi in range(255):
 
@@ -85,8 +85,8 @@ print(np.shape(rho[:, :, 1]), np.shape(R[:, :, 1]/au), np.shape(THETA[:, :, 1]))
 
 # Plot 3D contours up to a certain radial extent as defined by irad
 # irad = np.where(domains["r"]/au < 300)[0][-1]
-fig = plt.figure(figsize=(10, 7))
-contours_3D(X /au, Y /au, ZCYL /au, np.log10(rho), fig, xlabel="X [AU]", ylabel="Y [AU]", zlabel="Z [AU]", colorbarlabel=r"$\log \rho (g/cm^3)$", title="Density contour")
+# fig = plt.figure(figsize=(10, 7))
+# contours_3D(X /au, Y /au, ZCYL /au, np.log10(rho), fig, xlabel="X [AU]", ylabel="Y [AU]", zlabel="Z [AU]", colorbarlabel=r"$\log \rho (g/cm^3)$", title="Density contour")
 # contours_3D(X[:, :irad, :]/au, Y[:, :irad, :]/au, ZCYL[:, :irad, :]/au, np.log10(rho[:, :irad, :]), fig, xlabel="X [AU]", ylabel="Y [AU]", zlabel="Z [AU]", colorbarlabel=r"$\log \rho (g/cm^3)$", title="Density contour")
 
 # itheta = 50
