@@ -100,8 +100,8 @@ def contours_3D(X, Y, Z, data, fig, xlabel, ylabel, zlabel, colorbarlabel, title
     Inputs:
     ------
     X:                       3D array of Cartesian X meshgrid
-    X:                       3D array of Cartesian X meshgrid
-    X:                       3D array of Cartesian X meshgrid
+    Y:                       3D array of Cartesian Y meshgrid
+    Z:                       3D array of Cartesian Z meshgrid
     data:                    3D array of quantity to be visualized
     fig:                     Plot artist/class
     xlabel/ylabel/zlabel:    Axis labels (str)
@@ -125,11 +125,28 @@ def contours_3D(X, Y, Z, data, fig, xlabel, ylabel, zlabel, colorbarlabel, title
 
 
 def quiver_plots(X, Y, v_x, v_y, itheta, irad, title, savefig, figfolder):
+    """
+    2D plots of vectors such as velocities
+
+    Inputs:
+    ------
+    X:               3D array of Cartesian X meshgrid
+    Y:               3D array of Cartesian Y meshgrid
+    v_x:             3D array of Cartesian X velocities
+    v_y:             3D array of Cartesian Y velocities
+    title:           Plot title (str)
+    irad:            Index of final radius to be plotted (int)
+    itheta:          Index of polar angle to be plotted
+    savefig:         if True, image is saved (bool)
+    figfolder:       Path where the image is to be saved (path)
+    """
 
     plt.figure(figsize=(10,8))
     vtot = np.log10(np.sqrt(v_x**2 + v_y**2))
     # vtot = np.sqrt(v_x**2 + v_y**2)
-    Q = plt.quiver(X[itheta, :irad, ::2]/au, Y[itheta, :irad, ::2]/au, v_x[itheta, :irad, ::2], v_y[itheta, :irad, ::2], vtot[itheta, :irad, ::2], cmap='viridis', edgecolor="black", alpha=0.6, angles='xy', scale_units='xy', scale=10**3.2)
+
+    # Note that I am plotting every second value in phi since otherwise, the plot gets too busy
+    Q = plt.quiver(X[itheta, :irad, ::2]/au, Y[itheta, :irad, ::2]/au, v_x[itheta, :irad, ::2], v_y[itheta, :irad, ::2], vtot[itheta, :irad, ::2], cmap='viridis', edgecolor="black", alpha=0.6, angles='xy', scale_units='xy', pivot='tip', scale=10**3.2)
     plt.colorbar(Q, label='log(v)') 
 
     # Set labels and limits

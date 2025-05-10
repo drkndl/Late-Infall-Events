@@ -7,8 +7,17 @@ au = c.au.cgs.value
 
 def calc_cell_volume(theta, r, phi):
     """
-    Calculates the cell volumes of an (theta,r,phi) grid 
-    theta = 100, r = 250, phi = 225
+    Calculates the cell volumes of an (theta,r,phi) grid in cm^3 using the fomula V = r^2 sin(theta) dr dphi dtheta
+    
+    Inputs:
+    ------
+    theta:    1D array of polar angles
+    r:        1D array of radii
+    phi:      1D array of azimuthal angles
+
+    Outputs:
+    -------
+    cell_vol: 3D array of cell volumes with shape (theta-1, r-1, phi-1)
     """
 
     # Finding dr, dphi, dtheta and making them 3D arrays
@@ -35,7 +44,16 @@ def calc_cell_volume(theta, r, phi):
 
 def calc_mass(rho, cell_vol):
     """
-    Calculates the mass of each cell 
+    Calculates the mass of each cell in g as m = rho * volume
+
+    Inputs:
+    -------
+    rho:      3D array of density in g/cm^3 with shape (theta, r, phi)
+    cell_vol: 3D array of cell volumes in cm^3 with shape (theta-1, r-1, phi-1)
+
+    Outputs:
+    --------
+    mass:     3D array of mass in g with shape (theta-1, r-1, phi-1)
     """
 
     # Centering the rho grid so that we take the density at the centre of the cells
@@ -45,13 +63,48 @@ def calc_mass(rho, cell_vol):
     mass = rho_c * cell_vol
     return mass
 
+
+def calc_angular_momentum(mass, x, y, z, vx, vy, vz):
+    """
+    Calculates the angular momentum across each cell in (g cm^2/s) as L = m(r x v)
+
+    Inputs:
+    -------
+    mass:     3D array of mass in g with shape (theta-1, r-1, phi-1)
+
+    """
+
+    r_vec = np.stack((x, y, z), axis=-1)
+    v_vec = np.stack((vx, vy, vz), axis=-1)
+    L_vec = np.cross(r_vec, v_vec, axis=-1)
+    return L_vec
+
+
+
+
 folder = Path("leon_snapshot/")         # Folder with the output files
 it = 600                                # FARGO snapshot
 
 ############# theta = 100, r = 250, phi = 225 ###########
 domains = get_domain_spherical(folder)
 rho = get_data(folder, "dens", it, domains)         # Load 3D array of density values
+vphi = get_data(folder, "vx", it, domains)          # Load 3D array of azimuthal velocities v_phi
+vrad = get_data(folder, "vy", it, domains)          # Load 3D array of radial velocities v_rad
+vthe = get_data(folder, "vz", it, domains)          # Load 3D array of colatitude velocities v_theta
+
+THETA, R, PHI = np.meshgrid(domains["theta"], domains["r"], domains["phi"], indexing="ij")
+X = R * np.sin(THETA) * np.cos(PHI)
+Y = R * np.sin(THETA) * np.sin(PHI)
+RCYL = R * np.sin(THETA)
+ZCYL = R * np.cos(THETA)
+
+vsph = np.sqrt(vphi**2 + vrad**2 + vthe**2)         # Total velocities in spherical coordinates
+
+# Cartesian velocities
+vx = vrad * np.sin(THETA) * np.cos(PHI) + vthe * np.cos(THETA) * np.cos(PHI) - vphi * np.sin(PHI)
+vy = vrad * np.sin(THETA) * np.sin(PHI) + vthe * np.cos(THETA) * np.sin(PHI) + vphi * np.cos(PHI)
+vz = vrad * np.cos(THETA) - vthe * np.sin(THETA)
 
 cell_volume = calc_cell_volume(domains["theta"], domains["r"], domains["phi"])
 mass = calc_mass(rho, cell_volume)
-print(mass)
+calc_angular_momentum(mass, X, Y, ZCYL, vx, vy, vz)
