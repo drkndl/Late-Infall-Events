@@ -233,19 +233,40 @@ def interactive_interp_3d(data, Rmax, colorbarlabel, title, idxnames):
     plt.show()
 
 
-def quiver_plot_3d(X, Y, Z, dx, dy, dz, stagger):
+def quiver_plot_3d(X, Y, Z, dx, dy, dz, stagger, title, colorbarlabel, savefig, figfolder):
     """
     Plots quiver plot in 3D 
     
     Inputs:
     ------
+    stagger: Plot only every stagger points so that the plot doesn't look so busy
     """
 
-    ax = plt.figure(figsize=(8,8)).add_subplot(projection='3d')
-    Q = ax.quiver(X[::stagger], Y[::stagger], Z[::stagger], dx[::stagger], dy[::stagger], dz[::stagger], length=5, pivot='tip', alpha=0.6, arrow_length_ratio = 0.7, normalize=True)
-    ax.view_init(elev=-41, azim=-62)
+    ax = plt.figure(figsize=(8,6)).add_subplot(projection='3d')
+
+    # Map arrows to colormap according to the log of the magnitude of (dx, dy, dz)
+    o = np.log10(np.sqrt(dx**2 + dy**2 + dz**2))
+    norm = colors.Normalize()
+    norm.autoscale(o)
+    cmap = cm.plasma
+    
+    # Define colour array
+    sm = cm.ScalarMappable(cmap=cmap, norm=norm)
+    sm.set_array([])
+
+    # Plot the arrows
+    Q = ax.quiver(X[::stagger], Y[::stagger], Z[::stagger], dx[::stagger], dy[::stagger], dz[::stagger], length=3, pivot='tip', alpha=0.8, color=cmap(norm(o)), arrow_length_ratio = 0.5, normalize=True)
+    plt.colorbar(sm, label=colorbarlabel)
+
+    # Best initial camera projection to see the arrows properly 
+    ax.view_init(elev=8, azim=-66)
+
+    # Plot formatting
     ax.set_xlabel("X [AU]")
     ax.set_ylabel("Y [AU]")
     ax.set_zlabel("Z [AU]")
+    ax.set_title(title)
     plt.tight_layout()
+    if savefig == True:
+        plt.savefig(figfolder)
     plt.show()
