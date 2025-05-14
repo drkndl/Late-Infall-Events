@@ -2,7 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pathlib import Path
 from read import get_domain_spherical, get_data
-from no_thoughts_just_plots import interactive_2D, contours_3D, cyl_2D_plot, XY_2D_plot, quiver_plots
+from analysis import sph_to_cart, vel_sph_to_cart
+from no_thoughts_just_plots import interactive_2D, contours_3D, cyl_2D_plot, XY_2D_plot, quiver_plots, interactive_interp_3d
 import astropy.constants as c
 au = c.au.cgs.value
 
@@ -13,29 +14,21 @@ it = 600                                # FARGO snapshot
 ############# theta = 100, r = 250, phi = 225 ###########
 domains = get_domain_spherical(folder)
 
-# Converting spherical coords to Cartesian and Cylindrical coords
+# 3D meshgrid of Cartesian and cylindrical coordinates from the given spherical coordinates
 THETA, R, PHI = np.meshgrid(domains["theta"], domains["r"], domains["phi"], indexing="ij")
-X = R * np.sin(THETA) * np.cos(PHI)
-Y = R * np.sin(THETA) * np.sin(PHI)
-RCYL = R * np.sin(THETA)
-ZCYL = R * np.cos(THETA)
-#print(X.shape, Y.shape, RCYL.shape, ZCYL.shape)
+X, Y, ZCYL, RCYL = sph_to_cart(THETA, R, PHI)
+print(np.max(X /au), np.min(X/au))
 
 rho = get_data(folder, "dens", it, domains)         # Load 3D array of density values 
 vphi = get_data(folder, "vx", it, domains)          # Load 3D array of azimuthal velocities v_phi
 vrad = get_data(folder, "vy", it, domains)          # Load 3D array of radial velocities v_rad
 vthe = get_data(folder, "vz", it, domains)          # Load 3D array of colatitude velocities v_theta
-print(np.shape(rho), np.shape(vrad))
 
 vsph = np.sqrt(vphi**2 + vrad**2 + vthe**2)         # Total velocities in spherical coordinates
 
 # Cartesian velocities
-vx = vrad * np.sin(THETA) * np.cos(PHI) + vthe * np.cos(THETA) * np.cos(PHI) - vphi * np.sin(PHI)
-vy = vrad * np.sin(THETA) * np.sin(PHI) + vthe * np.cos(THETA) * np.sin(PHI) + vphi * np.cos(PHI)
-vz = vrad * np.cos(THETA) - vthe * np.sin(THETA)
-# print(np.max(domains["r"]/au), np.min(domains["r"]/au))
-# print(np.max(np.abs(X)/au), np.min(np.abs(X)/au))
-# print(np.max(np.abs(R)/au), np.min(np.abs(R)/au))
+vx, vy, vz = vel_sph_to_cart(vthe, vrad, vphi, THETA, R, PHI)
+
 ############## Plotting ###################
 
 # Plot r-theta slice (flipping theta to match physics convention of spherical coords)
@@ -89,15 +82,19 @@ irad=-1
 # contours_3D(X /au, Y /au, ZCYL /au, np.log10(rho), fig, xlabel="X [AU]", ylabel="Y [AU]", zlabel="Z [AU]", colorbarlabel=r"$\log \rho (g/cm^3)$", title="Density contour")
 # contours_3D(X[:, :irad, :]/au, Y[:, :irad, :]/au, ZCYL[:, :irad, :]/au, np.log10(rho[:, :irad, :]), fig, xlabel="X [AU]", ylabel="Y [AU]", zlabel="Z [AU]", colorbarlabel=r"$\log \rho (g/cm^3)$", title="Density contour")
 
-itheta = 50
-itheta_deg = np.round(np.rad2deg(domains["theta"][itheta]), 2)
-iphi = 0
-irad = -1
-irad = np.where(domains["r"]/au < 1000)[0][-1]
-print(irad)
+# itheta = 50
+# itheta_deg = np.round(np.rad2deg(domains["theta"][itheta]), 2)
+# iphi = 0
+# irad = -1
+# irad = np.where(domains["r"]/au < 1000)[0][-1]
+# print(irad)
 
 # cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'Density R-Z Plane $\phi = $ {np.round(domains["phi"][iphi], 2)}', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=False, figfolder=folder / f"dens_cyl_phi{iphi}_rad{irad}.png")
 
 # XY_2D_plot(rho, X, Y, irad, itheta, title=rf'Density X-Y Plane $\theta = $ {itheta_deg}', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=folder / f"dens_xy_theta{itheta}_rad{irad}.png")
 
-quiver_plots(X, Y, vx, vy, itheta, irad, title=rf'Velocity X-Y Plane $\theta = $ {itheta_deg}', savefig=False, figfolder=folder / f"vel_xy_theta{itheta}_rad{irad}.png")
+# quiver_plots(X, Y, vx, vy, itheta, irad, title=rf'Velocity X-Y Plane $\theta = $ {itheta_deg}', savefig=False, figfolder=folder / f"vel_xy_theta{itheta}_rad{irad}.png")
+
+Rmax = 500       # Maximum radius of the Cartesian box for interactive_interp_3d in AU
+interactive_interp_3d(np.log10(rho), Rmax, colorbarlabel=r"$\log \rho (g/cm^3)$", title="Density", idxnames=['X [au]', 'Y [au]', 'Z [au]'])
+interactive_interp_3d(vsph, Rmax, colorbarlabel=r"$\log v (cm/s)$", title="Velocity", idxnames=['X [au]', 'Y [au]', 'Z [au]'])

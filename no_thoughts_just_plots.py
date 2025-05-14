@@ -2,8 +2,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from viewarr import *
 from matplotlib import cm
+from matplotlib import colors
 from mpl_toolkits.mplot3d import axes3d
 #from matplotlib.ticker import LinearLocator
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+from scipy.interpolate import RegularGridInterpolator
 import astropy.constants as c
 au = c.au.cgs.value
 
@@ -95,7 +98,7 @@ def interactive_2D(data, indices, x, y, idxnames):
 
 def contours_3D(X, Y, Z, data, fig, xlabel, ylabel, zlabel, colorbarlabel, title):
     """
-    Plot a 3D contour plot of a FARGO scalar field (dens/vx/enery etc) in Cartesian coords
+    Plot a 3D contour plot of a FARGO scalar field (dens/vx/energy etc) in Cartesian coords
     
     Inputs:
     ------
@@ -107,20 +110,30 @@ def contours_3D(X, Y, Z, data, fig, xlabel, ylabel, zlabel, colorbarlabel, title
     xlabel/ylabel/zlabel:    Axis labels (str)
     colorbarlabel:           Colour bar label (str)
     title:                   Image title (str)
+
+    Issues:
+    ------
+    1. Too much whitespace around plot and labels
     """
 
     ax = fig.add_subplot(111, projection='3d')
-    p = ax.scatter(X[::5].flatten(), Y[::5].flatten(), Z[::5].flatten(), c=data[::5].flatten(), cmap='plasma', alpha=0.05)
+    fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
 
-    fig.colorbar(p, ax=ax, label=colorbarlabel)
+    p = ax.scatter(X.flatten(), Y.flatten(), Z.flatten(), c=data.flatten(), cmap='plasma', s=3, edgecolor='none', alpha=0.3)
+
+    # Colorbar formatting
+    fig.colorbar(p, shrink=0.65, pad=0.04, label=colorbarlabel) # fraction=0.046
+
+    # Plot formatting
     ax.set_xlabel(xlabel)
-    # ax.set_xscale("log")
-    # ax.set_yscale("log")
-    # ax.set_zscale("log")
     ax.set_ylabel(ylabel)
     ax.set_zlabel(zlabel)
     ax.set_title(title)
-    plt.tight_layout()
+
+    # Initial camera position of the 3D plot adjusted for best view of warp
+    ax.view_init(elev=-41, azim=-62)   
+        
+    fig.tight_layout()
     plt.show()
 
 
@@ -157,4 +170,82 @@ def quiver_plots(X, Y, v_x, v_y, itheta, irad, title, savefig, figfolder):
     plt.tight_layout()
     if savefig == True:
         plt.savefig(figfolder)
+    plt.show()
+
+
+def interactive_interp_3d(data, Rmax, colorbarlabel, title, idxnames):
+    """
+    Plots data available in spherical coordinates on a Cartesian box that we can zoom in and out of
+
+    Inputs:
+    ------
+
+    """
+    # Model in (r,theta,phi)
+
+    rin = 10
+    rout= Rmax
+    nr  = 250
+    r   = rin * (rout/rin)**np.linspace(0,1,nr)
+
+    th0 = 0.1
+    th1 = np.pi-th0
+    nt  = 100
+    theta = np.linspace(th0,th1,nt)
+
+    nph = 225
+    phi = np.linspace(0,2*np.pi,nph)
+
+    tt,rr, pp = np.meshgrid(theta,r,phi,indexing='ij')
+    # Rmax = 3500.       # Maximum radius of the Cartesian box (AU)
+    nx   = 200
+    ny   = 202
+    nz   = 204
+    x    = np.linspace(-Rmax,Rmax,nx)
+    y    = np.linspace(-Rmax,Rmax,ny)
+    z    = np.linspace(-Rmax,Rmax,nz)
+    xx,yy,zz = np.meshgrid(x,y,z,indexing='ij')
+    print(xx.shape, yy.shape, zz.shape)
+    print(np.min(xx), np.max(xx))
+
+    # Now compute r, theta and phi for each grid cell in the cartesian box
+    r_box     = np.sqrt(xx**2+yy**2+zz**2)
+    rc_box    = np.sqrt(xx**2+yy**2)
+    theta_box = np.pi/2-np.arctan(zz/(rc_box+1e-99))
+    phi_box   = np.arctan2(yy,xx)
+    phi_box[phi_box<0]+=np.pi*2
+
+    interp = RegularGridInterpolator((theta, r, phi), data, fill_value=0.,bounds_error=False)
+
+    # Now map the model onto (x,y,z) box
+    data_cart  = interp((theta_box, r_box, phi_box))
+
+    # Now view
+    slicearr(data_cart, indices=(1,0), idxnames=idxnames)
+    plt.title(title)
+    # plt.colorbar(label=colorbarlabel)
+    plt.ioff()
+    plt.show()
+    slicearr(data_cart, indices=(0,2), idxnames=idxnames)
+    plt.title(title)
+    # plt.colorbar(label=colorbarlabel)
+    plt.ioff()
+    plt.show()
+
+
+def quiver_plot_3d(X, Y, Z, dx, dy, dz):
+    """
+    Plots quiver plot in 3D 
+    
+    Inputs:
+    ------
+    """
+
+    ax = plt.figure(figsize=(8,8)).add_subplot(projection='3d')
+    Q = ax.quiver(X, Y, Z, dx, dy, dz, length=1, pivot='tip', alpha=0.6, normalize=True)
+    
+    ax.set_xlabel("X")
+    ax.set_ylabel("Y")
+    ax.set_zlabel("Z")
+    plt.tight_layout()
     plt.show()
