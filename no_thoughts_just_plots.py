@@ -119,7 +119,7 @@ def contours_3D(X, Y, Z, data, fig, xlabel, ylabel, zlabel, colorbarlabel, title
     ax = fig.add_subplot(111, projection='3d')
     fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
 
-    p = ax.scatter(X.flatten(), Y.flatten(), Z.flatten(), c=data.flatten(), cmap='plasma', s=3, edgecolor='none', alpha=0.3)
+    p = ax.scatter(X.flatten(), Y.flatten(), Z.flatten(), c=data.flatten(), cmap='plasma', s=7, edgecolor='none', alpha=0.3)
 
     # Colorbar formatting
     fig.colorbar(p, shrink=0.65, pad=0.04, label=colorbarlabel) # fraction=0.046
@@ -233,7 +233,7 @@ def interactive_interp_3d(data, Rmax, colorbarlabel, title, idxnames):
     plt.show()
 
 
-def quiver_plot_3d(X, Y, Z, dx, dy, dz):
+def quiver_plot_3d(X, Y, Z, dx, dy, dz, stagger):
     """
     Plots quiver plot in 3D 
     
@@ -242,10 +242,10 @@ def quiver_plot_3d(X, Y, Z, dx, dy, dz):
     """
 
     ax = plt.figure(figsize=(8,8)).add_subplot(projection='3d')
-    Q = ax.quiver(X, Y, Z, dx, dy, dz, length=1, pivot='tip', alpha=0.6, normalize=True)
-    
-    ax.set_xlabel("X")
-    ax.set_ylabel("Y")
-    ax.set_zlabel("Z")
+    Q = ax.quiver(X[::stagger], Y[::stagger], Z[::stagger], dx[::stagger], dy[::stagger], dz[::stagger], length=5, pivot='tip', alpha=0.6, arrow_length_ratio = 0.7, normalize=True)
+    ax.view_init(elev=-41, azim=-62)
+    ax.set_xlabel("X [AU]")
+    ax.set_ylabel("Y [AU]")
+    ax.set_zlabel("Z [AU]")
     plt.tight_layout()
     plt.show()

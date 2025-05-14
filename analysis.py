@@ -135,12 +135,9 @@ def isolate_warp(dens, threshold):
     warp_dens = np.where(mask, dens, np.nan)
 
     # Also finding the corresponding x, y, z indices of the filtered densities
-    x, y, z = np.indices(dens.shape)
-    warpx = np.where(mask, x, -1)
-    warpy = np.where(mask, y, -1)
-    warpz = np.where(mask, z, -1)
+    ids = ~np.isnan(warp_dens)
 
-    return warp_dens, warpx, warpy, warpz
+    return warp_dens, ids
 
 
 
@@ -175,9 +172,21 @@ Ly = L[:, :, :, 1]
 Lz = L[:, :, :, 2]
 
 
-# Isolating the warp in the primary disk
-threshold = -14
-rho_warp = isolate_warp(rho, threshold)
+########################### Isolating the warp in the primary disk ###############################
+
+threshold = -14   # log of density threshold for which we can see the warp in the primary
+rho_warp, warp_ids = isolate_warp(rho, threshold)
+
+# Plotting the warp densities 
+fig = plt.figure(figsize=(10, 7))
+contours_3D(X/au, Y/au, ZCYL/au, rho_warp, fig, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$')
+
+# Another way to plot the warp densities
+# fig = plt.figure(figsize=(10, 7))
+# contours_3D(X[warp_ids]/au, Y[warp_ids]/au, ZCYL[warp_ids]/au, rho[warp_ids], fig, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$')
+
+# Plotting the wap angular momentum
+quiver_plot_3d(X[warp_ids]/au, Y[warp_ids]/au, ZCYL[warp_ids]/au, Lx[warp_ids], Ly[warp_ids], Lz[warp_ids], stagger=100)
 
 # quiver_plot_3d(X[::7, :20:7, ::7]/au, Y[::7, :20:7, ::7]/au, ZCYL[::7, :20:7, ::7]/au, Lx[::7, :20:7, ::7], Ly[::7, :20:7, ::7], Lz[::7, :20:7, ::7])
 # quiver_plot_3d(X[50, :170:5, ::5]/au, Y[50, :170:5, ::5]/au, ZCYL[50, :170:5, ::5]/au, Lx[50, :170:5, ::5], Ly[50, :170:5, ::5], Lz[50, :170:5, ::5])
@@ -191,10 +200,3 @@ rho_warp = isolate_warp(rho, threshold)
 # print(L[:, :, :, 0], L[:, :, :, 0].shape)
 # print(L[:, :, :, 0], L[:, :, :, 1].shape)
 
-# Plotting the warp
-fig = plt.figure(figsize=(10, 7))
-# contours_3D(X[::2, ::2, ::2]/au, Y[::2, ::2, ::2]/au, ZCYL[::2, ::2, ::2]/au, np.log10(rho_warp[::2, ::2, ::2]), fig, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\log(\rho)$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$')
-
-contours_3D(X/au, Y/au, ZCYL/au, rho_warp, fig, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$')
-
-quiver_plot_3d(X/au, Y/au, ZCYL/au, Lx, Ly, Lz)
