@@ -1,3 +1,5 @@
+# Post-processing on FARGO3D output files 
+
 import numpy as np
 from pathlib import Path
 from read import get_domain_spherical, get_data
@@ -10,6 +12,19 @@ au = c.au.cgs.value
 def sph_to_cart(THETA, R, PHI):
     """
     Creates a meshgrid of Cartesian and/or cylindrical coordinates given spherical coordinates 
+
+    Inputs:
+    ------
+    THETA:   3D meshgrid of theta values with shape (n_theta, n_r, n_phi)
+    R:       3D meshgrid of r values with shape (n_theta, n_r, n_phi)
+    PHI:     3D meshgrid of phi values with shape (n_theta, n_r, n_phi)
+
+    Outputs:
+    -------
+    X:       3D meshgrid of Cartesian X values with shape (n_theta, n_r, n_phi)
+    Y:       3D meshgrid of Cartesian Y values with shape (n_theta, n_r, n_phi)
+    ZCYL:    3D meshgrid of Cartesian (or Cylindrical) Z values with shape (n_theta, n_r, n_phi)
+    RCYL:    3D meshgrid of Cylindrical R values with shape (n_theta, n_r, n_phi)
     """
 
     X = R * np.sin(THETA) * np.cos(PHI)
@@ -22,7 +37,20 @@ def sph_to_cart(THETA, R, PHI):
 
 def cart_to_sph(xx, yy, zz):
     """
-    Convert Cartesian coordinates to spherical coordinates
+    Convert data in Cartesian coordinates to spherical coordinates. This function is adapted from test_interp_3d.py by Kees Dullemond
+
+    Inputs:
+    ------
+    xx:   3D meshgrid of Cartesian X values with shape (n_theta, n_r, n_phi)
+    yy:   3D meshgrid of Cartesian Y values with shape (n_theta, n_r, n_phi)
+    zz:   3D meshgrid of Cartesian Z values with shape (n_theta, n_r, n_phi)
+
+    Outputs:
+    -------
+    r_box:       3D meshgrid of spherical R values with shape (n_theta, n_r, n_phi)
+    rc_box:      3D meshgrid of Cylindrical R values with shape (n_theta, n_r, n_phi)
+    theta_box:   3D meshgrid of spherical theta values with shape (n_theta, n_r, n_phi)
+    phi_box:     3D meshgrid of spherical phi values with shape (n_theta, n_r, n_phi)
     """
 
     r_box     = np.sqrt(xx**2 + yy**2 + zz**2)
@@ -34,9 +62,23 @@ def cart_to_sph(xx, yy, zz):
     return r_box, rc_box, theta_box, phi_box
 
 
-def vel_sph_to_cart(vthe, vrad, vphi, THETA, R, PHI):
+def vel_sph_to_cart(vthe, vrad, vphi, THETA, PHI):
     """
     Converts velocities in spherical coordinates to Cartesian coordinates
+
+    Inputs:
+    ------
+    vthe:    3D meshgrid of polar velocities with shape (n_theta, n_r, n_phi)
+    vrad:    3D meshgrid of azimuthal velocities with shape (n_theta, n_r, n_phi)
+    vphi:    3D meshgrid of radial velocities with shape (n_theta, n_r, n_phi)
+    THETA:   3D meshgrid of theta values with shape (n_theta, n_r, n_phi)
+    PHI:     3D meshgrid of phi values with shape (n_theta, n_r, n_phi)
+
+    Outputs:
+    -------
+    vx:    3D meshgrid of Cartesian X velocities with shape (n_theta, n_r, n_phi)
+    vy:    3D meshgrid of Cartesian Y velocities with shape (n_theta, n_r, n_phi)
+    vz:    3D meshgrid of Cartesian Z velocities with shape (n_theta, n_r, n_phi)
     """
 
     vx = vrad * np.sin(THETA) * np.cos(PHI) + vthe * np.cos(THETA) * np.cos(PHI) - vphi * np.sin(PHI)
@@ -52,11 +94,11 @@ def centering(data):
 
     Inputs:
     ------
-    data:      3D array with shape (theta, r, phi)
+    data:      3D array with shape (n_theta, n_r, n_phi)
 
     Outputs:
     -------
-    data_c:    Centered 3D array with shape (theta-1, r-1, phi-1)
+    data_c:    Centered 3D array with shape (n_theta-1, n_r-1, n_phi-1)
     """
 
     data_c = 0.5 * (data[:-1, :, :] + data[1:, :, :])
@@ -69,7 +111,7 @@ def centering(data):
 
 def calc_cell_volume(theta, r, phi):
     """
-    Calculates the cell volumes of an (theta,r,phi) grid in cm^3 using the fomula V = r^2 sin(theta) dr dphi dtheta
+    Calculates the cell volumes of an (theta,r,phi) grid in cm^3 using the fomula for an elemental volume in 3D spherical coordinates dV = r^2 sin(theta) dr dphi dtheta
     
     Inputs:
     ------
@@ -79,7 +121,7 @@ def calc_cell_volume(theta, r, phi):
 
     Outputs:
     -------
-    cell_vol: 3D array of cell volumes with shape (theta-1, r-1, phi-1)
+    cell_vol: 3D array of cell volumes with shape (n_theta-1, n_r-1, n_phi-1)
     """
 
     # Finding dr, dphi, dtheta and making them 3D arrays
@@ -106,22 +148,19 @@ def calc_cell_volume(theta, r, phi):
 
 def calc_mass(rho, cell_vol):
     """
-    Calculates the mass of each cell in g as m = rho * volume
+    Calculates the mass of each cell in g as m = density x volume
 
     Inputs:
     -------
-    rho:      3D array of density in g/cm^3 with shape (theta, r, phi)
-    cell_vol: 3D array of cell volumes in cm^3 with shape (theta-1, r-1, phi-1)
+    rho:      3D array of density in g/cm^3 with shape (n_theta, n_r, n_phi)
+    cell_vol: 3D array of cell volumes in cm^3 with shape (n_theta-1, n_r-1, n_phi-1)
 
     Outputs:
     --------
-    mass:     3D array of mass in g with shape (theta-1, r-1, phi-1)
+    mass:     3D array of mass in g with shape (n_theta-1, n_r-1, n_phi-1)
     """
 
     # Centering the rho grid so that we take the density at the centre of the cells
-    # rho_c = 0.5 * (rho[:-1, :, :] + rho[1:, :, :])
-    # rho_c = 0.5 * (rho_c[:, :-1, :] + rho_c[:, 1:, :])
-    # rho_c = 0.5 * (rho_c[:, :, :-1] + rho_c[:, :, 1:])
     rho_c = centering(rho)
     mass = rho_c * cell_vol
     return mass
@@ -133,25 +172,37 @@ def calc_angular_momentum(mass, x, y, z, vx, vy, vz):
 
     Inputs:
     -------
-    mass:     3D array of mass in g with shape (theta-1, r-1, phi-1)
+    mass:     3D array of mass in g with shape (n_theta-1, n_r-1, n_phi-1)
+    x:        3D meshgrid of Cartesian X values with shape (n_theta, n_r, n_phi)
+    y:        3D meshgrid of Cartesian Y values with shape (n_theta, n_r, n_phi)
+    z:        3D meshgrid of Cartesian Z values with shape (n_theta, n_r, n_phi)
+    vx:       3D meshgrid of Cartesian X velocities with shape (n_theta, n_r, n_phi)
+    vy:       3D meshgrid of Cartesian Y velocities with shape (n_theta, n_r, n_phi)
+    vz:       3D meshgrid of Cartesian Z velocities with shape (n_theta, n_r, n_phi)
 
+    Outputs:
+    -------
+    Lx:       3D array of x-component of angular momentum with shape (n_theta-1, n_r-1, n_phi-1)
+    Ly:       3D array of y-component of angular momentum with shape (n_theta-1, n_r-1, n_phi-1)
+    Lz:       3D array of z-component of angular momentum with shape (n_theta-1, n_r-1, n_phi-1)
     """
 
+    # Calculating r x v
     r_vec = np.stack((x, y, z), axis=-1)
     v_vec = np.stack((vx, vy, vz), axis=-1)
     L_vec = np.cross(r_vec, v_vec, axis=-1)
 
-    # Find angular momentum components
+    # Finding x, y, z angular momentum components
     Lx = L_vec[:, :, :, 0]
     Ly = L_vec[:, :, :, 1]
     Lz = L_vec[:, :, :, 2] 
 
-    # Average the angular momenta to cell centres (because mass is defined at cell centre)
+    # Averaging the angular momenta to cell centres (because mass is defined at cell centre)
     Lx = centering(Lx)
     Ly = centering(Ly)
     Lz = centering(Lz)
 
-    # Find angular momentum components and multiply by 
+    # Calculate angular momentum components by multiplying with mass 
     Lx = mass * Lx
     Ly = mass * Ly
     Lz = mass * Lz
@@ -159,7 +210,36 @@ def calc_angular_momentum(mass, x, y, z, vx, vy, vz):
     return Lx, Ly, Lz
 
 
-def calc_L_average(Lx, Ly, Lz):
+def calc_eccent():
+    return 
+
+
+def isolate_warp(dens, threshold):
+    """
+    A crude way to isolate the warp in the primary disk: applying a density threshold to capture the highest densities in the simulation output
+
+    Inputs:
+    ------
+    dens:         3D array of centered density in g/cm^3 with shape (n_theta-1, n_r-1, n_phi-1)
+    threshold:    Threshold density by which we filter the dens array
+
+    Outputs:
+    -------
+    warp_dens:    3D array of filtered density in g/cm^3 with shape (n_theta-1, n_r-1, n_phi-1)
+    ids:          Indices corresponding to warp_dens
+    """
+
+    # Filtering densities greater than a given threshold; values below the threshold are designated nan
+    mask = dens > 10**threshold
+    warp_dens = np.where(mask, dens, np.nan)
+
+    # Also finding the corresponding x, y, z indices of the filtered densities
+    ids = ~np.isnan(warp_dens)
+
+    return warp_dens, ids
+
+
+def calc_L_average(Lx, Ly, Lz, X, Y, Z):
     """
     Calculates the angular momentum averaged across the theta and phi directions to find the radial Ls
 
@@ -171,55 +251,36 @@ def calc_L_average(Lx, Ly, Lz):
     """
 
     Lr, _, Ltheta, Lphi = cart_to_sph(Lx, Ly, Lz)
-    print(Lr.shape, Ltheta.shape, Lphi.shape)
+    r, rc, theta, phi = cart_to_sph(X, Y, Z)
+    theta = np.rad2deg(theta)
+    phi = np.rad2deg(phi)
+    print(r.min()/au, r.max()/au, r.mean()/au)
+    print(theta.min(), theta.max(), theta.mean())
+    print(phi.min(), phi.max(), phi.mean())
 
-
-
-    return Lr, Ltheta, Lphi
-
-
-def calc_eccent():
     return 
-
-
-def isolate_warp(dens, threshold):
-    """
-    A crude way to isolate the warp in the primary disk: applying a density threshold
-    """
-
-    # Filtering densities greater than a given threshold
-    mask = dens > 10**threshold
-    warp_dens = np.where(mask, dens, np.nan)
-
-    # Also finding the corresponding x, y, z indices of the filtered densities
-    ids = ~np.isnan(warp_dens)
-
-    return warp_dens, ids
-
 
 
 folder = Path("leon_snapshot/")         # Folder with the output files
 it = 600                                # FARGO snapshot
 
-############# theta = 100, r = 250, phi = 225 ###########
+###################### Load data (theta = 100, r = 250, phi = 225) ################################
+
 domains = get_domain_spherical(folder)
 rho = get_data(folder, "dens", it, domains)         # Load 3D array of density values            
 vphi = get_data(folder, "vx", it, domains)          # Load 3D array of azimuthal velocities v_phi
 vrad = get_data(folder, "vy", it, domains)          # Load 3D array of radial velocities v_rad
 vthe = get_data(folder, "vz", it, domains)          # Load 3D array of colatitude velocities v_theta
 
-THETA, R, PHI = np.meshgrid(domains["theta"], domains["r"], domains["phi"], indexing="ij")
-X = R * np.sin(THETA) * np.cos(PHI)
-Y = R * np.sin(THETA) * np.sin(PHI)
-RCYL = R * np.sin(THETA)
-ZCYL = R * np.cos(THETA)
-
 vsph = np.sqrt(vphi**2 + vrad**2 + vthe**2)         # Total velocities in spherical coordinates
 
+THETA, R, PHI = np.meshgrid(domains["theta"], domains["r"], domains["phi"], indexing="ij")
+X, Y, ZCYL, RCYL = sph_to_cart(THETA, R, PHI)       # Meshgrid of Cartesian coordinates
+
 # Cartesian velocities
-vx = vrad * np.sin(THETA) * np.cos(PHI) + vthe * np.cos(THETA) * np.cos(PHI) - vphi * np.sin(PHI)
-vy = vrad * np.sin(THETA) * np.sin(PHI) + vthe * np.cos(THETA) * np.sin(PHI) + vphi * np.cos(PHI)
-vz = vrad * np.cos(THETA) - vthe * np.sin(THETA)
+vx, vy, vz = vel_sph_to_cart(vthe, vrad, vphi, THETA, PHI)
+
+############################# Calculate physical quantities ######################################
 
 # Interpolate the densities & coordinates to the cell centres so that the array shape matches with mass & L
 rho_c = centering(rho)
@@ -231,27 +292,29 @@ cell_volume = calc_cell_volume(domains["theta"], domains["r"], domains["phi"])
 # print(cell_volume.max(), cell_volume.min(), cell_volume.mean())
 mass = calc_mass(rho, cell_volume)
 Lx, Ly, Lz = calc_angular_momentum(mass, X, Y, ZCYL, vx, vy, vz)
-print(Lx.shape, Ly.shape, Lz.shape)
-Lrad, Lthe, Lphi = calc_L_average(Lx, Ly, Lz)
 
 ########################### Isolating the warp in the primary disk ###############################
 
 threshold = -14   # log of density threshold for which we can see the warp in the primary
-rho_warp, warp_ids = isolate_warp(rho_c, threshold)    # Note that I am using centered densities to match the indices corresponding to the warp with the angular momenta indices
+rho_c_warp, warp_ids = isolate_warp(rho_c, threshold)    # Note that I am using centered densities to match the indices corresponding to the warp with the angular momenta indices
+
+calc_L_average(Lx[warp_ids], Ly[warp_ids], Lz[warp_ids], X_c[warp_ids], Y_c[warp_ids], Z_c[warp_ids])
+bewkfn
 
 # Plotting the warp densities 
-fig = plt.figure(figsize=(10, 7))
-contours_3D(X_c/au, Y_c/au, Z_c/au, rho_warp, fig, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$')
+contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_warp, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$', savefig=True, figfolder='../warp_dens_3d.png')
 
 # Another way to plot the warp densities
 # fig = plt.figure(figsize=(10, 7))
-# contours_3D(X[warp_ids]/au, Y[warp_ids]/au, ZCYL[warp_ids]/au, rho[warp_ids], fig, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$')
+# contours_3D(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, rho_c[warp_ids], fig, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$')
 
 # Plotting the Cartesian warp angular momenta
 quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Lx[warp_ids], Ly[warp_ids], Lz[warp_ids], stagger=70, title="Warp angular momenta", colorbarlabel="logL", savefig=False, figfolder=None)
 
 # Plotting the spherical warp angular momenta
 # quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Lrad[warp_ids], Lthe[warp_ids], Lphi[warp_ids], stagger=100, title="Warp angular momenta", savefig=False, figfolder=None)
+
+####################################################################################################
 
 # quiver_plot_3d(X[::7, :20:7, ::7]/au, Y[::7, :20:7, ::7]/au, ZCYL[::7, :20:7, ::7]/au, Lx[::7, :20:7, ::7], Ly[::7, :20:7, ::7], Lz[::7, :20:7, ::7])
 # quiver_plot_3d(X[50, :170:5, ::5]/au, Y[50, :170:5, ::5]/au, ZCYL[50, :170:5, ::5]/au, Lx[50, :170:5, ::5], Ly[50, :170:5, ::5], Lz[50, :170:5, ::5])

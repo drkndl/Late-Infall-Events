@@ -96,7 +96,7 @@ def interactive_2D(data, indices, x, y, idxnames):
     plt.show()
 
 
-def contours_3D(X, Y, Z, data, fig, xlabel, ylabel, zlabel, colorbarlabel, title):
+def contours_3D(X, Y, Z, data, xlabel, ylabel, zlabel, colorbarlabel, title, savefig, figfolder):
     """
     Plot a 3D contour plot of a FARGO scalar field (dens/vx/energy etc) in Cartesian coords
     
@@ -106,7 +106,6 @@ def contours_3D(X, Y, Z, data, fig, xlabel, ylabel, zlabel, colorbarlabel, title
     Y:                       3D array of Cartesian Y meshgrid
     Z:                       3D array of Cartesian Z meshgrid
     data:                    3D array of quantity to be visualized
-    fig:                     Plot artist/class
     xlabel/ylabel/zlabel:    Axis labels (str)
     colorbarlabel:           Colour bar label (str)
     title:                   Image title (str)
@@ -116,24 +115,27 @@ def contours_3D(X, Y, Z, data, fig, xlabel, ylabel, zlabel, colorbarlabel, title
     1. Too much whitespace around plot and labels
     """
 
-    ax = fig.add_subplot(111, projection='3d')
-    fig.subplots_adjust(left=0, right=1, bottom=0, top=1)
+    # ax = fig.add_subplot(111, figsize=(8,6), projection='3d')
+    ax = plt.figure(figsize=(8,6)).add_subplot(projection='3d')
 
-    p = ax.scatter(X.flatten(), Y.flatten(), Z.flatten(), c=data.flatten(), cmap='plasma', s=7, edgecolor='none', alpha=0.3)
+    p = ax.scatter(X.flatten(), Y.flatten(), Z.flatten(), c=data.flatten(), cmap='plasma', s=7, edgecolor='none', alpha=0.5)
 
     # Colorbar formatting
-    fig.colorbar(p, shrink=0.65, pad=0.04, label=colorbarlabel) # fraction=0.046
+    plt.colorbar(p, pad=0.08, label=colorbarlabel) #, shrink=0.85), fraction=0.046)
 
     # Plot formatting
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.set_zlabel(zlabel)
-    ax.set_title(title)
+    ax.set_title(title, pad=30)
 
     # Initial camera position of the 3D plot adjusted for best view of warp
     ax.view_init(elev=-41, azim=-62)   
-        
-    fig.tight_layout()
+    
+    plt.tight_layout()
+    if savefig == True:
+        plt.savefig(figfolder)
+
     plt.show()
 
 
@@ -255,7 +257,7 @@ def quiver_plot_3d(X, Y, Z, dx, dy, dz, stagger, title, colorbarlabel, savefig, 
     sm.set_array([])
 
     # Plot the arrows
-    Q = ax.quiver(X[::stagger], Y[::stagger], Z[::stagger], dx[::stagger], dy[::stagger], dz[::stagger], length=3, pivot='tip', alpha=0.8, color=cmap(norm(o)), arrow_length_ratio = 0.5, normalize=True)
+    Q = ax.quiver(X[::stagger], Y[::stagger], Z[::stagger], dx[::stagger], dy[::stagger], dz[::stagger], length=3, pivot='tip', alpha=0.8, colors=cmap(norm(o)), arrow_length_ratio = 0.5, normalize=True) 
     plt.colorbar(sm, label=colorbarlabel)
 
     # Best initial camera projection to see the arrows properly 
