@@ -27,7 +27,7 @@ vthe = get_data(folder, "vz", it, domains)          # Load 3D array of colatitud
 vsph = np.sqrt(vphi**2 + vrad**2 + vthe**2)         # Total velocities in spherical coordinates
 
 # Cartesian velocities
-vx, vy, vz = vel_sph_to_cart(vthe, vrad, vphi, THETA, R, PHI)
+vx, vy, vz = vel_sph_to_cart(vthe, vrad, vphi, THETA, PHI)
 
 ############## Plotting ###################
 
@@ -82,19 +82,19 @@ irad=-1
 # contours_3D(X /au, Y /au, ZCYL /au, np.log10(rho), fig, xlabel="X [AU]", ylabel="Y [AU]", zlabel="Z [AU]", colorbarlabel=r"$\log \rho (g/cm^3)$", title="Density contour")
 # contours_3D(X[:, :irad, :]/au, Y[:, :irad, :]/au, ZCYL[:, :irad, :]/au, np.log10(rho[:, :irad, :]), fig, xlabel="X [AU]", ylabel="Y [AU]", zlabel="Z [AU]", colorbarlabel=r"$\log \rho (g/cm^3)$", title="Density contour")
 
-# itheta = 50
-# itheta_deg = np.round(np.rad2deg(domains["theta"][itheta]), 2)
+itheta = 12
+itheta_deg = np.round(np.rad2deg(domains["theta"][itheta]), 2)
 # iphi = 0
 # irad = -1
-# irad = np.where(domains["r"]/au < 1000)[0][-1]
+irad = np.where(domains["r"]/au < 500)[0][-1]
 # print(irad)
 
 # cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'Density R-Z Plane $\phi = $ {np.round(domains["phi"][iphi], 2)}', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=False, figfolder=folder / f"dens_cyl_phi{iphi}_rad{irad}.png")
 
 # XY_2D_plot(rho, X, Y, irad, itheta, title=rf'Density X-Y Plane $\theta = $ {itheta_deg}', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=folder / f"dens_xy_theta{itheta}_rad{irad}.png")
 
-# quiver_plots(X, Y, vx, vy, itheta, irad, title=rf'Velocity X-Y Plane $\theta = $ {itheta_deg}', savefig=False, figfolder=folder / f"vel_xy_theta{itheta}_rad{irad}.png")
+# quiver_plots(X, Y, vx, vy, itheta, irad, title=rf'Velocity X-Y Plane $\theta = $ {itheta_deg}', savefig=True, figfolder=f"../vel_xy_theta{itheta}_rad{irad}.png")
 
 Rmax = 500       # Maximum radius of the Cartesian box for interactive_interp_3d in AU
-interactive_interp_3d(np.log10(rho), Rmax, colorbarlabel=r"$\log \rho (g/cm^3)$", title="Density", idxnames=['X [au]', 'Y [au]', 'Z [au]'])
-interactive_interp_3d(vsph, Rmax, colorbarlabel=r"$\log v (cm/s)$", title="Velocity", idxnames=['X [au]', 'Y [au]', 'Z [au]'])
+# interactive_interp_3d(np.log10(rho), Rmax, colorbarlabel=r"$\log \rho (g/cm^3)$", title="Density", idxnames=['X [au]', 'Y [au]', 'Z [au]'])
+# interactive_interp_3d(np.log10(vsph), Rmax, colorbarlabel=r"$\log v (cm/s)$", title="Velocity", idxnames=['X [au]', 'Y [au]', 'Z [au]'])

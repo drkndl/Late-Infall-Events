@@ -177,7 +177,7 @@ def slicearr(data,indices=(0,1),x=None,y=None,zmin=None,zmax=None,idxnames=None,
     if zmin is None: zmin=data.min()
     if zmax is None: zmax=data.max()
     norm     = colors.Normalize(vmin=zmin,vmax=zmax)
-    cmap     = cm.hot
+    cmap     = cm.plasma
     fig,ax   = plt.subplots()
     im       = NonUniformImage(ax,interpolation='nearest',cmap=cmap,norm=norm)
     idcs     = [indices[0],indices[1]]
