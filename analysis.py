@@ -239,7 +239,7 @@ def isolate_warp(dens, threshold):
     return warp_dens, ids
 
 
-def calc_L_average(Lxwarp, Lywarp, Lzwarp, Xwarp, Ywarp, Zwarp):
+def calc_L_average(Lx, Ly, Lz, X, Y, Z):
     """
     Calculates the angular momentum averaged across the theta and phi directions to find the radial Ls
 
@@ -250,54 +250,13 @@ def calc_L_average(Lxwarp, Lywarp, Lzwarp, Xwarp, Ywarp, Zwarp):
     Lz:       Angular momentum array in z-direction with size (theta, r, phi)
     """
 
-    R = np.sqrt(Xwarp**2 + Ywarp**2 + Zwarp**2)
-    Ltot = np.sqrt(Lxwarp**2 + Lywarp**2 + Lzwarp**2)
+    R, Rc, theta, phi = cart_to_sph(X, Y, Z)
+    print(R.shape, R.max(), R.min())
+    print(theta.shape, theta.max(), theta.min())
+    print(phi.shape, phi.max(), phi.min())
+    # Ltot = np.sqrt(Lxwarp**2 + Lywarp**2 + Lzwarp**2)
     
-    r_flat = R.flatten()
-    x_flat, y_flat, z_flat = Xwarp.flatten(), Ywarp.flatten(), Zwarp.flatten()
-    Lx_flat, Ly_flat, Lz_flat = Lxwarp.flatten(), Lywarp.flatten(), Lzwarp.flatten()
-
-    r_bins = np.linspace(r_flat.min(), r_flat.max(), num=20)  # Adjust number of bins
-    r_bin_centers = 0.5 * (r_bins[:-1] + r_bins[1:])
-    r_indices = np.digitize(r_flat, r_bins)
-
-    avg_positions = []
-    avg_velocities = []
-
-    for i in range(1, len(r_bins)):
-        mask = r_indices == i
-        if np.any(mask):
-            # Position of the average vector = direction of shell center × radius
-            x_avg = x_flat[mask].mean()
-            y_avg = y_flat[mask].mean()
-            z_avg = z_flat[mask].mean()
-
-            # Average velocity vector in that shell
-            vx_avg = Lx_flat[mask].mean()
-            vy_avg = Ly_flat[mask].mean()
-            vz_avg = Lz_flat[mask].mean()
-
-            avg_positions.append([x_avg, y_avg, z_avg])
-            avg_velocities.append([vx_avg, vy_avg, vz_avg])
-
-    avg_positions = np.array(avg_positions)
-    avg_velocities = np.array(avg_velocities)
-
-    fig = plt.figure(figsize=(10, 8))
-    ax = fig.add_subplot(111, projection='3d')
-
-    # Decompose arrays for plotting
-    X0, Y0, Z0 = avg_positions[:, 0], avg_positions[:, 1], avg_positions[:, 2]
-    U, V, W = avg_velocities[:, 0], avg_velocities[:, 1], avg_velocities[:, 2]
-
-    ax.quiver(X0, Y0, Z0, U, V, W, length=1.0, normalize=True)
-
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
-    ax.set_title('Angular momentum per spherical shell')
-    plt.show()
-
+    
     return 
 
 
@@ -329,42 +288,31 @@ Y_c = centering(Y)
 Z_c = centering(ZCYL)
 
 cell_volume = calc_cell_volume(domains["theta"], domains["r"], domains["phi"])
-# print(cell_volume.max(), cell_volume.min(), cell_volume.mean())
 mass = calc_mass(rho, cell_volume)
 Lx, Ly, Lz = calc_angular_momentum(mass, X, Y, ZCYL, vx, vy, vz)
 
 ########################### Isolating the warp in the primary disk ###############################
 
-threshold = -14   # log of density threshold for which we can see the warp in the primary
 # Note 1: I am using centered densities to isolate the warp to match the indices corresponding to the warp with the angular momenta indices
 # Note 2: The warp_ids itself is a 3D Boolean array, but when applied to another array such as x[warp_ids], the latter array becomes 1D
+threshold = -14   # log of density threshold for which we can see the warp in the primary
 rho_c_warp, warp_ids = isolate_warp(rho_c, threshold) 
-# print(warp_ids.shape)
-# wx, wy, wz = np.where(warp_ids)
-# print(wx)
-# print(wx.shape, wy.shape, wz.shape)
-# Lxwarp = np.where(Lx[warp_ids], Lx, np.nan)
-# Lywarp = np.where(Ly[warp_ids], Ly, np.nan)
-# Lzwarp = np.where(Lz[warp_ids], Lz, np.nan) 
-# Xwarp = np.where(X_cwarp_ids, X_c, np.nan)
-# Ywarp = np.where(warp_ids, Y_c, np.nan)
-# Zwarp = np.where(warp_ids, Z_c, np.nan)   
-# print(Lx[warp_ids].shape, Lxwarp.shape) 
-# calc_L_average(Lx, Ly, Lz, X_c, Y_c, Z_c)
-# bewkfn
+calc_L_average(Lx, Ly, Lz, X_c, Y_c, Z_c)
+
+print(domains["theta"].max(), domains["theta"].min())
+print(domains["phi"].max(), domains["phi"].min())
+print(domains["r"].max(), domains["r"].min())
+bewkfn
 
 # Plotting the warp densities 
-# contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_warp, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$', savefig=False, figfolder=f'../warp_dens_thresh{threshold}.png')
+contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_warp, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$', savefig=False, figfolder=f'../warp_dens_thresh{threshold}.png')
 
 # Another way to plot the warp densities
 # fig = plt.figure(figsize=(10, 7))
 # contours_3D(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, rho_c[warp_ids], fig, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$')
 
 # Plotting the Cartesian warp angular momenta
-# quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Lx[warp_ids], Ly[warp_ids], Lz[warp_ids], stagger=70, title="Warp angular momenta", colorbarlabel="logL", savefig=True, figfolder=f'../warp_L_thresh{threshold}.png')
-
-# Plotting the spherical warp angular momenta
-# quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Lrad[warp_ids], Lthe[warp_ids], Lphi[warp_ids], stagger=100, title="Warp angular momenta", savefig=False, figfolder=None)
+quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Lx[warp_ids], Ly[warp_ids], Lz[warp_ids], stagger=70, title="Warp angular momenta", colorbarlabel="logL", savefig=True, figfolder=f'../warp_L_thresh{threshold}.png')
 
 ####################################################################################################
 

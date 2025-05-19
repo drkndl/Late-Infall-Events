@@ -95,6 +95,6 @@ irad = np.where(domains["r"]/au < 500)[0][-1]
 
 # quiver_plots(X, Y, vx, vy, itheta, irad, title=rf'Velocity X-Y Plane $\theta = $ {itheta_deg}', savefig=True, figfolder=f"../vel_xy_theta{itheta}_rad{irad}.png")
 
-Rmax = 500       # Maximum radius of the Cartesian box for interactive_interp_3d in AU
-# interactive_interp_3d(np.log10(rho), Rmax, colorbarlabel=r"$\log \rho (g/cm^3)$", title="Density", idxnames=['X [au]', 'Y [au]', 'Z [au]'])
-# interactive_interp_3d(np.log10(vsph), Rmax, colorbarlabel=r"$\log v (cm/s)$", title="Velocity", idxnames=['X [au]', 'Y [au]', 'Z [au]'])
+Rmax = 50       # Maximum radius of the Cartesian box for interactive_interp_3d in AU
+interactive_interp_3d(np.log10(rho), Rmax, colorbarlabel=r"$\log \rho (g/cm^3)$", title="Density", idxnames=['X [au]', 'Y [au]', 'Z [au]'])
+interactive_interp_3d(np.log10(vsph), Rmax, colorbarlabel=r"$\log v (cm/s)$", title="Velocity", idxnames=['X [au]', 'Y [au]', 'Z [au]'])
