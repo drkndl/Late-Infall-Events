@@ -7,6 +7,9 @@ import matplotlib.pyplot as plt
 from no_thoughts_just_plots import quiver_plot_3d, contours_3D
 import astropy.constants as c
 au = c.au.cgs.value
+G = 6.67e-8               # Gravitational constant in cgs units
+Msun = 1.989e33           # Mass of the Sun in g
+Mstar = 0.7 * Msun        # Mass of the primary star in IRAS 04125+2902 (Barber et al. 2024)
 
 
 def sph_to_cart(THETA, R, PHI):
@@ -210,8 +213,65 @@ def calc_angular_momentum(mass, x, y, z, vx, vy, vz):
     return Lx, Ly, Lz
 
 
-def calc_eccent():
-    return 
+def calc_LRL(mass, Mstar, vx, vy, vz, Lx, Ly, Lz, X, Y, Z):
+    """
+    Calculating the Laplace-Runge-Lenz vector A = p x L - m * k * r^ where k is the strength of the central force k = GMm for gravitational forces
+
+    Inputs:
+    ------
+    mass:     3D array of gas mass in g with shape (n_theta-1, n_r-1, n_phi-1)
+    Mstar:    Mass of the central star in g (float)
+    vx:       3D meshgrid of Cartesian X velocities with shape (n_theta-1, n_r-1, n_phi-1)
+    vy:       3D meshgrid of Cartesian Y velocities with shape (n_theta-1, n_r-1, n_phi-1)
+    vz:       3D meshgrid of Cartesian Z velocities with shape (n_theta-1, n_r-1, n_phi-1)
+    Lx:       Angular momentum array in x-direction with size (theta-1, n_r-1, n_phi-1)
+    Ly:       Angular momentum array in y-direction with size (theta-1, n_r-1, n_phi-1)
+    Lz:       Angular momentum array in z-direction with size (theta-1, n_r-1, n_phi-1)
+    X:        3D meshgrid of Cartesian X values with shape (n_theta-1, n_r-1, n_phi-1)
+    Y:        3D meshgrid of Cartesian Y values with shape (n_theta-1, n_r-1, n_phi-1)
+    Z:        3D meshgrid of Cartesian Z values with shape (n_theta-1, n_r-1, n_phi-1)
+
+    Outputs:
+    -------
+    Ax:       3D array of X values of Laplace-Runge-Lenz vector with shape (n_theta-1, n_r-1, n_phi-1)
+    Ay:       3D array of Y values of Laplace-Runge-Lenz vector with shape (n_theta-1, n_r-1, n_phi-1)
+    Az:       3D array of Z values of Laplace-Runge-Lenz vector with shape (n_theta-1, n_r-1, n_phi-1)
+    """
+
+    # Defining r, v and L vectors 
+    r = np.stack((X, Y, Z), axis=-1)  
+    v = np.stack((vx, vy, vz), axis=-1)
+    L = np.stack((Lx, Ly, Lz), axis=-1)
+
+    # Calculating the coordinates' unit vector
+    r_mag = np.linalg.norm(r, axis=-1, keepdims=True)
+    r_hat = r / r_mag
+
+    # Calculating the linear momentum vector
+    p = mass[..., np.newaxis] * v
+
+    # Calculating the Laplace-Runge-Lenz vector
+    A = np.cross(p, L) - G * mass[..., np.newaxis]**2 * Mstar * r_hat
+    
+    # Finding x, y, z angular momentum components
+    Ax = A[:, :, :, 0]
+    Ay = A[:, :, :, 1]
+    Az = A[:, :, :, 2]
+
+    return Ax, Ay, Az
+
+
+def calc_eccen(Ax, Ay, Az, mass, Mstar):
+    """
+    Calculating the eccentricity by way of the Laplace-Runge-Lenz vector with e = A / |m k|
+    """
+
+    k = G * Mstar * mass
+    ex = Ax / (mass * k)
+    ey = Ay / (mass * k)
+    ez = Az / (mass * k)
+
+    return ex, ey, ez
 
 
 def isolate_warp(dens, threshold):
@@ -369,6 +429,9 @@ rho_c = centering(rho)
 X_c = centering(X)
 Y_c = centering(Y)
 Z_c = centering(ZCYL)
+vx_c = centering(vx)
+vy_c = centering(vy)
+vz_c = centering(vz)
 
 cell_volume = calc_cell_volume(domains["theta"], domains["r"], domains["phi"])
 mass = calc_mass(rho, cell_volume)
@@ -397,6 +460,20 @@ plot_L_average(Lx[warp_ids], Ly[warp_ids], Lz[warp_ids], X_c[warp_ids], Y_c[warp
 
 # Plotting radially averaged L for ALL radii (a.k.a a mess)
 # plot_L_average(Lx, Ly, Lz, X_c, Y_c, Z_c, rho_c)
+
+# Calculating and plotting warp Laplace-Runge-Lenz vector
+Ax, Ay, Az = calc_LRL(mass, Mstar, vx_c, vy_c, vz_c, Lx, Ly, Lz, X_c, Y_c, Z_c)
+quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Ax[warp_ids], Ay[warp_ids], Az[warp_ids], stagger=70, title=rf'Warp LRL', colorbarlabel=r'$\log(A [g^2cm^3/s^2])$', savefig=False, figfolder=f'../warp_LRL.png')
+
+# Calculating and plotting warp eccentricity
+ex, ey, ez = calc_eccen(Ax, Ay, Az, mass, Mstar)
+quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, ex[warp_ids], ey[warp_ids], ez[warp_ids], stagger=70, title=rf'Warp Eccentricity', colorbarlabel=r'$\log(e)$', savefig=False, figfolder=f'../warp_ecc.png')
+
+# Characterizing warp eccentricity 
+e = np.sqrt(ex**2 + ey**2 + ez**2)
+print("Min Warp eccentricity: ", np.min(e))
+print("Max Warp eccentricity: ", np.max(e))
+print("Mean warp eccentricity: ", np.mean(e))
 
 ####################################################################################################
 
