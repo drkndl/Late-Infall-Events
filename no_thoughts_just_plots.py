@@ -96,7 +96,7 @@ def interactive_2D(data, indices, x, y, idxnames):
     plt.show()
 
 
-def contours_3D(X, Y, Z, data, xlabel, ylabel, zlabel, colorbarlabel, title, savefig, figfolder):
+def contours_3D(X, Y, Z, data, xlabel, ylabel, zlabel, colorbarlabel, title, savefig, figfolder, azim=-62, elev=-41):
     """
     Plot a 3D contour plot of a FARGO scalar field (dens/vx/energy etc) in Cartesian coords
     
@@ -109,6 +109,8 @@ def contours_3D(X, Y, Z, data, xlabel, ylabel, zlabel, colorbarlabel, title, sav
     xlabel/ylabel/zlabel:    Axis labels (str)
     colorbarlabel:           Colour bar label (str)
     title:                   Image title (str)
+    azim:                    Azmiuthal camera angle for plot (Default=-62 for warp view) (degrees)
+    elev:                    Elevation camera angle for plot (Default=-41 for warp view) (degrees)
 
     Issues:
     ------
@@ -129,8 +131,8 @@ def contours_3D(X, Y, Z, data, xlabel, ylabel, zlabel, colorbarlabel, title, sav
     ax.set_zlabel(zlabel)
     ax.set_title(title, pad=30)
 
-    # Initial camera position of the 3D plot adjusted for best view of warp
-    ax.view_init(elev=-41, azim=-62)   
+    # Initial camera position of the 3D plot (default: elev=-41, azim=-62 for best view of warp)
+    ax.view_init(elev=elev, azim=azim)   
     
     plt.tight_layout()
     if savefig == True:

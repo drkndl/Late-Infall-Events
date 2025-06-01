@@ -239,7 +239,7 @@ def isolate_warp(dens, threshold):
     return warp_dens, ids
 
 
-def calc_L_average(Lx, Ly, Lz, X, Y, Z):
+def plot_L_average(Lx, Ly, Lz, X, Y, Z, dens):
     """
     Calculates the angular momentum averaged across the theta and phi directions to find the radial Ls
 
@@ -249,13 +249,96 @@ def calc_L_average(Lx, Ly, Lz, X, Y, Z):
     Ly:       Angular momentum array in y-direction with size (theta, r, phi)
     Lz:       Angular momentum array in z-direction with size (theta, r, phi)
     """
-
-    R, Rc, theta, phi = cart_to_sph(X, Y, Z)
-    print(R.shape, R.max(), R.min())
-    print(theta.shape, theta.max(), theta.min())
-    print(phi.shape, phi.max(), phi.min())
-    # Ltot = np.sqrt(Lxwarp**2 + Lywarp**2 + Lzwarp**2)
     
+    # Converting the Cartesian grid to spherical grid
+    R, Rc, theta, phi = cart_to_sph(X, Y, Z)
+    
+    # Binning data radially 
+    num_bins = 20
+    r_bins = np.linspace(R.min(), R.max(), num_bins + 1)
+    r_bincen = 0.5 * (r_bins[:-1] + r_bins[1:])
+
+    phi_plot = np.linspace(-np.pi, np.pi, num_bins)
+    theta_plot = np.linspace(0, np.pi, num_bins)
+    xplot, yplot, zplot, _ = sph_to_cart(theta_plot, r_bincen, phi_plot)
+    
+    # Flatten coordinate and angular momentum arrays
+    R_flat = R.flatten()
+    Lx_flat = Lx.flatten()
+    Ly_flat = Ly.flatten()
+    Lz_flat = Lz.flatten()
+
+    # Get bin indices for each point
+    bin_indices = np.digitize(R_flat, r_bins)
+    print("Radial bins: ", r_bins/au)
+
+    # Store radial averages
+    Lx_avg = np.zeros(num_bins)
+    Ly_avg = np.zeros(num_bins)
+    Lz_avg = np.zeros(num_bins)
+
+    for i in range(1, num_bins + 1):
+        mask = bin_indices == i
+        if np.any(mask):
+
+            Lx_avg[i-1] = Lx_flat[mask].mean()
+            Ly_avg[i-1] = Ly_flat[mask].mean()
+            Lz_avg[i-1] = Lz_flat[mask].mean()
+
+    ##############   3D PLOTTING  #######################
+
+    fig = plt.figure(figsize=(8, 6))
+    ax = fig.add_subplot(111, projection='3d')
+
+    # Plotting with Cartesian equivalent of r_bincen
+    # ax.quiver(xplot/au, yplot/au, zplot/au, Lx_avg, Ly_avg, Lz_avg, length=5, normalize=True, color='red')
+
+    # Radially plotting (i.e. using r_bincen) averaged angular momenta
+    ax.quiver(r_bincen/au, 0, 0, Lx_avg, Ly_avg, Lz_avg, length=5, normalize=True, edgecolor='black', color='red')
+
+    # Overplotting the density as well
+    p = ax.scatter(X.flatten()/au, Y.flatten()/au, Z.flatten()/au, c=dens.flatten(), cmap='plasma', s=7, edgecolor='none', alpha=0.2)
+
+    # Colorbar formatting
+    plt.colorbar(p, pad=0.08, label=r'$\rho [g/cm^3]$') #, shrink=0.85), fraction=0.046)
+
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    # ax.set_ylim(yplot.min()/au, yplot.max()/au)
+    # ax.set_zlim(zplot.min()/au, zplot.max()/au)
+    ax.set_title('Radially Averaged Warp L')
+    ax.set_box_aspect([1, 1, 1])  # Equal aspect ratio
+    plt.tight_layout()
+    plt.show()
+
+    ################################### 2D PROJECTION PLOTTING ############################
+
+    plt.figure(figsize=(6, 6))
+
+    # XZ projection
+    Q1 = plt.quiver(r_bincen/au, 0, Lx_avg, Lz_avg, np.sqrt(Lx_avg**2 + Ly_avg**2 + Lz_avg**2), cmap='viridis')
+    plt.colorbar(Q1, label=r'$\vert L \vert [g cm^2/s]$')
+    plt.xlabel('X')
+    plt.ylabel('Z')
+    plt.title('Radially Averaged L in XZ Plane')
+    plt.axis('equal')
+    plt.grid(True)
+    plt.show()
+
+    plt.figure(figsize=(6, 6))
+
+    # YZ projection
+    Q2 = plt.quiver(np.zeros(shape=Ly_avg.shape), np.zeros(shape=Lz_avg.shape), Ly_avg, Lz_avg, np.sqrt(Lx_avg**2 + Ly_avg**2 + Lz_avg**2), cmap='viridis')
+    plt.colorbar(Q2, label=r'$\vert L \vert [g cm^2/s]$')
+    plt.xlabel('Y')
+    plt.ylabel('Z')
+    plt.title('Radially Averaged L in YZ Plane')
+    plt.xlim(yplot.min()/au, yplot.max()/au)
+    plt.ylim(zplot.min()/au, zplot.max()/au)
+    plt.axis('equal')
+    plt.grid(True)
+    plt.show()
     
     return 
 
@@ -297,22 +380,23 @@ Lx, Ly, Lz = calc_angular_momentum(mass, X, Y, ZCYL, vx, vy, vz)
 # Note 2: The warp_ids itself is a 3D Boolean array, but when applied to another array such as x[warp_ids], the latter array becomes 1D
 threshold = -14   # log of density threshold for which we can see the warp in the primary
 rho_c_warp, warp_ids = isolate_warp(rho_c, threshold) 
-calc_L_average(Lx, Ly, Lz, X_c, Y_c, Z_c)
 
-print(domains["theta"].max(), domains["theta"].min())
-print(domains["phi"].max(), domains["phi"].min())
-print(domains["r"].max(), domains["r"].min())
-bewkfn
+#################################### Plotting warp properties #####################################
 
 # Plotting the warp densities 
-contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_warp, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$', savefig=False, figfolder=f'../warp_dens_thresh{threshold}.png')
+contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_warp, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$', savefig=False, figfolder=f'../warp_dens_thresh{threshold}.png', azim=178, elev=11)
 
 # Another way to plot the warp densities
-# fig = plt.figure(figsize=(10, 7))
 # contours_3D(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, rho_c[warp_ids], fig, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$')
 
 # Plotting the Cartesian warp angular momenta
-quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Lx[warp_ids], Ly[warp_ids], Lz[warp_ids], stagger=70, title="Warp angular momenta", colorbarlabel="logL", savefig=True, figfolder=f'../warp_L_thresh{threshold}.png')
+quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Lx[warp_ids], Ly[warp_ids], Lz[warp_ids], stagger=70, title="Warp angular momenta", colorbarlabel="logL", savefig=False, figfolder=f'../warp_L_thresh{threshold}.png')
+
+# Plotting the radially averaged Cartesian warp angular momenta and the 2D projections
+plot_L_average(Lx[warp_ids], Ly[warp_ids], Lz[warp_ids], X_c[warp_ids], Y_c[warp_ids], Z_c[warp_ids], rho_c[warp_ids])
+
+# Plotting radially averaged L for ALL radii (a.k.a a mess)
+# plot_L_average(Lx, Ly, Lz, X_c, Y_c, Z_c, rho_c)
 
 ####################################################################################################
 
