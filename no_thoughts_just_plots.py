@@ -237,13 +237,25 @@ def interactive_interp_3d(data, Rmax, colorbarlabel, title, idxnames):
     plt.show()
 
 
-def quiver_plot_3d(X, Y, Z, dx, dy, dz, stagger, title, colorbarlabel, savefig, figfolder, ignorecol=False):
+def quiver_plot_3d(X, Y, Z, dx, dy, dz, stagger, length, title, colorbarlabel, savefig, figfolder, ignorecol=False):
     """
     Plots quiver plot in 3D 
     
     Inputs:
     ------
-    stagger: Plot only every stagger points so that the plot doesn't look so busy
+    X:              Array of X coordinates of the arrows
+    Y:              Array of Y coordinates of the arrows
+    Z:              Array of Z coordinates of the arrows
+    dx:             Array of X direction data of the arrows
+    dy:             Array of Y direction data of the arrows
+    dz:             Array of Z direction data of the arrows
+    stagger:        Plot only every stagger points so that the plot doesn't look so busy
+    length:         Length of the arrow
+    title:          Plot title
+    colorbarlabel:  Plot colorbar label
+    savefig:        Boolean to save figure if True
+    figfolder:      Directory in which the figure is to be saved
+    ignorecols:     Boolean to remove arrow colours if True
     """
 
     ax = plt.figure(figsize=(8,6)).add_subplot(projection='3d')
@@ -260,9 +272,9 @@ def quiver_plot_3d(X, Y, Z, dx, dy, dz, stagger, title, colorbarlabel, savefig, 
 
     # Plot the arrows
     if ignorecol == True:
-        Q = ax.quiver(X[::stagger], Y[::stagger], Z[::stagger], dx[::stagger], dy[::stagger], dz[::stagger], length=3, pivot='tip', alpha=0.8, arrow_length_ratio = 0.5, normalize=True) 
+        Q = ax.quiver(X[::stagger], Y[::stagger], Z[::stagger], dx[::stagger], dy[::stagger], dz[::stagger], length=length, pivot='tip', alpha=0.8, arrow_length_ratio = 0.5, normalize=True) 
     else:
-        Q = ax.quiver(X[::stagger], Y[::stagger], Z[::stagger], dx[::stagger], dy[::stagger], dz[::stagger], length=3, pivot='tip', alpha=0.8, colors=cmap(norm(o)), arrow_length_ratio = 0.5, normalize=True) 
+        Q = ax.quiver(X[::stagger], Y[::stagger], Z[::stagger], dx[::stagger], dy[::stagger], dz[::stagger], length=length, pivot='tip', alpha=0.8, colors=cmap(norm(o)), arrow_length_ratio = 0.5, normalize=True) 
         plt.colorbar(sm, label=colorbarlabel)
 
     # Best initial camera projection to see the arrows properly 
