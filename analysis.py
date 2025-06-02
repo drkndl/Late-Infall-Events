@@ -475,6 +475,10 @@ print("Min Warp eccentricity: ", np.min(e))
 print("Max Warp eccentricity: ", np.max(e))
 print("Mean warp eccentricity: ", np.mean(e))
 
+################## Isolating the secondary disk: R = , theta = 30°, phi = 115° #####################
+
+
+
 ####################################################################################################
 
 # quiver_plot_3d(X[::7, :20:7, ::7]/au, Y[::7, :20:7, ::7]/au, ZCYL[::7, :20:7, ::7]/au, Lx[::7, :20:7, ::7], Ly[::7, :20:7, ::7], Lz[::7, :20:7, ::7])
