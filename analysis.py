@@ -264,6 +264,20 @@ def calc_LRL(mass, Mstar, vx, vy, vz, Lx, Ly, Lz, X, Y, Z):
 def calc_eccen(Ax, Ay, Az, mass, Mstar):
     """
     Calculating the eccentricity by way of the Laplace-Runge-Lenz vector with e = A / |m k|
+
+    Inputs:
+    ------
+    Ax:       3D array of Laplace-Runge-Lenz vectors in x direction
+    Ay:       3D array of Laplace-Runge-Lenz vectors in y direction
+    Az:       3D array of Laplace-Runge-Lenz vectors in z direction
+    mass:     3D array of particle masses 
+    Mstar:    Mass of the primary star (float)
+
+    Outputs:
+    -------
+    ex:       3D array of eccentricity in x direction
+    ey:       3D array of eccentricity in y direction
+    ez:       3D array of eccentricity in z direction
     """
 
     k = G * Mstar * mass
