@@ -299,6 +299,36 @@ def isolate_warp(dens, threshold):
     return warp_dens, ids
 
 
+def isolate_secondary_box(X, Y, Z, secX, secY, secZ, buffer, dens):
+    """
+    Isolates the secondary simply by zooming into the simulation box around (secX, secY, secZ) obtained by visualization
+
+    Inputs:
+    ------
+    X: 
+    Y: 
+    Z: 
+    """
+
+    # Logical mask to select points within the box
+    mask = (
+        (X >= secX - buffer) & (X <= secX + buffer) &
+        (Y >= secY - buffer) & (Y <= secY + buffer) &
+        (Z >= secZ - buffer) & (Z <= secZ + buffer)
+    )
+
+    # Extract the density values within the box
+    sec_dens = dens[mask]
+
+    # Extract corresponding coordinates
+    X_sec = X[mask]
+    Y_sec = Y[mask]
+    Z_sec = Z[mask]
+
+    return X_sec, Y_sec, Z_sec, sec_dens, mask
+
+
+
 def plot_L_average(Lx, Ly, Lz, X, Y, Z, dens):
     """
     Calculates the angular momentum averaged across the theta and phi directions to find the radial Ls
@@ -408,6 +438,7 @@ it = 600                                # FARGO snapshot
 
 ###################### Load data (theta = 100, r = 250, phi = 225) ################################
 
+
 domains = get_domain_spherical(folder)
 rho = get_data(folder, "dens", it, domains)         # Load 3D array of density values            
 vphi = get_data(folder, "vx", it, domains)          # Load 3D array of azimuthal velocities v_phi
@@ -422,7 +453,9 @@ X, Y, ZCYL, RCYL = sph_to_cart(THETA, R, PHI)       # Meshgrid of Cartesian coor
 # Cartesian velocities
 vx, vy, vz = vel_sph_to_cart(vthe, vrad, vphi, THETA, PHI)
 
+
 ############################# Calculate physical quantities ######################################
+
 
 # Interpolate the densities & coordinates to the cell centres so that the array shape matches with mass & L
 rho_c = centering(rho)
@@ -436,48 +469,71 @@ vz_c = centering(vz)
 cell_volume = calc_cell_volume(domains["theta"], domains["r"], domains["phi"])
 mass = calc_mass(rho, cell_volume)
 Lx, Ly, Lz = calc_angular_momentum(mass, X, Y, ZCYL, vx, vy, vz)
+Ax, Ay, Az = calc_LRL(mass, Mstar, vx_c, vy_c, vz_c, Lx, Ly, Lz, X_c, Y_c, Z_c)
+ex, ey, ez = calc_eccen(Ax, Ay, Az, mass, Mstar)
+e = np.sqrt(ex**2 + ey**2 + ez**2)
+
 
 ########################### Isolating the warp in the primary disk ###############################
 
+
 # Note 1: I am using centered densities to isolate the warp to match the indices corresponding to the warp with the angular momenta indices
 # Note 2: The warp_ids itself is a 3D Boolean array, but when applied to another array such as x[warp_ids], the latter array becomes 1D
-threshold = -14   # log of density threshold for which we can see the warp in the primary
-rho_c_warp, warp_ids = isolate_warp(rho_c, threshold) 
+warp_thresh = -14   # log of density threshold for which we can see the warp in the primary
+rho_c_warp, warp_ids = isolate_warp(rho_c, warp_thresh) 
+
 
 #################################### Plotting warp properties #####################################
 
+
 # Plotting the warp densities 
-contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_warp, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$', savefig=False, figfolder=f'../warp_dens_thresh{threshold}.png', azim=178, elev=11)
+# contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_warp, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$', savefig=False, figfolder=f'../warp_dens_thresh{threshold}.png', azim=178, elev=11)
 
 # Another way to plot the warp densities
 # contours_3D(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, rho_c[warp_ids], fig, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$')
 
 # Plotting the Cartesian warp angular momenta
-quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Lx[warp_ids], Ly[warp_ids], Lz[warp_ids], stagger=70, title="Warp angular momenta", colorbarlabel="logL", savefig=False, figfolder=f'../warp_L_thresh{threshold}.png')
+# quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Lx[warp_ids], Ly[warp_ids], Lz[warp_ids], stagger=70, title="Warp angular momenta", colorbarlabel="logL", savefig=False, figfolder=f'../warp_L_thresh{threshold}.png')
 
 # Plotting the radially averaged Cartesian warp angular momenta and the 2D projections
-plot_L_average(Lx[warp_ids], Ly[warp_ids], Lz[warp_ids], X_c[warp_ids], Y_c[warp_ids], Z_c[warp_ids], rho_c[warp_ids])
+# plot_L_average(Lx[warp_ids], Ly[warp_ids], Lz[warp_ids], X_c[warp_ids], Y_c[warp_ids], Z_c[warp_ids], rho_c[warp_ids])
 
 # Plotting radially averaged L for ALL radii (a.k.a a mess)
 # plot_L_average(Lx, Ly, Lz, X_c, Y_c, Z_c, rho_c)
 
-# Calculating and plotting warp Laplace-Runge-Lenz vector
-Ax, Ay, Az = calc_LRL(mass, Mstar, vx_c, vy_c, vz_c, Lx, Ly, Lz, X_c, Y_c, Z_c)
-quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Ax[warp_ids], Ay[warp_ids], Az[warp_ids], stagger=70, title=rf'Warp LRL', colorbarlabel=r'$\log(A [g^2cm^3/s^2])$', savefig=False, figfolder=f'../warp_LRL.png')
+# Plotting warp Laplace-Runge-Lenz vector
+# quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Ax[warp_ids], Ay[warp_ids], Az[warp_ids], stagger=70, title=rf'Warp LRL', colorbarlabel=r'$\log(A [g^2cm^3/s^2])$', savefig=False, figfolder=f'../warp_LRL.png')
 
-# Calculating and plotting warp eccentricity
-ex, ey, ez = calc_eccen(Ax, Ay, Az, mass, Mstar)
-quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, ex[warp_ids], ey[warp_ids], ez[warp_ids], stagger=70, title=rf'Warp Eccentricity', colorbarlabel=r'$\log(e)$', savefig=False, figfolder=f'../warp_ecc.png')
+# Plotting warp eccentricity
+# quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, ex[warp_ids], ey[warp_ids], ez[warp_ids], stagger=70, title=rf'Warp Eccentricity', colorbarlabel=r'$\log(e)$', savefig=False, figfolder=f'../warp_ecc.png')
 
 # Characterizing warp eccentricity 
-e = np.sqrt(ex**2 + ey**2 + ez**2)
-print("Min Warp eccentricity: ", np.min(e))
-print("Max Warp eccentricity: ", np.max(e))
-print("Mean warp eccentricity: ", np.mean(e))
-
-################## Isolating the secondary disk: R = , theta = 30°, phi = 115° #####################
+# print("Min Warp eccentricity: ", np.min(e[warp_ids]))
+# print("Max Warp eccentricity: ", np.max(e[warp_ids]))
+# print("Mean warp eccentricity: ", np.mean(e[warp_ids]))
 
 
+######## Isolating the secondary disk box: (X=-150AU,Y=300,Z=600) (R=?,theta=30°,phi=115°) ##########
+
+# Roughly the Cartesian central coordinate of the secondary disk obtained through visualization
+secx = -150       # AU
+secy = 300        # AU
+secz = 600        # AU
+buffer = 100      # AU
+
+# Isolating the secondary box and its corresponding density
+X_secbox, Y_secbox, Z_secbox, rho_c_secbox, secbox_ids = isolate_secondary_box(X_c, Y_c, Z_c, secx * au, secy * au, secz * au, buffer * au, rho_c)
+
+# Plotting the secondary densities box 
+contours_3D(X_secbox/au, Y_secbox/au, Z_secbox/au, rho_c_secbox, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\rho$ Secondary Disk Box', savefig=False, figfolder=f'../secondary_dens_box.png')
+
+# Now applying the density threshold to the secondary box to get the secondary disk itself
+sec_thresh = -16.5   # log of density threshold for which we can see the secondary
+rho_c_sec, sec_ids = isolate_warp(rho_c_secbox, sec_thresh)
+
+# Plotting the secondary densities
+print(X_secbox[sec_ids].shape, Y_secbox[sec_ids].shape, Z_secbox[sec_ids].shape, rho_c_sec.shape)
+contours_3D(X_secbox/au, Y_secbox/au, Z_secbox/au, rho_c_sec, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\rho$ Secondary Disk', savefig=False, figfolder=f'../secondary_dens.png')
 
 ####################################################################################################
 

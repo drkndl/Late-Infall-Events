@@ -86,15 +86,15 @@ itheta = 12
 itheta_deg = np.round(np.rad2deg(domains["theta"][itheta]), 2)
 # iphi = 0
 # irad = -1
-irad = np.where(domains["r"]/au < 500)[0][-1]
+# irad = np.where(domains["r"]/au < 500)[0][-1]
 # print(irad)
 
 # cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'Density R-Z Plane $\phi = $ {np.round(domains["phi"][iphi], 2)}', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=False, figfolder=folder / f"dens_cyl_phi{iphi}_rad{irad}.png")
 
-# XY_2D_plot(rho, X, Y, irad, itheta, title=rf'Density X-Y Plane $\theta = $ {itheta_deg}', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=folder / f"dens_xy_theta{itheta}_rad{irad}.png")
+XY_2D_plot(rho, X, ZCYL, irad, itheta, title=rf'Density X-Z Plane $\theta = $ {itheta_deg}', colorbarlabel=r"$\log(\rho)$", savefig=False, figfolder=folder / f"dens_xz_theta{itheta}_rad{irad}.png")
 
 # quiver_plots(X, Y, vx, vy, itheta, irad, title=rf'Velocity X-Y Plane $\theta = $ {itheta_deg}', savefig=True, figfolder=f"../vel_xy_theta{itheta}_rad{irad}.png")
 
-Rmax = 50       # Maximum radius of the Cartesian box for interactive_interp_3d in AU
-interactive_interp_3d(np.log10(rho), Rmax, colorbarlabel=r"$\log \rho (g/cm^3)$", title="Density", idxnames=['X [au]', 'Y [au]', 'Z [au]'])
-interactive_interp_3d(np.log10(vsph), Rmax, colorbarlabel=r"$\log v (cm/s)$", title="Velocity", idxnames=['X [au]', 'Y [au]', 'Z [au]'])
+# Rmax = 50       # Maximum radius of the Cartesian box for interactive_interp_3d in AU
+# interactive_interp_3d(np.log10(rho), Rmax, colorbarlabel=r"$\log \rho (g/cm^3)$", title="Density", idxnames=['X [au]', 'Y [au]', 'Z [au]'])
+# interactive_interp_3d(np.log10(vsph), Rmax, colorbarlabel=r"$\log v (cm/s)$", title="Velocity", idxnames=['X [au]', 'Y [au]', 'Z [au]'])
