@@ -237,7 +237,7 @@ def interactive_interp_3d(data, Rmax, colorbarlabel, title, idxnames):
     plt.show()
 
 
-def quiver_plot_3d(X, Y, Z, dx, dy, dz, stagger, length, title, colorbarlabel, savefig, figfolder, ignorecol=False):
+def quiver_plot_3d(X, Y, Z, dx, dy, dz, stagger, length, title, colorbarlabel, savefig, figfolder, ignorecol=False, logmag=True):
     """
     Plots quiver plot in 3D 
     
@@ -260,8 +260,11 @@ def quiver_plot_3d(X, Y, Z, dx, dy, dz, stagger, length, title, colorbarlabel, s
 
     ax = plt.figure(figsize=(8,6)).add_subplot(projection='3d')
 
-    # Map arrows to colormap according to the log of the magnitude of (dx, dy, dz)
-    o = np.log10(np.sqrt(dx**2 + dy**2 + dz**2))
+    if logmag == True:
+        # Map arrows to colormap according to the log of the magnitude of (dx, dy, dz)
+        o = np.log10(np.sqrt(dx**2 + dy**2 + dz**2))
+    else:
+        o = np.sqrt(dx**2 + dy**2 + dz**2)
     norm = colors.Normalize()
     norm.autoscale(o)
     cmap = cm.plasma
