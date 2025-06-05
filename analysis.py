@@ -409,7 +409,7 @@ def plot_L_average(Lx, Ly, Lz, X, Y, Z, dens, savefig, it):
 
     # Radially plotting (i.e. using r_bincen) averaged angular momenta
     y_steps = np.linspace(0, yplot.max()/au, num_bins)
-    ax.quiver(r_bincen/au, y_steps, 0, Lx_avg, Ly_avg, Lz_avg, length=5, normalize=True, edgecolor='black', color='black')
+    ax.quiver(r_bincen/au, 0, 0, Lx_avg, Ly_avg, Lz_avg, length=5, normalize=True, edgecolor='black', color='black')
 
     # Overplotting the density as well
     p = ax.scatter(X.flatten()/au, Y.flatten()/au, Z.flatten()/au, c=dens.flatten(), cmap='plasma', s=7, edgecolor='none', alpha=0.1)
@@ -425,6 +425,8 @@ def plot_L_average(Lx, Ly, Lz, X, Y, Z, dens, savefig, it):
     ax.set_title('Radially Averaged Warp L')
     ax.set_box_aspect([1, 1, 1])  # Equal aspect ratio
     plt.tight_layout()
+    if savefig==True:
+        plt.savefig(f"../twist_{it}_3D.png")
     plt.show()
 
     ################################### 2D PROJECTION PLOTTING ############################
@@ -448,7 +450,7 @@ def plot_L_average(Lx, Ly, Lz, X, Y, Z, dens, savefig, it):
     plt.figure(figsize=(8, 6))
 
     # YZ projection
-    Q2 = plt.quiver(y_steps, np.zeros(shape=Lz_avg.shape), Ly_avg, Lz_avg, angles_deg - np.nanmin(angles_deg), cmap='viridis')
+    Q2 = plt.quiver(np.zeros(shape=Ly_avg.shape), np.zeros(shape=Lz_avg.shape), Ly_avg, Lz_avg, angles_deg - np.nanmin(angles_deg), cmap='viridis')
     plt.colorbar(Q2, label=r'$\hat{L} - \hat{L_{min}}$')
     plt.xlabel('Y [AU]')
     plt.ylabel('Z [AU]')
@@ -464,7 +466,7 @@ def plot_L_average(Lx, Ly, Lz, X, Y, Z, dens, savefig, it):
 
     # XY projection
     plt.figure(figsize=(8, 6))
-    Q3 = plt.quiver(r_bincen/au, y_steps, Lx_avg, Ly_avg, angles_deg - np.nanmin(angles_deg), cmap='viridis')
+    Q3 = plt.quiver(r_bincen/au, np.zeros(shape=Lz_avg.shape), Lx_avg, Ly_avg, angles_deg - np.nanmin(angles_deg), cmap='viridis')
     plt.colorbar(Q3, label=r'$\hat{L} - \hat{L_{min}}$')
     plt.xlabel('X [AU]')
     plt.ylabel('Y [AU]')
@@ -483,7 +485,7 @@ def plot_L_average(Lx, Ly, Lz, X, Y, Z, dens, savefig, it):
 
 
 folder = Path("leon_snapshot/")         # Folder with the output files
-it = 600                                # FARGO snapshot
+it = 100                                # FARGO snapshot
 
 ###################### Load data (theta = 100, r = 250, phi = 225) ################################
 
@@ -536,32 +538,32 @@ rho_c_warp, warp_ids = isolate_warp(rho_c, warp_thresh)
 
 
 # Plotting the warp densities 
-# contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_warp, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{warp_thresh}}} g/cm^3$', savefig=False, figfolder=f'../warp_dens_thresh{warp_thresh}.png', azim=178, elev=11)
+contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_warp, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{warp_thresh}}} g/cm^3$', savefig=True, figfolder=f'../warp_dens_thresh{warp_thresh}_it{it}.png')
 
 # Another way to plot the warp densities
 # contours_3D(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, rho_c[warp_ids], fig, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$')
 
 # Plotting the Cartesian warp angular momenta
-# quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Lx[warp_ids], Ly[warp_ids], Lz[warp_ids], stagger=70, length=3, title="Warp angular momenta", colorbarlabel="logL", savefig=False, figfolder=f'../warp_L_thresh{warp_thresh}.png', logmag=True)
+quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Lx[warp_ids], Ly[warp_ids], Lz[warp_ids], stagger=70, length=3, title="Warp angular momenta", colorbarlabel="logL", savefig=False, figfolder=f'../warp_L_thresh{warp_thresh}_it{it}.png', logmag=True)
 
 # Plotting the radially averaged Cartesian warp angular momenta and the 2D projections
-# plot_L_average(Lx[warp_ids], Ly[warp_ids], Lz[warp_ids], X_c[warp_ids], Y_c[warp_ids], Z_c[warp_ids], rho_c[warp_ids], True, it)
+plot_L_average(Lx[warp_ids], Ly[warp_ids], Lz[warp_ids], X_c[warp_ids], Y_c[warp_ids], Z_c[warp_ids], rho_c[warp_ids], True, it)
 
 # Plotting radially averaged L for ALL radii (a.k.a a mess)
 # plot_L_average(Lx, Ly, Lz, X_c, Y_c, Z_c, rho_c)
 
 # Plotting warp Laplace-Runge-Lenz vector
-# quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Ax[warp_ids], Ay[warp_ids], Az[warp_ids], stagger=70, length=3, title=rf'Warp LRL', colorbarlabel=r'$\log(A [g^2cm^3/s^2])$', savefig=True, figfolder=f'../warp _{it}_LRL.png', logmag=True)
+quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Ax[warp_ids], Ay[warp_ids], Az[warp_ids], stagger=70, length=3, title=rf'Warp LRL', colorbarlabel=r'$\log(A [g^2cm^3/s^2])$', savefig=True, figfolder=f'../warp_{it}_LRL.png', logmag=True)
 
 # Plotting warp eccentricity
-# quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, ex[warp_ids], ey[warp_ids], ez[warp_ids], stagger=70, length=3, title=rf'Warp Eccentricity', colorbarlabel=r'$e$', savefig=True, figfolder=f'../warp_{it}_ecc.png', logmag=False)
+quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, ex[warp_ids], ey[warp_ids], ez[warp_ids], stagger=70, length=3, title=rf'Warp Eccentricity', colorbarlabel=r'$e$', savefig=True, figfolder=f'../warp_{it}_ecc.png', logmag=False)
 
 # Characterizing warp eccentricity 
 print("Min Warp eccentricity: ", np.min(e[warp_ids]))
 print("Max Warp eccentricity: ", np.max(e[warp_ids]))
 print("Mean warp eccentricity: ", np.mean(e[warp_ids]))
 
-no_secondary,_al_my_homies_hate_secondary
+no_secondary_all_my_homies_hate_secondary
 
 ######## Isolating the secondary disk box: (X=-150AU,Y=300,Z=600) (R=?,theta=30°,phi=115°) ##########
 
