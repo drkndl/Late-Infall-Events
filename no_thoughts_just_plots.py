@@ -275,7 +275,7 @@ def quiver_plot_3d(X, Y, Z, dx, dy, dz, stagger, length, title, colorbarlabel, s
 
     # Plot the arrows
     if ignorecol == True:
-        Q = ax.quiver(X[::stagger], Y[::stagger], Z[::stagger], dx[::stagger], dy[::stagger], dz[::stagger], length=length, pivot='tip', alpha=0.8, arrow_length_ratio = 0.5, normalize=True) 
+        Q = ax.quiver(X[::stagger, ::stagger, ::stagger], Y[::stagger, ::stagger, ::stagger], Z[::stagger, ::stagger, ::stagger], dx[::stagger, ::stagger, ::stagger], dy[::stagger, ::stagger, ::stagger], dz[::stagger, ::stagger, ::stagger], length=length, pivot='tip', alpha=0.8, arrow_length_ratio = 0.5, normalize=True) 
     else:
         Q = ax.quiver(X[::stagger], Y[::stagger], Z[::stagger], dx[::stagger], dy[::stagger], dz[::stagger], length=length, pivot='tip', alpha=0.8, colors=cmap(norm(o)), arrow_length_ratio = 0.5, normalize=True) 
         plt.colorbar(sm, label=colorbarlabel)

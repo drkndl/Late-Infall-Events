@@ -89,3 +89,86 @@ plt.show()
     # plt.axis('equal')
     # plt.grid(True)
     # plt.show()
+
+
+##############   3D PLOTTING  #######################
+
+    # fig = plt.figure()
+    # ax = fig.add_subplot(111, projection='3d')
+
+    # # Plotting with Cartesian equivalent of r_bincen
+    # # ax.quiver(xplot/au, yplot/au, zplot/au, Lx_avg, Ly_avg, Lz_avg, length=5, normalize=True, color='red')
+
+    # # Radially plotting (i.e. using r_bincen) averaged angular momenta
+    # y_steps = np.linspace(0, yplot.max()/au, num_bins)
+    # ax.quiver(r_bincen/au, 0, 0, Lx_avg, Ly_avg, Lz_avg, length=5, normalize=True, edgecolor='black', color='black')
+
+    # # Overplotting the density as well
+    # p = ax.scatter(X.flatten()/au, Y.flatten()/au, Z.flatten()/au, c=dens.flatten(), cmap='plasma', s=7, edgecolor='none', alpha=0.1)
+
+    # # Colorbar formatting
+    # plt.colorbar(p, pad=0.08, label=r'$\rho [g/cm^3]$') #, shrink=0.85), fraction=0.046)
+
+    # ax.set_xlabel('X')
+    # ax.set_ylabel('Y')
+    # ax.set_zlabel('Z')
+    # # ax.set_ylim(yplot.min()/au, yplot.max()/au)
+    # # ax.set_zlim(zplot.min()/au, zplot.max()/au)
+    # ax.set_title('Radially Averaged Warp L')
+    # ax.set_box_aspect([1, 1, 1])  # Equal aspect ratio
+    # plt.tight_layout()
+    # if savefig==True:
+    #     plt.savefig(f"../twist_{it}_3D.png")
+    # plt.show()
+
+    ################################### 2D PROJECTION PLOTTING ############################
+
+    # plt.figure(figsize=(8, 6))
+
+    # # XZ projection
+    # Q1 = plt.quiver(r_bincen/au, 0, Lx_avg, Lz_avg, angles_deg - np.nanmin(angles_deg), cmap='viridis')
+    # plt.colorbar(Q1, label=r'$\hat{L} - \hat{L_{min}}$')
+    # plt.xlabel('X')
+    # plt.xlim(right = np.max(r_bincen)/au + 5)
+    # plt.ylabel('Z')
+    # plt.title('Radially Averaged L in XZ Plane')
+    # plt.axis('equal')
+    # plt.grid(True)
+    # plt.tight_layout()
+    # if savefig==True:
+    #     plt.savefig(f"../twist_{it}_XZ_2D.png")
+    # plt.show()
+
+    # plt.figure(figsize=(8, 6))
+
+    # # YZ projection
+    # Q2 = plt.quiver(np.zeros(shape=Ly_avg.shape), np.zeros(shape=Lz_avg.shape), Ly_avg, Lz_avg, angles_deg - np.nanmin(angles_deg), cmap='viridis')
+    # plt.colorbar(Q2, label=r'$\hat{L} - \hat{L_{min}}$')
+    # plt.xlabel('Y [AU]')
+    # plt.ylabel('Z [AU]')
+    # plt.title('Radially Averaged L in YZ Plane')
+    # plt.xlim(-0.02, 0.02)
+    # plt.ylim(zplot.min()/au, zplot.max()/au)
+    # plt.axis('equal')
+    # plt.grid(True)
+    # plt.tight_layout()
+    # if savefig==True:
+    #     plt.savefig(f"../twist_{it}_YZ_2D.png")
+    # plt.show()
+
+    # # XY projection
+    # plt.figure(figsize=(8, 6))
+    # Q3 = plt.quiver(r_bincen/au, np.zeros(shape=Lz_avg.shape), Lx_avg, Ly_avg, angles_deg - np.nanmin(angles_deg), cmap='viridis')
+    # plt.colorbar(Q3, label=r'$\hat{L} - \hat{L_{min}}$')
+    # plt.xlabel('X [AU]')
+    # plt.ylabel('Y [AU]')
+    # plt.title('Radially Averaged L in XY Plane')
+    # print(r_bincen.min(), r_bincen.max())
+    # plt.xlim(r_bincen.min(), r_bincen.max() + 10*au)
+    # plt.ylim(yplot.min()/au, yplot.max()/au)
+    # plt.axis('equal')
+    # plt.grid(True)
+    # plt.tight_layout()
+    # if savefig==True:
+    #     plt.savefig(f"../twist_{it}_XY_2D.png")
+    # plt.show()s
