@@ -356,136 +356,122 @@ def plot_L_average(Lx, Ly, Lz, X, Y, Z, dens, savefig, it):
     
     # Converting the Cartesian grid to spherical grid
     R, Rc, theta, phi = cart_to_sph(X, Y, Z)
-    
-    # Binning data radially 
-    num_bins = 10
-    r_bins = np.linspace(R.min(), R.max(), num_bins + 1)
-    r_bincen = 0.5 * (r_bins[:-1] + r_bins[1:])
 
-    phi_plot = np.linspace(-np.pi, np.pi, num_bins)
-    theta_plot = np.linspace(0, np.pi, num_bins)
-    xplot, yplot, zplot, _ = sph_to_cart(theta_plot, r_bincen, phi_plot)
-    # print(yplot.max()/au, yplot.min()/au)
-    # print(zplot.max()/au, zplot.min()/au)
-    # wefbwfk
-    
     # Flatten coordinate and angular momentum arrays
-    R_flat = R.flatten()
-    Lx_flat = Lx.flatten()
-    Ly_flat = Ly.flatten()
-    Lz_flat = Lz.flatten()
+    # R_flat = R.flatten()
+    # Lx_flat = Lx.flatten()
+    # Ly_flat = Ly.flatten()
+    # Lz_flat = Lz.flatten()
 
-    # Get bin indices for each point
-    bin_indices = np.digitize(R_flat, r_bins)
-    # print("Radial bins: ", r_bins/au)
-
-    # Store radial averages
-    Lx_avg = np.zeros(num_bins)
-    Ly_avg = np.zeros(num_bins)
-    Lz_avg = np.zeros(num_bins)
-
-    for i in range(1, num_bins + 1):
-        mask = bin_indices == i
-        if np.any(mask):
-
-            Lx_avg[i-1] = Lx_flat[mask].mean()
-            Ly_avg[i-1] = Ly_flat[mask].mean()
-            Lz_avg[i-1] = Lz_flat[mask].mean()
+    # Angular momentum vectors for each shell L(r)
+    Lx_avg = np.sum(Lx, axis=(0,2))
+    Ly_avg = np.sum(Ly, axis=(0,2))
+    Lz_avg = np.sum(Lz, axis=(0,2))
+    Lavg_mag = np.sqrt(Lx_avg**2 + Ly_avg**2 + Lz_avg**2)
 
     # Calculating twist
-    Lavg_mag = np.sqrt(Lx_avg**2 + Ly_avg**2 + Lz_avg**2)
     angles_rad = np.arccos(Lz_avg / Lavg_mag)
     angles_deg = np.degrees(angles_rad)
     twist = np.nanmax(angles_deg) - np.nanmin(angles_deg)
     print("Twist: ", twist)
 
+    # Calculating warp inclination
+    inc = np.arccos(Lz_avg * Lavg_mag)
+    inc_deg = np.degrees(inc)
+
+    plt.plot(R, inc_deg)
+    plt.xlabel("R [AU]")
+    plt.ylabel("Inclination (deg)")
+    plt.show()
+
+
     ##############   3D PLOTTING  #######################
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
+    # fig = plt.figure()
+    # ax = fig.add_subplot(111, projection='3d')
 
-    # Plotting with Cartesian equivalent of r_bincen
-    # ax.quiver(xplot/au, yplot/au, zplot/au, Lx_avg, Ly_avg, Lz_avg, length=5, normalize=True, color='red')
+    # # Plotting with Cartesian equivalent of r_bincen
+    # # ax.quiver(xplot/au, yplot/au, zplot/au, Lx_avg, Ly_avg, Lz_avg, length=5, normalize=True, color='red')
 
-    # Radially plotting (i.e. using r_bincen) averaged angular momenta
-    y_steps = np.linspace(0, yplot.max()/au, num_bins)
-    ax.quiver(r_bincen/au, 0, 0, Lx_avg, Ly_avg, Lz_avg, length=5, normalize=True, edgecolor='black', color='black')
+    # # Radially plotting (i.e. using r_bincen) averaged angular momenta
+    # y_steps = np.linspace(0, yplot.max()/au, num_bins)
+    # ax.quiver(r_bincen/au, 0, 0, Lx_avg, Ly_avg, Lz_avg, length=5, normalize=True, edgecolor='black', color='black')
 
-    # Overplotting the density as well
-    p = ax.scatter(X.flatten()/au, Y.flatten()/au, Z.flatten()/au, c=dens.flatten(), cmap='plasma', s=7, edgecolor='none', alpha=0.1)
+    # # Overplotting the density as well
+    # p = ax.scatter(X.flatten()/au, Y.flatten()/au, Z.flatten()/au, c=dens.flatten(), cmap='plasma', s=7, edgecolor='none', alpha=0.1)
 
-    # Colorbar formatting
-    plt.colorbar(p, pad=0.08, label=r'$\rho [g/cm^3]$') #, shrink=0.85), fraction=0.046)
+    # # Colorbar formatting
+    # plt.colorbar(p, pad=0.08, label=r'$\rho [g/cm^3]$') #, shrink=0.85), fraction=0.046)
 
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
-    # ax.set_ylim(yplot.min()/au, yplot.max()/au)
-    # ax.set_zlim(zplot.min()/au, zplot.max()/au)
-    ax.set_title('Radially Averaged Warp L')
-    ax.set_box_aspect([1, 1, 1])  # Equal aspect ratio
-    plt.tight_layout()
-    if savefig==True:
-        plt.savefig(f"../twist_{it}_3D.png")
-    plt.show()
+    # ax.set_xlabel('X')
+    # ax.set_ylabel('Y')
+    # ax.set_zlabel('Z')
+    # # ax.set_ylim(yplot.min()/au, yplot.max()/au)
+    # # ax.set_zlim(zplot.min()/au, zplot.max()/au)
+    # ax.set_title('Radially Averaged Warp L')
+    # ax.set_box_aspect([1, 1, 1])  # Equal aspect ratio
+    # plt.tight_layout()
+    # if savefig==True:
+    #     plt.savefig(f"../twist_{it}_3D.png")
+    # plt.show()
 
     ################################### 2D PROJECTION PLOTTING ############################
 
-    plt.figure(figsize=(8, 6))
+    # plt.figure(figsize=(8, 6))
 
-    # XZ projection
-    Q1 = plt.quiver(r_bincen/au, 0, Lx_avg, Lz_avg, angles_deg - np.nanmin(angles_deg), cmap='viridis')
-    plt.colorbar(Q1, label=r'$\hat{L} - \hat{L_{min}}$')
-    plt.xlabel('X')
-    plt.xlim(right = np.max(r_bincen)/au + 5)
-    plt.ylabel('Z')
-    plt.title('Radially Averaged L in XZ Plane')
-    plt.axis('equal')
-    plt.grid(True)
-    plt.tight_layout()
-    if savefig==True:
-        plt.savefig(f"../twist_{it}_XZ_2D.png")
-    plt.show()
+    # # XZ projection
+    # Q1 = plt.quiver(r_bincen/au, 0, Lx_avg, Lz_avg, angles_deg - np.nanmin(angles_deg), cmap='viridis')
+    # plt.colorbar(Q1, label=r'$\hat{L} - \hat{L_{min}}$')
+    # plt.xlabel('X')
+    # plt.xlim(right = np.max(r_bincen)/au + 5)
+    # plt.ylabel('Z')
+    # plt.title('Radially Averaged L in XZ Plane')
+    # plt.axis('equal')
+    # plt.grid(True)
+    # plt.tight_layout()
+    # if savefig==True:
+    #     plt.savefig(f"../twist_{it}_XZ_2D.png")
+    # plt.show()
 
-    plt.figure(figsize=(8, 6))
+    # plt.figure(figsize=(8, 6))
 
-    # YZ projection
-    Q2 = plt.quiver(np.zeros(shape=Ly_avg.shape), np.zeros(shape=Lz_avg.shape), Ly_avg, Lz_avg, angles_deg - np.nanmin(angles_deg), cmap='viridis')
-    plt.colorbar(Q2, label=r'$\hat{L} - \hat{L_{min}}$')
-    plt.xlabel('Y [AU]')
-    plt.ylabel('Z [AU]')
-    plt.title('Radially Averaged L in YZ Plane')
-    plt.xlim(-0.02, 0.02)
-    plt.ylim(zplot.min()/au, zplot.max()/au)
-    plt.axis('equal')
-    plt.grid(True)
-    plt.tight_layout()
-    if savefig==True:
-        plt.savefig(f"../twist_{it}_YZ_2D.png")
-    plt.show()
+    # # YZ projection
+    # Q2 = plt.quiver(np.zeros(shape=Ly_avg.shape), np.zeros(shape=Lz_avg.shape), Ly_avg, Lz_avg, angles_deg - np.nanmin(angles_deg), cmap='viridis')
+    # plt.colorbar(Q2, label=r'$\hat{L} - \hat{L_{min}}$')
+    # plt.xlabel('Y [AU]')
+    # plt.ylabel('Z [AU]')
+    # plt.title('Radially Averaged L in YZ Plane')
+    # plt.xlim(-0.02, 0.02)
+    # plt.ylim(zplot.min()/au, zplot.max()/au)
+    # plt.axis('equal')
+    # plt.grid(True)
+    # plt.tight_layout()
+    # if savefig==True:
+    #     plt.savefig(f"../twist_{it}_YZ_2D.png")
+    # plt.show()
 
-    # XY projection
-    plt.figure(figsize=(8, 6))
-    Q3 = plt.quiver(r_bincen/au, np.zeros(shape=Lz_avg.shape), Lx_avg, Ly_avg, angles_deg - np.nanmin(angles_deg), cmap='viridis')
-    plt.colorbar(Q3, label=r'$\hat{L} - \hat{L_{min}}$')
-    plt.xlabel('X [AU]')
-    plt.ylabel('Y [AU]')
-    plt.title('Radially Averaged L in XY Plane')
-    print(r_bincen.min(), r_bincen.max())
-    plt.xlim(r_bincen.min(), r_bincen.max() + 10*au)
-    plt.ylim(yplot.min()/au, yplot.max()/au)
-    plt.axis('equal')
-    plt.grid(True)
-    plt.tight_layout()
-    if savefig==True:
-        plt.savefig(f"../twist_{it}_XY_2D.png")
-    plt.show()
+    # # XY projection
+    # plt.figure(figsize=(8, 6))
+    # Q3 = plt.quiver(r_bincen/au, np.zeros(shape=Lz_avg.shape), Lx_avg, Ly_avg, angles_deg - np.nanmin(angles_deg), cmap='viridis')
+    # plt.colorbar(Q3, label=r'$\hat{L} - \hat{L_{min}}$')
+    # plt.xlabel('X [AU]')
+    # plt.ylabel('Y [AU]')
+    # plt.title('Radially Averaged L in XY Plane')
+    # print(r_bincen.min(), r_bincen.max())
+    # plt.xlim(r_bincen.min(), r_bincen.max() + 10*au)
+    # plt.ylim(yplot.min()/au, yplot.max()/au)
+    # plt.axis('equal')
+    # plt.grid(True)
+    # plt.tight_layout()
+    # if savefig==True:
+    #     plt.savefig(f"../twist_{it}_XY_2D.png")
+    # plt.show()
     
     return 
 
 
 folder = Path("leon_snapshot/")         # Folder with the output files
-it = 100                                # FARGO snapshot
+it = 600                                # FARGO snapshot
 
 ###################### Load data (theta = 100, r = 250, phi = 225) ################################
 
@@ -532,13 +518,14 @@ e = np.sqrt(ex**2 + ey**2 + ez**2)
 # Note 2: The warp_ids itself is a 3D Boolean array, but when applied to another array such as x[warp_ids], the latter array becomes 1D
 warp_thresh = -14   # log of density threshold for which we can see the warp in the primary
 rho_c_warp, warp_ids = isolate_warp(rho_c, warp_thresh) 
-
+print(rho_c_warp.shape)
+ewhjwef
 
 #################################### Plotting warp properties #####################################
 
 
 # Plotting the warp densities 
-contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_warp, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{warp_thresh}}} g/cm^3$', savefig=True, figfolder=f'../warp_dens_thresh{warp_thresh}_it{it}.png')
+contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_warp, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{warp_thresh}}} g/cm^3$', savefig=False, figfolder=f'../warp_dens_thresh{warp_thresh}_it{it}.png')
 
 # Another way to plot the warp densities
 # contours_3D(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, rho_c[warp_ids], fig, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$')
@@ -553,15 +540,15 @@ plot_L_average(Lx[warp_ids], Ly[warp_ids], Lz[warp_ids], X_c[warp_ids], Y_c[warp
 # plot_L_average(Lx, Ly, Lz, X_c, Y_c, Z_c, rho_c)
 
 # Plotting warp Laplace-Runge-Lenz vector
-quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Ax[warp_ids], Ay[warp_ids], Az[warp_ids], stagger=70, length=3, title=rf'Warp LRL', colorbarlabel=r'$\log(A [g^2cm^3/s^2])$', savefig=True, figfolder=f'../warp_{it}_LRL.png', logmag=True)
+# quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Ax[warp_ids], Ay[warp_ids], Az[warp_ids], stagger=70, length=3, title=rf'Warp LRL', colorbarlabel=r'$\log(A [g^2cm^3/s^2])$', savefig=True, figfolder=f'../warp_{it}_LRL.png', logmag=True)
 
 # Plotting warp eccentricity
-quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, ex[warp_ids], ey[warp_ids], ez[warp_ids], stagger=70, length=3, title=rf'Warp Eccentricity', colorbarlabel=r'$e$', savefig=True, figfolder=f'../warp_{it}_ecc.png', logmag=False)
+# quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, ex[warp_ids], ey[warp_ids], ez[warp_ids], stagger=70, length=3, title=rf'Warp Eccentricity', colorbarlabel=r'$e$', savefig=True, figfolder=f'../warp_{it}_ecc.png', logmag=False)
 
 # Characterizing warp eccentricity 
-print("Min Warp eccentricity: ", np.min(e[warp_ids]))
-print("Max Warp eccentricity: ", np.max(e[warp_ids]))
-print("Mean warp eccentricity: ", np.mean(e[warp_ids]))
+# print("Min Warp eccentricity: ", np.min(e[warp_ids]))
+# print("Max Warp eccentricity: ", np.max(e[warp_ids]))
+# print("Mean warp eccentricity: ", np.mean(e[warp_ids]))
 
 no_secondary_all_my_homies_hate_secondary
 
