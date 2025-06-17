@@ -288,6 +288,30 @@ def calc_eccen(Ax, Ay, Az, mass, Mstar):
     return ex, ey, ez
 
 
+def calc_surfdens(dens, theta, r, phi):
+    """
+    Calculates surface density
+    """
+
+    # Azimuthally averaging density
+    dens_phiavg = np.mean(dens, axis=-1)   # shape (Ntheta, Nr)
+
+    # Reshape arrays to enable broadcasting:
+    dtheta = np.gradient(theta)            # shape (Ntheta,)
+    theta_grid = theta[:, np.newaxis]      # shape (Ntheta, 1)
+    r_grid = r[np.newaxis, :]              # shape (1, Nr)
+    dtheta_grid = dtheta[:, np.newaxis]    # shape (Ntheta, 1)
+
+    # Compute the integrand for each (theta, r) pair
+    integrand = dens_phiavg * r_grid * np.sin(theta_grid) * dtheta_grid  # shape (Ntheta, Nr)
+
+    # Integrate over theta (axis=0) to get surface density as function of r
+    surf_dens = np.sum(integrand, axis=0)  # shape (Nr,)
+
+    return surf_dens
+
+
+
 def isolate_warp(dens, vx, vy, vz, Lx, Ly, Lz, threshold):
     """
     A crude way to isolate the warp in the primary disk: applying a density threshold to capture the highest densities in the simulation output
@@ -428,6 +452,7 @@ vz_c = centering(vz)
 
 cell_volume = calc_cell_volume(domains["theta"], domains["r"], domains["phi"])
 mass = calc_mass(rho, cell_volume)
+surf_dens = calc_surfdens(rho, domains["theta"], domains["r"], domains["phi"])
 Lx, Ly, Lz = calc_angular_momentum(mass, X, Y, ZCYL, vx, vy, vz)
 Ax, Ay, Az = calc_LRL(mass, Mstar, vx_c, vy_c, vz_c, Lx, Ly, Lz, X_c, Y_c, Z_c)
 ex, ey, ez = calc_eccen(Ax, Ay, Az, mass, Mstar)
@@ -441,7 +466,6 @@ e = np.sqrt(ex**2 + ey**2 + ez**2)
 # Note 2: The warp_ids itself is a 3D Boolean array, but when applied to another array such as x[warp_ids], the latter array becomes 1D
 warp_thresh = -14   # log of density threshold for which we can see the warp in the primary
 rho_c_warp, vx_c_warp, vy_c_warp, vz_c_warp, Lx_c_warp, Ly_c_warp, Lz_c_warp, warp_ids = isolate_warp(rho_c, vx_c, vy_c, vz_c, Lx, Ly, Lz, warp_thresh) 
-print(rho_c_warp.shape, vx_c_warp.shape, vy_c_warp.shape, Lx_c_warp.shape, Ly_c_warp.shape)
 
 #################################### Plotting warp properties #####################################
 
@@ -459,10 +483,20 @@ print(rho_c_warp.shape, vx_c_warp.shape, vy_c_warp.shape, Lx_c_warp.shape, Ly_c_
 # quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Lx[warp_ids], Ly[warp_ids], Lz[warp_ids], stagger=70, length=3, title="Warp angular momenta", colorbarlabel="logL", savefig=False, figfolder=f'../warp_L_thresh{warp_thresh}_it{it}.png', logmag=True)
 
 # Plotting the radially averaged Cartesian warp angular momenta and the 2D projections
-plot_L_average(Lx_c_warp, Ly_c_warp, Lz_c_warp, domains["r"], True, it)
+# plot_L_average(Lx_c_warp, Ly_c_warp, Lz_c_warp, domains["r"], True, it)
 
-# Plotting radially averaged L for ALL radii (a.k.a a mess)
-# plot_L_average(Lx, Ly, Lz, X_c, Y_c, Z_c, rho_c)
+# Plotting warp surface density
+r_warp_extent = np.sqrt(X_c[warp_ids]**2 +  Y_c[warp_ids]**2 + Z_c[warp_ids]**2) / au
+print(r_warp_extent.min(), r_warp_extent.max())
+mask = (domains["r"]/au >= r_warp_extent.min()) & (domains["r"]/au <= r_warp_extent.max())
+r_selected = domains["r"][mask]
+print(r_selected)
+surface_density_selected = surf_dens[mask]
+# print(domains["r"].min()/au, domains["r"].max()/au)
+# print(r_warp_extent.shape)
+# wedjkwfk
+plt.plot(r_selected/au, surface_density_selected)
+plt.show()
 
 # Plotting warp Laplace-Runge-Lenz vector
 # quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Ax[warp_ids], Ay[warp_ids], Az[warp_ids], stagger=70, length=3, title=rf'Warp LRL', colorbarlabel=r'$\log(A [g^2cm^3/s^2])$', savefig=True, figfolder=f'../warp_{it}_LRL.png', logmag=True)
