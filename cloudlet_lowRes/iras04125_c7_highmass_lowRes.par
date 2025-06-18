@@ -1,4 +1,4 @@
-Setup       cloudlet
+Setup       cloudlet_lowres
 
 RhoFloorGas     1.0e-24
 RhoFloorDust    1.0e-24
@@ -23,4 +23,5 @@ Nz        105                        Number of zones in colatitude
 
 ### Output control parameters
 
-Ntot          60000                            Total number of time steps
+OutputDir     @outputs/iras04125_c7_highmass_lowres     Output directory
+Ntot          60000                                     Total number of time steps

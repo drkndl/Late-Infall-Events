@@ -417,8 +417,8 @@ def plot_L_average(Lx, Ly, Lz, R, savefig, it):
     return 
 
 
-folder = Path("leon_snapshot/")         # Folder with the output files
-it = 600                                # FARGO snapshot
+folder = Path("cloudlet_lowres/iras04125_c7_highmass_lowres/")         # Folder with the output files
+it = 300                                                               # FARGO snapshot
 
 ###################### Load data (theta = 100, r = 250, phi = 225) ################################
 
@@ -464,20 +464,20 @@ e = np.sqrt(ex**2 + ey**2 + ez**2)
 
 # Note 1: I am using centered densities to isolate the warp to match the indices corresponding to the warp with the angular momenta indices
 # Note 2: The warp_ids itself is a 3D Boolean array, but when applied to another array such as x[warp_ids], the latter array becomes 1D
-warp_thresh = -14   # log of density threshold for which we can see the warp in the primary
+warp_thresh = -15   # log of density threshold for which we can see the warp in the primary
 rho_c_warp, vx_c_warp, vy_c_warp, vz_c_warp, Lx_c_warp, Ly_c_warp, Lz_c_warp, warp_ids = isolate_warp(rho_c, vx_c, vy_c, vz_c, Lx, Ly, Lz, warp_thresh) 
 
 #################################### Plotting warp properties #####################################
 
 
 # Plotting the warp densities 
-# contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_warp, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{warp_thresh}}} g/cm^3$', savefig=False, figfolder=f'../warp_dens_thresh{warp_thresh}_it{it}.png')
+contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_warp, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{warp_thresh}}} g/cm^3$', savefig=False, figfolder=f'../warp_dens_thresh{warp_thresh}_it{it}.png')
 
 # Another way to plot the warp densities
 # contours_3D(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, rho_c[warp_ids], fig, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$')
 
 # Plotting the Cartesian warp angular momenta
-# quiver_plot_3d(X_c/au, Y_c/au, Z_c/au, Lx_c_warp, Ly_c_warp, Lz_c_warp, stagger=5, length=2, title="Warp angular momenta 2", colorbarlabel="logL", savefig=False, figfolder=f'../warp_L_thresh{warp_thresh}_it{it}.png', logmag=True, ignorecol=True)
+quiver_plot_3d(X_c/au, Y_c/au, Z_c/au, Lx_c_warp, Ly_c_warp, Lz_c_warp, stagger=5, length=2, title="Warp angular momenta 2", colorbarlabel="logL", savefig=False, figfolder=f'../warp_L_thresh{warp_thresh}_it{it}.png', logmag=True, ignorecol=True)
 
 # Another way to plot the Cartesian warp angular momenta
 # quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Lx[warp_ids], Ly[warp_ids], Lz[warp_ids], stagger=70, length=3, title="Warp angular momenta", colorbarlabel="logL", savefig=False, figfolder=f'../warp_L_thresh{warp_thresh}_it{it}.png', logmag=True)
