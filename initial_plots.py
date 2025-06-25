@@ -8,7 +8,7 @@ import astropy.constants as c
 au = c.au.cgs.value
 
 
-folder = Path("cloudlet_lowres/iras04125_c7_highmass_lowres/")         # Folder with the output files
+folder = Path("../iras04125_c7_highmass_lowres/")         # Folder with the output files
 it = 300                                                               # FARGO snapshot
 
 ############# theta = 100, r = 250, phi = 225 ###########

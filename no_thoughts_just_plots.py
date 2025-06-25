@@ -96,7 +96,7 @@ def interactive_2D(data, indices, x, y, idxnames):
     plt.show()
 
 
-def contours_3D(X, Y, Z, data, xlabel, ylabel, zlabel, colorbarlabel, title, savefig, figfolder, azim=-62, elev=-41):
+def contours_3D(X, Y, Z, data, xlabel, ylabel, zlabel, colorbarlabel, title, savefig, figfolder, showfig=True, azim=-62, elev=-41):
     """
     Plot a 3D contour plot of a FARGO scalar field (dens/vx/energy etc) in Cartesian coords
     
@@ -109,6 +109,9 @@ def contours_3D(X, Y, Z, data, xlabel, ylabel, zlabel, colorbarlabel, title, sav
     xlabel/ylabel/zlabel:    Axis labels (str)
     colorbarlabel:           Colour bar label (str)
     title:                   Image title (str)
+    savefig:                 Boolean to save figure if True
+    figfolder:               Folder in which to save the figure if savefig=True
+    showfig:                 Boolean to show figure if True (default=True)
     azim:                    Azmiuthal camera angle for plot (Default=-62 for warp view) (degrees)
     elev:                    Elevation camera angle for plot (Default=-41 for warp view) (degrees)
 
@@ -135,10 +138,16 @@ def contours_3D(X, Y, Z, data, xlabel, ylabel, zlabel, colorbarlabel, title, sav
     ax.view_init(elev=elev, azim=azim)   
     
     plt.tight_layout()
+
+    # Save the figure?
     if savefig == True:
         plt.savefig(figfolder)
 
-    plt.show()
+    # Display the figure?
+    if showfig:
+        plt.show()
+    else:
+        plt.close()
 
 
 def quiver_plots(X, Y, v_x, v_y, itheta, irad, title, savefig, figfolder):
@@ -237,7 +246,7 @@ def interactive_interp_3d(data, Rmax, colorbarlabel, title, idxnames):
     plt.show()
 
 
-def quiver_plot_3d(X, Y, Z, dx, dy, dz, stagger, length, title, colorbarlabel, savefig, figfolder, ignorecol=False, logmag=True):
+def quiver_plot_3d(X, Y, Z, dx, dy, dz, stagger, length, title, colorbarlabel, savefig, figfolder, showfig=True, ignorecol=False, logmag=True):
     """
     Plots quiver plot in 3D 
     
@@ -255,6 +264,7 @@ def quiver_plot_3d(X, Y, Z, dx, dy, dz, stagger, length, title, colorbarlabel, s
     colorbarlabel:  Plot colorbar label
     savefig:        Boolean to save figure if True
     figfolder:      Directory in which the figure is to be saved
+    showfig:        Boolean to show figure if True (default=True)
     ignorecols:     Boolean to remove arrow colours if True
     """
 
@@ -265,6 +275,7 @@ def quiver_plot_3d(X, Y, Z, dx, dy, dz, stagger, length, title, colorbarlabel, s
         o = np.log10(np.sqrt(dx**2 + dy**2 + dz**2))
     else:
         o = np.sqrt(dx**2 + dy**2 + dz**2)
+    # o = o.ravel()
     norm = colors.Normalize()
     norm.autoscale(o)
     cmap = cm.plasma
@@ -289,6 +300,47 @@ def quiver_plot_3d(X, Y, Z, dx, dy, dz, stagger, length, title, colorbarlabel, s
     ax.set_zlabel("Z [AU]")
     ax.set_title(title)
     plt.tight_layout()
-    if savefig == True:
+
+    # Save the figure?
+    if savefig:
         plt.savefig(figfolder)
-    plt.show()
+    
+    # Display the figure?
+    if showfig:
+        plt.show()
+    else:
+        plt.close()
+
+
+def plot_surf_dens(X, Y, Z, surf_dens, warp_ids, r, savefig, figfolder, showfig):
+    """
+    X:            3D array of X coordinates
+    Y:            3D array of Y coordinates
+    Z:            3D array of Z coordinates
+    surf_dens:    1D array of surface density at each radial point
+    warp_ids:     IDs corresponding to the warp
+    r:            1D array of radial points
+    savefig:      Boolean to save figure if True
+    figfolder:    Directory in which figure is to be saved
+    showfig:      Boolean to show figure if True
+    """
+
+    r_warp_extent = np.sqrt(X[warp_ids]**2 +  Y[warp_ids]**2 + Z[warp_ids]**2) / au
+    mask = (r/au >= r_warp_extent.min()) & (r/au <= r_warp_extent.max())
+    r_selected = r[mask]
+    surface_density_selected = surf_dens[mask]
+
+    plt.plot(r_selected/au, surface_density_selected)
+    plt.xlabel("R [AU]")
+    plt.ylabel(r"$\Sigma$")
+    plt.tight_layout()
+
+    # Save the figure?
+    if savefig:
+        plt.savefig(figfolder)
+    
+    # Display the figure?
+    if showfig:
+        plt.show()
+    else:
+        plt.close()
