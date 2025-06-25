@@ -296,17 +296,17 @@ def calc_surfdens(dens, theta, r, phi):
     # Azimuthally averaging density
     dens_phiavg = np.mean(dens, axis=-1)   # shape (Ntheta, Nr)
 
-    # Reshape arrays to enable broadcasting:
+    # Checking if broadcasting is okay
     dtheta = np.gradient(theta)            # shape (Ntheta,)
     theta_grid = theta[:, np.newaxis]      # shape (Ntheta, 1)
     r_grid = r[np.newaxis, :]              # shape (1, Nr)
     dtheta_grid = dtheta[:, np.newaxis]    # shape (Ntheta, 1)
 
-    # Compute the integrand for each (theta, r) pair
-    integrand = dens_phiavg * r_grid * np.sin(theta_grid) * dtheta_grid  # shape (Ntheta, Nr)
+    # Integrand in the surface density formula
+    surf_dens_theta = dens_phiavg * r_grid * np.sin(theta_grid) * dtheta_grid  # shape (Ntheta, Nr)
 
-    # Integrate over theta (axis=0) to get surface density as function of r
-    surf_dens = np.sum(integrand, axis=0)  # shape (Nr,)
+    # Integrating over theta (axis=0) to get surface density as function of r
+    surf_dens = np.sum(surf_dens_theta, axis=0)  # shape (Nr,)
 
     return surf_dens
 
