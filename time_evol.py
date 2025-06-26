@@ -90,7 +90,7 @@ def main():
 
 
         # Plotting the warp densities 
-        contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_warp, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{warp_thresh}}} g/cm^3$, t = {int(it * dt * ninterm / stoky)} kyr', savefig=True, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=False)
+        # contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_warp, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{warp_thresh}}} g/cm^3$, t = {int(it * dt * ninterm / stoky)} kyr', savefig=True, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=False)
 
         # Plotting the Cartesian warp angular momenta
         # quiver_plot_3d(X_c/au, Y_c/au, Z_c/au, Lx_c_warp, Ly_c_warp, Lz_c_warp, stagger=2, length=5, title="Warp angular momenta", colorbarlabel="logL", savefig=False, figfolder=f'../warp_L_thresh{warp_thresh}_it{it}.png', logmag=True, ignorecol=True, showfig=False)
@@ -120,8 +120,9 @@ def main():
         plt.plot(rc/au, inc_itercheck[i], color=cols(i), label=f"{int(dtkyrs_check[i])} kyr")
     plt.xlabel("R [AU]")
     plt.ylabel("Warp inclination [°]")
-    plt.legend()
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
     plt.title("Time evolution of warp inclination")
+    plt.tight_layout()
     plt.savefig(f'{fig_imgs}/warp_inc_evol.png')
     plt.show()
 
@@ -130,10 +131,10 @@ def main():
     ax = fig.add_subplot(111, projection='3d')
     r_warp_extent = np.sqrt(X_c[warp_ids]**2 +  Y_c[warp_ids]**2 + Z_c[warp_ids]**2) / au
     mask = (rc/au >= r_warp_extent.min()) & (rc/au <= r_warp_extent.max())
-    for i in range(len(dt_years[::2])):
+    for i in range(len(dt_years[::4])):
         r_select = rc[mask]
         inc_it_select = inc_it[i][mask]
-        ax.plot(r_select/au, [dt_years[::2][i]] * len(r_select), inc_it_select, color=plt.cm.viridis(i/len(dt_years[::2])))
+        ax.plot(r_select/au, [dt_years[::4][i]] * len(r_select), inc_it_select, color=plt.cm.viridis(i/len(dt_years[::4])))
 
     ax.view_init(elev=35, azim=-31)
     ax.set_xlabel('R [AU]')
@@ -150,8 +151,9 @@ def main():
         plt.plot(rc/au, prec_itercheck[i], color=cols(i), label=f"{int(dtkyrs_check[i])} kyr")
     plt.xlabel("R [AU]")
     plt.ylabel("Warp precession [°]")
-    plt.legend()
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
     plt.title("Time evolution of warp twist")
+    plt.tight_layout()
     plt.savefig(f'{fig_imgs}/warp_twist_evol.png')
     plt.show()
 
@@ -160,10 +162,10 @@ def main():
     ax = fig.add_subplot(111, projection='3d')
     r_warp_extent = np.sqrt(X_c[warp_ids]**2 +  Y_c[warp_ids]**2 + Z_c[warp_ids]**2) / au
     mask = (rc/au >= r_warp_extent.min()) & (rc/au <= r_warp_extent.max())
-    for i in range(len(dt_years[::2])):
+    for i in range(len(dt_years[::4])):
         r_select = rc[mask]
         prec_it_select = prec_it[i][mask]
-        ax.plot(r_select/au, [dt_years[::2][i]] * len(r_select), prec_it_select, color=plt.cm.viridis(i/len(dt_years[::2])))
+        ax.plot(r_select/au, [dt_years[::4][i]] * len(r_select), prec_it_select, color=plt.cm.viridis(i/len(dt_years[::4])))
 
     ax.view_init(elev=35, azim=-31)
     ax.set_xlabel('R [AU]')
@@ -181,8 +183,9 @@ def main():
     plt.xlabel("R [AU]")
     plt.ylabel(r"$\Sigma [g/cm^2]$")
     plt.title("Time evolution of warp surface density")
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.tight_layout()
     plt.savefig(f'{fig_imgs}/warp_surfdens_evol.png')
-    plt.legend()
     plt.show()
 
 if __name__ == "__main__":
