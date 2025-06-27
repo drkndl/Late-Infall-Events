@@ -4,12 +4,15 @@ import numpy as np
 from pathlib import Path
 from read import get_domain_spherical, get_data
 import matplotlib.pyplot as plt
-from no_thoughts_just_plots import quiver_plot_3d, contours_3D, plot_surf_dens
+from no_thoughts_just_plots import quiver_plot_3d, contours_3D, plot_surf_dens, plot_twist_arrows
 import astropy.constants as c
 au = c.au.cgs.value
 G = 6.67e-8               # Gravitational constant in cgs units
 Msun = 1.989e33           # Mass of the Sun in g
 Mstar = 0.7 * Msun        # Mass of the primary star in IRAS 04125+2902 (Barber et al. 2024)
+dt = 1.87e7               # Timestep length of simulations in sec
+ninterm = 200             # Total number of timesteps between outputs in FARGO simulations
+stoky = 3.156e7 * 1e3     # 1 kyr in sec
 
 
 def sph_to_cart(THETA, R, PHI):
@@ -312,6 +315,27 @@ def calc_surfdens(dens, theta, r, phi):
 
 
 
+def calc_simtime(it, ninterm=ninterm, dt=dt, stoky=stoky):
+    """
+    Given an iteration, calculate simulation time in kyr
+
+    Inputs:
+    ------
+    it:              Simulation iteration (int)
+    ninterm:         Time steps between outputs (found in .par --> output control parameters) (int)
+    dt:              Time step length (found in .par --> output control parameters) (sec, float)
+    stoky:           Number of seconds in 1 kyr (float)
+
+    Outputs:
+    -------
+    t_ky:            Iteration in simulation time (kyr, float)
+    """
+
+    t_ky = it * ninterm * dt / stoky
+    return t_ky
+
+
+
 def isolate_warp(dens, vx, vy, vz, Lx, Ly, Lz, threshold):
     """
     A crude way to isolate the warp in the primary disk: applying a density threshold to capture the highest densities in the simulation output
@@ -419,8 +443,9 @@ def calc_L_average(Lx, Ly, Lz, R, savefig, plot=True):
 
 def main():
 
-    folder = Path("../iras04125_c7_highmass_lowres/")         # Folder with the output files
-    it = 300                                                               # FARGO snapshot
+    folder = Path("../iras04125_lowres_it450/")                  # Folder with the output files
+    it = 450                                                     # FARGO snapshot
+    sim_name = str(folder).split('/')[1]                         # Simulation name (for plot labels)
 
     ###################### Load data (theta = 100, r = 250, phi = 225) ################################
 
@@ -473,22 +498,25 @@ def main():
 
 
     # Plotting the warp densities 
-    contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_warp, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{warp_thresh}}} g/cm^3$', savefig=False, figfolder=f'../warp_dens_thresh{warp_thresh}_it{it}.png')
+    # contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_warp, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{warp_thresh}}} g/cm^3$', savefig=False, figfolder=f'../warp_dens_thresh{warp_thresh}_it{it}.png')
 
     # Another way to plot the warp densities
     # contours_3D(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, rho_c[warp_ids], fig, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$')
 
     # Plotting the Cartesian warp angular momenta
-    quiver_plot_3d(X_c/au, Y_c/au, Z_c/au, Lx_c_warp, Ly_c_warp, Lz_c_warp, stagger=5, length=2, title="Warp angular momenta 2", colorbarlabel="logL", savefig=False, figfolder=f'../warp_L_thresh{warp_thresh}_it{it}.png', logmag=True, ignorecol=True)
+    # quiver_plot_3d(X_c/au, Y_c/au, Z_c/au, Lx_c_warp, Ly_c_warp, Lz_c_warp, stagger=5, length=2, title="Warp angular momenta 2", colorbarlabel="logL", savefig=False, figfolder=f'../warp_L_thresh{warp_thresh}_it{it}.png', logmag=True, ignorecol=True)
 
     # Another way to plot the Cartesian warp angular momenta
     # quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Lx[warp_ids], Ly[warp_ids], Lz[warp_ids], stagger=70, length=3, title="Warp angular momenta", colorbarlabel="logL", savefig=False, figfolder=f'../warp_L_thresh{warp_thresh}_it{it}.png', logmag=True)
 
-    # Plotting the radially averaged Cartesian warp angular momenta and the 2D projections
+    # Calculating the radial profile of warp inclination and precession according to Kimmig & Dullemond (2024)
     # inc, twist = calc_L_average(Lx_c_warp, Ly_c_warp, Lz_c_warp, domains["r"], savefig=False, plot=True)
 
+    # Calculating and plotting the radial profile of warp precession as a quiver plot
+    plot_twist_arrows(Lx_c_warp, Ly_c_warp, Lz_c_warp, domains["r"], title=f"Warp twist {sim_name} t={int(calc_simtime(it))} kyr", savefig=False, figfolder="", showfig=True)
+
     # Plotting warp surface density
-    plot_surf_dens(X_c, Y_c, Z_c, surf_dens, warp_ids, domains["r"], savefig=False, figfolder=f'../warp_L_thresh{warp_thresh}_it{it}.png', showfig=False)
+    # plot_surf_dens(X_c, Y_c, Z_c, surf_dens, warp_ids, domains["r"], savefig=False, figfolder=f'../warp_L_thresh{warp_thresh}_it{it}.png', showfig=False)
 
     # Plotting warp Laplace-Runge-Lenz vector
     # quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Ax[warp_ids], Ay[warp_ids], Az[warp_ids], stagger=70, length=3, title=rf'Warp LRL', colorbarlabel=r'$\log(A [g^2cm^3/s^2])$', savefig=True, figfolder=f'../warp_{it}_LRL.png', logmag=True)

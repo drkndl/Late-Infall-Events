@@ -344,3 +344,68 @@ def plot_surf_dens(X, Y, Z, surf_dens, warp_ids, r, savefig, figfolder, showfig)
         plt.show()
     else:
         plt.close()
+
+
+
+def plot_twist_arrows(Lx, Ly, Lz, R, title, savefig, showfig, figfolder):   
+    """
+    Function to plot the warped disk twist/precession through a 3D quiver plot as a function of radius
+    """
+
+    # Obtain radius values for plotting
+    Rc = 0.5 * (R[1:] + R[:-1])
+
+    # Angular momentum vectors for each shell L(r)
+    Lx_avg = np.nansum(Lx, axis=(0,2))
+    Ly_avg = np.nansum(Ly, axis=(0,2))
+    Lz_avg = np.nansum(Lz, axis=(0,2))
+    Lavg_mag = np.sqrt(Lx_avg**2 + Ly_avg**2 + Lz_avg**2)
+    Lxy_proj = np.sqrt(Lx_avg**2 + Ly_avg**2)
+
+    fig = plt.figure(figsize=(7,6))
+    ax = fig.add_subplot(111, projection='3d')
+
+    # Defining arrow colours according to twist value
+    c = np.arccos(Lx_avg / Lxy_proj)
+    # norm = colors.Normalize()
+    # norm.autoscale(c)
+    cmap = cm.viridis
+    
+    # Define colour array
+    sm = cm.ScalarMappable(cmap=cmap)
+    sm.set_array([])
+    # c = np.arccos(Lx_avg / Lxy_proj)
+    c = np.concatenate((c, np.repeat(c, 2)))          # Repeat for each body line and two head lines of arrow
+    # c = plt.cm.viridis(c)                             # Colormap
+
+    # Radially plotting averaged angular momenta (assuming R along X-axis and keeping Y- and Z- axes 0)
+    ax.quiver(Rc/au, 0, 0, Lx_avg, Ly_avg, Lz_avg, arrow_length_ratio=1, length=1, normalize=True, pivot='tip', color="black")          # Workaround to add arrowheads (fuck matplotlib 3D quiver plots)
+    q = ax.quiver(Rc/au, 0, 0, Lx_avg, Ly_avg, Lz_avg, length=3, normalize=True, pivot='tip', colors=cmap(c))
+    plt.colorbar(sm, label=r"Warp precession")
+
+    # Overplotting the density as well
+    # if plot_density:
+    #     p = ax.scatter(X.flatten()/au, Y.flatten()/au, Z.flatten()/au, c=dens.flatten(), cmap='plasma', s=7, edgecolor='none', alpha=0.1)
+    #     # Colorbar formatting
+    #     plt.colorbar(p, pad=0.08, label=r'$\rho [g/cm^3]$') #, shrink=0.85), fraction=0.046)
+
+    ax.set_xlabel('X [AU]')
+    ax.set_ylabel('Y [AU]')
+    ax.set_zlabel('Z [AU]')
+    # ax.set_ylim(-Rc.max()/au, Rc.max()/au)
+    # ax.set_zlim(-Rc.max()/au, Rc.max()/au)
+    ax.set_ylim(-10, 10)
+    ax.set_zlim(-10, 10)
+    ax.set_title(title)
+    ax.set_box_aspect([1, 1, 1])  # Equal aspect ratio
+    plt.tight_layout()
+    
+    # Save the figure?
+    if savefig:
+        plt.savefig(figfolder)
+    
+    # Display the figure?
+    if showfig:
+        plt.show()
+    else:
+        plt.close()
