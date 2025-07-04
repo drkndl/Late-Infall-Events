@@ -117,7 +117,7 @@ def centering(data):
 
 def calc_cell_volume(theta, r, phi):
     """
-    Calculates the cell volumes of an (theta,r,phi) grid in cm^3 using the fomula for an elemental volume in 3D spherical coordinates dV = r^2 sin(theta) dr dphi dtheta
+    Calculates the cell volumes of an (theta,r,phi) grid in cm^3 using the formula for an elemental volume in 3D spherical coordinates dV = r^2 sin(theta) dr dphi dtheta
     
     Inputs:
     ------
@@ -406,15 +406,44 @@ def calc_L_average(Lx, Ly, Lz, R, savefig, plot=True):
     Lx:       Angular momentum array in x-direction with size (theta, r, phi)
     Ly:       Angular momentum array in y-direction with size (theta, r, phi)
     Lz:       Angular momentum array in z-direction with size (theta, r, phi)
-    """
 
-    # Obtain radius values for plotting
-    Rc = 0.5 * (R[1:] + R[:-1])
+    Outputs:
+    -------
+    Lx_avg:      1D array of radially averaged Lx
+    Ly_avg:      1D array of radially averaged Ly
+    Lz_avg:      1D array of radially averaged Lz
+    """
 
     # Angular momentum vectors for each shell L(r)
     Lx_avg = np.nansum(Lx, axis=(0,2))
     Ly_avg = np.nansum(Ly, axis=(0,2))
     Lz_avg = np.nansum(Lz, axis=(0,2))
+
+    return Lx_avg, Ly_avg, Lz_avg
+
+
+def calc_inc_twist(Lx_avg, Ly_avg, Lz_avg, R, savefig, plot=True):
+    """
+    Calculates the twist and inclination of the warped disk from the radial profile of angular momenta
+    
+    Inputs:
+    ------
+    Lx_avg:      1D array of radially averaged Lx
+    Ly_avg:      1D array of radially averaged Ly
+    Lz_avg:      1D array of radially averaged Lz
+    R:           1D array of radii 
+    savefig:     Boolean to save the plot if True
+    plot:        Boolean to plot inclination / twist vs R if True
+
+    Outputs:
+    -------
+    inc_deg:       1D array of radial profile of warp inclination in degrees
+    twist_deg:     1D array of radial profile of warp twist in degrees
+    """
+
+    # Obtain radius values for plotting
+    Rc = 0.5 * (R[1:] + R[:-1])
+
     Lavg_mag = np.sqrt(Lx_avg**2 + Ly_avg**2 + Lz_avg**2)
     Lxy_proj = np.sqrt(Lx_avg**2 + Ly_avg**2)
 
@@ -441,9 +470,35 @@ def calc_L_average(Lx, Ly, Lz, R, savefig, plot=True):
     return inc_deg, twist_deg
 
 
+
+def calc_total_L(Lx_avg, Ly_avg, Lz_avg):
+    """
+    Calculates the total angular momentum of the disk with reference to the z-axis by averaging over the radial profile of the angular momenta
+
+    Inputs:
+    ------
+    Lx_avg:      1D array of radially averaged Lx
+    Ly_avg:      1D array of radially averaged Ly
+    Lz_avg:      1D array of radially averaged Lz
+
+    Outputs:
+    -------
+    Lx_tot:      Total L of warped disk in x-direction (float)
+    Ly_tot:      Total L of warped disk in y-direction (float)
+    Lz_tot:      Total L of warped disk in z-direction (float)
+    """
+
+    Lx_tot = np.sum(Lx_avg)
+    Ly_tot = np.sum(Ly_avg)
+    Lz_tot = np.sum(Lz_avg)
+
+    return Lx_tot, Ly_tot, Lz_tot
+
+
+
 def main():
 
-    folder = Path("../iras04125_lowres_it450/")                  # Folder with the output files
+    folder = Path("../iras04125_lowres_it450_b01/")                  # Folder with the output files
     it = 450                                                     # FARGO snapshot
     sim_name = str(folder).split('/')[1]                         # Simulation name (for plot labels)
 
@@ -494,6 +549,11 @@ def main():
     warp_thresh = -15   # log of density threshold for which we can see the warp in the primary
     rho_c_warp, vx_c_warp, vy_c_warp, vz_c_warp, Lx_c_warp, Ly_c_warp, Lz_c_warp, warp_ids = isolate_warp(rho_c, vx_c, vy_c, vz_c, Lx, Ly, Lz, warp_thresh) 
 
+    # Find the radial extent of the warp
+    r_warp_extent = np.sqrt(X_c[warp_ids]**2 +  Y_c[warp_ids]**2 + Z_c[warp_ids]**2) / au
+    mask = (domains["r"]/au >= r_warp_extent.min()) & (domains["r"]/au <= r_warp_extent.max())
+    r_select = domains["r"][mask]
+
     #################################### Plotting warp properties #####################################
 
 
@@ -510,10 +570,15 @@ def main():
     # quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Lx[warp_ids], Ly[warp_ids], Lz[warp_ids], stagger=70, length=3, title="Warp angular momenta", colorbarlabel="logL", savefig=False, figfolder=f'../warp_L_thresh{warp_thresh}_it{it}.png', logmag=True)
 
     # Calculating the radial profile of warp inclination and precession according to Kimmig & Dullemond (2024)
-    # inc, twist = calc_L_average(Lx_c_warp, Ly_c_warp, Lz_c_warp, domains["r"], savefig=False, plot=True)
+    Lx_warp_avg, Ly_warp_avg, Lz_warp_avg = calc_L_average(Lx_c_warp, Ly_c_warp, Lz_c_warp)
+    inc, twist = calc_inc_twist(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], savefig=False, plot=False)
 
     # Calculating and plotting the radial profile of warp precession as a quiver plot
-    plot_twist_arrows(Lx_c_warp, Ly_c_warp, Lz_c_warp, domains["r"], title=f"Warp twist {sim_name} t={int(calc_simtime(it))} kyr", savefig=False, figfolder="", showfig=True)
+    plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, title=f"Warp twist {sim_name} t={int(calc_simtime(it))} kyr", savefig=False, figfolder="", showfig=True)
+
+    # Calculating and plotting the total angular momentum of the warped disk
+    Lx_disk, Ly_disk, Lz_disk = calc_total_L(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg)
+    quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Lx_disk, Ly_disk, Lz_disk, stagger=1, length=3, title="Total disk angular momentum", colorbarlabel="logL", savefig=False, figfolder=f'../{sim_name}_totalL.png', logmag=True)
 
     # Plotting warp surface density
     # plot_surf_dens(X_c, Y_c, Z_c, surf_dens, warp_ids, domains["r"], savefig=False, figfolder=f'../warp_L_thresh{warp_thresh}_it{it}.png', showfig=False)

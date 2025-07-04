@@ -132,6 +132,9 @@ def contours_3D(X, Y, Z, data, xlabel, ylabel, zlabel, colorbarlabel, title, sav
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.set_zlabel(zlabel)
+    # ax.set_xlim()
+    # ax.set_ylim()
+    # ax.set_zlim()
     ax.set_title(title, pad=30)
 
     # Initial camera position of the 3D plot (default: elev=-41, azim=-62 for best view of warp)
@@ -347,7 +350,7 @@ def plot_surf_dens(X, Y, Z, surf_dens, warp_ids, r, savefig, figfolder, showfig)
 
 
 
-def plot_twist_arrows(Lx, Ly, Lz, R, title, savefig, showfig, figfolder):   
+def plot_twist_arrows(Lx_avg, Ly_avg, Lz_avg, R, Rwarp, title, savefig, showfig, figfolder):   
     """
     Function to plot the warped disk twist/precession through a 3D quiver plot as a function of radius
     """
@@ -355,10 +358,7 @@ def plot_twist_arrows(Lx, Ly, Lz, R, title, savefig, showfig, figfolder):
     # Obtain radius values for plotting
     Rc = 0.5 * (R[1:] + R[:-1])
 
-    # Angular momentum vectors for each shell L(r)
-    Lx_avg = np.nansum(Lx, axis=(0,2))
-    Ly_avg = np.nansum(Ly, axis=(0,2))
-    Lz_avg = np.nansum(Lz, axis=(0,2))
+    # Magnitude and XY projection of L(r)
     Lavg_mag = np.sqrt(Lx_avg**2 + Ly_avg**2 + Lz_avg**2)
     Lxy_proj = np.sqrt(Lx_avg**2 + Ly_avg**2)
 
@@ -367,21 +367,16 @@ def plot_twist_arrows(Lx, Ly, Lz, R, title, savefig, showfig, figfolder):
 
     # Defining arrow colours according to twist value
     c = np.arccos(Lx_avg / Lxy_proj)
-    # norm = colors.Normalize()
-    # norm.autoscale(c)
-    cmap = cm.viridis
     
     # Define colour array
-    sm = cm.ScalarMappable(cmap=cmap)
-    sm.set_array([])
     # c = np.arccos(Lx_avg / Lxy_proj)
     c = np.concatenate((c, np.repeat(c, 2)))          # Repeat for each body line and two head lines of arrow
-    # c = plt.cm.viridis(c)                             # Colormap
+    c = plt.cm.viridis(c)                             # Colormap
 
     # Radially plotting averaged angular momenta (assuming R along X-axis and keeping Y- and Z- axes 0)
     ax.quiver(Rc/au, 0, 0, Lx_avg, Ly_avg, Lz_avg, arrow_length_ratio=1, length=1, normalize=True, pivot='tip', color="black")          # Workaround to add arrowheads (fuck matplotlib 3D quiver plots)
-    q = ax.quiver(Rc/au, 0, 0, Lx_avg, Ly_avg, Lz_avg, length=3, normalize=True, pivot='tip', colors=cmap(c))
-    plt.colorbar(sm, label=r"Warp precession")
+    q = ax.quiver(Rc/au, 0, 0, Lx_avg, Ly_avg, Lz_avg, length=3, normalize=True, pivot='tip', color="black")
+    plt.colorbar(q, label=r"Normalized warp precession")
 
     # Overplotting the density as well
     # if plot_density:
@@ -392,11 +387,13 @@ def plot_twist_arrows(Lx, Ly, Lz, R, title, savefig, showfig, figfolder):
     ax.set_xlabel('X [AU]')
     ax.set_ylabel('Y [AU]')
     ax.set_zlabel('Z [AU]')
-    # ax.set_ylim(-Rc.max()/au, Rc.max()/au)
-    # ax.set_zlim(-Rc.max()/au, Rc.max()/au)
+    ax.set_xlim(0, Rwarp.max()/au + 5)
     ax.set_ylim(-10, 10)
     ax.set_zlim(-10, 10)
     ax.set_title(title)
+    # ax.view_init(elev=36, azim=-68)
+    # ax.view_init(elev=5, azim=0)
+    ax.view_init(elev=42, azim=7)
     ax.set_box_aspect([1, 1, 1])  # Equal aspect ratio
     plt.tight_layout()
     
