@@ -397,7 +397,7 @@ def isolate_secondary_box(X, Y, Z, secX, secY, secZ, buffer, dens):
 
 
 
-def calc_L_average(Lx, Ly, Lz, R, savefig, plot=True):
+def calc_L_average(Lx, Ly, Lz):
     """
     Calculates the angular momentum averaged across the theta and phi directions to find the radial Ls
 
@@ -498,7 +498,7 @@ def calc_total_L(Lx_avg, Ly_avg, Lz_avg):
 
 def main():
 
-    folder = Path("../iras04125_lowres_it450_b01/")                  # Folder with the output files
+    folder = Path("../iras04125_lowres_it450/")                  # Folder with the output files
     it = 450                                                     # FARGO snapshot
     sim_name = str(folder).split('/')[1]                         # Simulation name (for plot labels)
 
@@ -558,7 +558,7 @@ def main():
 
 
     # Plotting the warp densities 
-    # contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_warp, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{warp_thresh}}} g/cm^3$', savefig=False, figfolder=f'../warp_dens_thresh{warp_thresh}_it{it}.png')
+    contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_warp, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{warp_thresh}}} g/cm^3$', savefig=False, figfolder=f'../warp_dens_thresh{warp_thresh}_it{it}.png')
 
     # Another way to plot the warp densities
     # contours_3D(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, rho_c[warp_ids], fig, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$')
@@ -575,10 +575,11 @@ def main():
 
     # Calculating and plotting the radial profile of warp precession as a quiver plot
     plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, title=f"Warp twist {sim_name} t={int(calc_simtime(it))} kyr", savefig=False, figfolder="", showfig=True)
+    bkwebkw
 
     # Calculating and plotting the total angular momentum of the warped disk
     Lx_disk, Ly_disk, Lz_disk = calc_total_L(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg)
-    quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Lx_disk, Ly_disk, Lz_disk, stagger=1, length=3, title="Total disk angular momentum", colorbarlabel="logL", savefig=False, figfolder=f'../{sim_name}_totalL.png', logmag=True)
+    # quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, np.array(Lx_disk), np.array(Ly_disk), np.array(Lz_disk), stagger=1, length=3, title="Total disk angular momentum", colorbarlabel="logL", savefig=False, figfolder=f'../{sim_name}_totalL.png', logmag=True)
 
     # Plotting warp surface density
     # plot_surf_dens(X_c, Y_c, Z_c, surf_dens, warp_ids, domains["r"], savefig=False, figfolder=f'../warp_L_thresh{warp_thresh}_it{it}.png', showfig=False)
@@ -594,7 +595,6 @@ def main():
     # print("Max Warp eccentricity: ", np.max(e[warp_ids]))
     # print("Mean warp eccentricity: ", np.mean(e[warp_ids]))
 
-    no_secondary_all_my_homies_hate_secondary
 
     ######## Isolating the secondary disk box: (X=-150AU,Y=300,Z=600) (R=?,theta=30°,phi=115°) ##########
 
@@ -615,25 +615,25 @@ def main():
     rho_c_sec, sec_ids = isolate_warp(rho_c_secbox, sec_thresh)
 
     # Plotting the secondary densities
-    contours_3D(X_secbox/au, Y_secbox/au, Z_secbox/au, rho_c_sec, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\rho$ Secondary Disk', savefig=True, figfolder=f'../secondary_dens_thresh{sec_thresh}.png')
+    contours_3D(X_secbox/au, Y_secbox/au, Z_secbox/au, rho_c_sec, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\rho$ Secondary Disk', savefig=False, figfolder=f'../secondary_dens_thresh{sec_thresh}.png')
 
     # Plotting the Cartesian secondary disk angular momenta
     Lx_secbox, Ly_secbox, Lz_secbox = Lx[secbox_ids], Ly[secbox_ids], Lz[secbox_ids]
-    quiver_plot_3d(X_secbox[sec_ids]/au, Y_secbox[sec_ids]/au, Z_secbox[sec_ids]/au, Lx_secbox[sec_ids], Ly_secbox[sec_ids], Lz_secbox[sec_ids], stagger=1, length=10, title="Secondary disk angular momenta", colorbarlabel="logL", savefig=True, figfolder=f'../secondary_L_thresh{sec_thresh}.png', logmag=True)
+    quiver_plot_3d(X_secbox[sec_ids]/au, Y_secbox[sec_ids]/au, Z_secbox[sec_ids]/au, Lx_secbox[sec_ids], Ly_secbox[sec_ids], Lz_secbox[sec_ids], stagger=1, length=10, title="Secondary disk angular momenta", colorbarlabel="logL", savefig=False, figfolder=f'../secondary_L_thresh{sec_thresh}.png', logmag=False)
 
     # Plotting secondary disk Laplace-Runge-Lenz vector
-    Ax_secbox, Ay_secbox, Az_secbox = Ax[secbox_ids], Ay[secbox_ids], Az[secbox_ids]
-    quiver_plot_3d(X_secbox[sec_ids]/au, Y_secbox[sec_ids]/au, Z_secbox[sec_ids]/au, Ax_secbox[sec_ids], Ay_secbox[sec_ids], Az_secbox[sec_ids], stagger=1, length=10, title=rf'Secondary disk LRL', colorbarlabel=r'$\log(A [g^2cm^3/s^2])$', savefig=True, figfolder=f'../secondary_LRL_thresh{sec_thresh}.png', logmag=True)
+    # Ax_secbox, Ay_secbox, Az_secbox = Ax[secbox_ids], Ay[secbox_ids], Az[secbox_ids]
+    # quiver_plot_3d(X_secbox[sec_ids]/au, Y_secbox[sec_ids]/au, Z_secbox[sec_ids]/au, Ax_secbox[sec_ids], Ay_secbox[sec_ids], Az_secbox[sec_ids], stagger=1, length=10, title=rf'Secondary disk LRL', colorbarlabel=r'$\log(A [g^2cm^3/s^2])$', savefig=False, figfolder=f'../secondary_LRL_thresh{sec_thresh}.png', logmag=False)
 
     # Plotting secondary disk eccentricity
-    ex_secbox, ey_secbox, ez_secbox = ex[secbox_ids], ey[secbox_ids], ez[secbox_ids]
-    quiver_plot_3d(X_secbox[sec_ids]/au, Y_secbox[sec_ids]/au, Z_secbox[sec_ids]/au, ex_secbox[sec_ids], ey_secbox[sec_ids], ez_secbox[sec_ids], stagger=1, length=10, title=rf'Secondary disk Eccentricity', colorbarlabel=r'$\log(e)$', savefig=True, figfolder=f'../secondary_ecc_thresh{sec_thresh}.png', logmag=False)
+    # ex_secbox, ey_secbox, ez_secbox = ex[secbox_ids], ey[secbox_ids], ez[secbox_ids]
+    # quiver_plot_3d(X_secbox[sec_ids]/au, Y_secbox[sec_ids]/au, Z_secbox[sec_ids]/au, ex_secbox[sec_ids], ey_secbox[sec_ids], ez_secbox[sec_ids], stagger=1, length=10, title=rf'Secondary disk Eccentricity', colorbarlabel=r'$\log(e)$', savefig=False, figfolder=f'../secondary_ecc_thresh{sec_thresh}.png', logmag=False)
 
     # Characterizing secondary disk eccentricity 
-    e_secbox = e[secbox_ids]
-    print("Min Warp eccentricity: ", np.min(e_secbox[sec_ids]))
-    print("Max Warp eccentricity: ", np.max(e_secbox[sec_ids]))
-    print("Mean Warp eccentricity: ", np.mean(e_secbox[sec_ids]))
+    # e_secbox = e[secbox_ids]
+    # print("Min Warp eccentricity: ", np.min(e_secbox[sec_ids]))
+    # print("Max Warp eccentricity: ", np.max(e_secbox[sec_ids]))
+    # print("Mean Warp eccentricity: ", np.mean(e_secbox[sec_ids]))
 
 
     ####################################################################################################

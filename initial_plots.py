@@ -8,8 +8,8 @@ import astropy.constants as c
 au = c.au.cgs.value
 
 
-folder = Path("../iras04125_c7_highmass_lowres/")         # Folder with the output files
-it = 300                                                               # FARGO snapshot
+folder = Path("../iras04125_lowres_it450_nocomp/")         # Folder with the output files
+it = 450                                                               # FARGO snapshot
 
 ############# theta = 100, r = 250, phi = 225 ###########
 domains = get_domain_spherical(folder)
@@ -77,7 +77,7 @@ labels = [r'$\pi - \theta$ [deg]',r'$\log r$ [AU]',r'$\phi$ [deg]']
 
 
 # Plot 3D contours up to a certain radial extent as defined by irad
-irad = np.where(domains["r"]/au < 300)[0][-1]
+irad = np.where(domains["r"]/au < 50)[0][-1]
 # irad = -1
 # fig = plt.figure(figsize=(10, 7))
 # contours_3D(X /au, Y /au, ZCYL /au, np.log10(rho), fig, xlabel="X [AU]", ylabel="Y [AU]", zlabel="Z [AU]", colorbarlabel=r"$\log \rho (g/cm^3)$", title="Density contour")

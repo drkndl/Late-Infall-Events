@@ -8,6 +8,9 @@ from mpl_toolkits.mplot3d import axes3d
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.interpolate import RegularGridInterpolator
 import astropy.constants as c
+import imageio
+import os
+
 au = c.au.cgs.value
 
 
@@ -374,9 +377,9 @@ def plot_twist_arrows(Lx_avg, Ly_avg, Lz_avg, R, Rwarp, title, savefig, showfig,
     c = plt.cm.viridis(c)                             # Colormap
 
     # Radially plotting averaged angular momenta (assuming R along X-axis and keeping Y- and Z- axes 0)
-    ax.quiver(Rc/au, 0, 0, Lx_avg, Ly_avg, Lz_avg, arrow_length_ratio=1, length=1, normalize=True, pivot='tip', color="black")          # Workaround to add arrowheads (fuck matplotlib 3D quiver plots)
+    # ax.quiver(Rc/au, 0, 0, Lx_avg, Ly_avg, Lz_avg, arrow_length_ratio=1, length=1, normalize=True, pivot='tip', color="black")          # Workaround to add arrowheads (fuck matplotlib 3D quiver plots)
     q = ax.quiver(Rc/au, 0, 0, Lx_avg, Ly_avg, Lz_avg, length=3, normalize=True, pivot='tip', color="black")
-    plt.colorbar(q, label=r"Normalized warp precession")
+    # plt.colorbar(q, label=r"Normalized warp precession")
 
     # Overplotting the density as well
     # if plot_density:
@@ -392,8 +395,9 @@ def plot_twist_arrows(Lx_avg, Ly_avg, Lz_avg, R, Rwarp, title, savefig, showfig,
     ax.set_zlim(-10, 10)
     ax.set_title(title)
     # ax.view_init(elev=36, azim=-68)
+    ax.view_init(elev=71, azim=-179)
     # ax.view_init(elev=5, azim=0)
-    ax.view_init(elev=42, azim=7)
+    # ax.view_init(elev=42, azim=7)
     ax.set_box_aspect([1, 1, 1])  # Equal aspect ratio
     plt.tight_layout()
     
@@ -406,3 +410,26 @@ def plot_twist_arrows(Lx_avg, Ly_avg, Lz_avg, R, Rwarp, title, savefig, showfig,
         plt.show()
     else:
         plt.close()
+
+
+
+def make_evol_GIF(directory, fname, gif_name):
+    """
+    Creates a time evolution GIF out of images in a given directory
+
+    Inputs:
+    ------
+    directory:      folder where the images are stored (str/Path)
+    fname:          part of the name of the images (e.g. 'warp_dens_thresh' or 'warp_twist_arrow') (str)
+    gif_name:       name of the output GIF (str)
+    """
+
+    filenames = sorted([f for f in os.listdir(directory) if fname in f])
+    print(filenames)
+
+    with imageio.get_writer(f'{directory}/{gif_name}.gif', mode='I') as writer:
+        for filename in filenames:
+            image = imageio.imread(f'{directory}/{filename}')
+            writer.append_data(image)
+
+    return
