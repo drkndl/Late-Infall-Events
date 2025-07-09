@@ -413,7 +413,7 @@ def plot_twist_arrows(Lx_avg, Ly_avg, Lz_avg, R, Rwarp, title, savefig, showfig,
 
 
 
-def make_evol_GIF(directory, fname, gif_name):
+def make_evol_GIF(directory, fname, gif_name, delete_files=True):
     """
     Creates a time evolution GIF out of images in a given directory
 
@@ -422,14 +422,22 @@ def make_evol_GIF(directory, fname, gif_name):
     directory:      folder where the images are stored (str/Path)
     fname:          part of the name of the images (e.g. 'warp_dens_thresh' or 'warp_twist_arrow') (str)
     gif_name:       name of the output GIF (str)
+    delete_files:   deletes images once GIF is made if True (default=True)
     """
 
+    # Get all the files required to make the GIF, sorted by iteration number
     filenames = sorted([f for f in os.listdir(directory) if fname in f])
     print(filenames)
 
+    # Create GIF
     with imageio.get_writer(f'{directory}/{gif_name}.gif', mode='I') as writer:
         for filename in filenames:
             image = imageio.imread(f'{directory}/{filename}')
             writer.append_data(image)
+
+    # Remove image files from the folder
+    if delete_files:
+        for file in filenames:
+            os.remove(f'{directory}/{file}') 
 
     return

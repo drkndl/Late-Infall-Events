@@ -8,7 +8,7 @@ import astropy.constants as c
 au = c.au.cgs.value
 
 
-folder = Path("../iras04125_lowres_it450_nocomp/")         # Folder with the output files
+folder = Path("../iras04125_lowres_it450_b10/")         # Folder with the output files
 it = 450                                                               # FARGO snapshot
 
 ############# theta = 100, r = 250, phi = 225 ###########
@@ -33,15 +33,15 @@ vx, vy, vz = vel_sph_to_cart(vthe, vrad, vphi, THETA, PHI)
 
 # Plot r-theta slice (flipping theta to match physics convention of spherical coords)
 labels = [r'$\pi - \theta$ [deg]',r'$\log r$ [AU]',r'$\phi$ [deg]']
-# interactive_2D(np.log10(rho[::-1,:,:]), (1,0), np.log10(domains['r'] / au), np.rad2deg(domains['theta']), labels)
+interactive_2D(np.log10(rho[::-1,:,:]), (1,0), np.log10(domains['r'] / au), np.rad2deg(domains['theta']), labels)
 # interactive_2D(np.log10(vsph[::-1,:,:]), (1,0), np.log10(domains['r'] / au), np.rad2deg(domains['theta']), labels)
 
 # Plot r-phi slice (flipping theta to match physics convention of spherical coords)
-# interactive_2D(np.log10(rho[::-1,:,:]), (1,2), np.log10(domains['r'] / au), np.rad2deg(domains['phi']), labels)
+interactive_2D(np.log10(rho[::-1,:,:]), (1,2), np.log10(domains['r'] / au), np.rad2deg(domains['phi']), labels)
 # interactive_2D(np.log10(vsph[::-1,:,:]), (1,2), np.log10(domains['r'] / au), np.rad2deg(domains['phi']), labels)
 
 # Plot phi-theta slice (flipping theta to match physics convention of spherical coords)
-# interactive_2D(np.log10(rho[::-1,:,:]), (2,0), np.rad2deg(domains['phi']), np.rad2deg(domains['theta']), labels)
+interactive_2D(np.log10(rho[::-1,:,:]), (2,0), np.rad2deg(domains['phi']), np.rad2deg(domains['theta']), labels)
 # interactive_2D(np.log10(vsph[::-1,:,:]), (2,0), np.rad2deg(domains['phi']), np.rad2deg(domains['theta']), labels)
 # irad=-1
 # print(np.shape(rho[:, :, 1]), np.shape(R[:, :, 1]/au), np.shape(THETA[:, :, 1]))
