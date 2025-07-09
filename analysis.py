@@ -498,8 +498,8 @@ def calc_total_L(Lx_avg, Ly_avg, Lz_avg):
 
 def main():
 
-    folder = Path("../iras04125_lowres_it450/")         # Folder with the output files
-    fig_imgs = Path("cloudlet_lowres_it450/imgs/")      # Folder to save images
+    folder = Path("../iras04125_lowres_it450_cmass10/")         # Folder with the output files
+    fig_imgs = Path("iras04125_lowres_it450_cmass10/imgs/")      # Folder to save images
     it = 450                                                     # FARGO snapshot
     sim_name = str(folder).split('/')[1]                         # Simulation name (for plot labels)
 
@@ -519,6 +519,9 @@ def main():
 
     # Cartesian velocities
     vx, vy, vz = vel_sph_to_cart(vthe, vrad, vphi, THETA, PHI)
+
+    # Central coordinates of the primary
+    Px, Py, Pz = 0, 0, 0                                # Primary is in the centre of the simulation
 
 
     ############################# Calculate physical quantities ######################################
@@ -559,7 +562,7 @@ def main():
 
 
     # Plotting the warp densities 
-    # contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_warp, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'{sim_name} $\log(\rho)$ above $\rho = 10^{{{warp_thresh}}} g/cm^3$, t = {int(it * dt * ninterm / stoky)} kyr', savefig=True, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=True)
+    contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_warp, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'{sim_name} $\log(\rho)$ above $\rho = 10^{{{warp_thresh}}} g/cm^3$, t = {int(it * dt * ninterm / stoky)} kyr', savefig=True, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=True)
 
     # Another way to plot the warp densities
     # contours_3D(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, rho_c[warp_ids], fig, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$')
@@ -575,11 +578,11 @@ def main():
     inc, twist = calc_inc_twist(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], savefig=False, plot=False)
 
     # Calculating and plotting the radial profile of warp precession as a quiver plot
-    # plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, title=f"Warp twist {sim_name} t={int(calc_simtime(it))} kyr", savefig=True, figfolder=f'{fig_imgs}/warp_twist_arrows_it{it}.png', showfig=True)
+    plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, title=f"Warp twist {sim_name} t={int(calc_simtime(it))} kyr", savefig=True, figfolder=f'{fig_imgs}/warp_twist_arrows_it{it}.png', showfig=True)
 
     # Calculating and plotting the total angular momentum of the warped disk
     Lx_disk, Ly_disk, Lz_disk = calc_total_L(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg)
-    quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, np.array(Lx_disk), np.array(Ly_disk), np.array(Lz_disk), stagger=1, length=3, title=f"{sim_name} Total disk angular momentum", colorbarlabel="logL", savefig=False, figfolder=f'{fig_imgs}/{sim_name}_totalL.png', logmag=True)
+    quiver_plot_3d(np.array([Px]), np.array([Py]), np.array([Pz]), np.array([Lx_disk]), np.array([Ly_disk]), np.array([Lz_disk]), stagger=1, length=0.05, title=f"{sim_name} Total disk angular momentum", colorbarlabel="logL", savefig=False, figfolder=f'{fig_imgs}/{sim_name}_totalL.png', logmag=True)
 
     # Plotting warp surface density
     # plot_surf_dens(X_c, Y_c, Z_c, surf_dens, warp_ids, domains["r"], savefig=False, figfolder=f'../warp_L_thresh{warp_thresh}_it{it}.png', showfig=False)

@@ -23,14 +23,15 @@ stoky = 3.156e7 * 1e3     # 1 kyr in sec
 def main():
 
 
-    folder = Path("../iras04125_lowres_it450_b10/")         # Folder with the FARGO output files
-    fig_imgs = Path("cloudlet_lowres_it450_b10/imgs/")      # Folder to save images    
+    folder = Path("../iras04125_lowres_it450_cmass10/")          # Folder with the FARGO output files
+    fig_imgs = Path("iras04125_lowres_it450_cmass10/imgs/")      # Folder to save images    
     iter_total = 450                                    # FARGO snapshot
 
-    iter_check = np.arange(100, iter_total+1, 25)                       # Some iterations to plot
-    sim_name = str(folder).split('/')[1]                                # Simulation name (for plot labels)
-    dt_years = calc_simtime(np.asarray(range(100, iter_total+1)))       # Convert iterations to kyrs
-    dtkyrs_check = calc_simtime(iter_check)                             # Convert iterations into kyrs
+    first_it = 100
+    iter_check = np.arange(first_it, iter_total+1, 25)                       # Some iterations to plot
+    sim_name = str(folder).split('/')[1]                                     # Simulation name (for plot labels)
+    dt_years = calc_simtime(np.asarray(range(first_it, iter_total+1)))       # Convert iterations to kyrs
+    dtkyrs_check = calc_simtime(iter_check)                                  # Convert iterations into kyrs
 
     inc_it = []                                               # List to save disk inclination at each iteration
     prec_it = []                                              # List to save disk precession at each iteration
@@ -47,7 +48,7 @@ def main():
     rc = 0.5 * (domains["r"][1:] + domains["r"][:-1])
     X, Y, ZCYL, RCYL = sph_to_cart(THETA, R, PHI)       # Meshgrid of Cartesian coordinates
 
-    for it in range(100, iter_total+1):
+    for it in range(first_it, iter_total+1):
     # for it in iter_check:
 
         ###################### Load data for each iteration #############################
@@ -133,6 +134,7 @@ def main():
     plt.tight_layout()
     plt.savefig(f'{fig_imgs}/warp_inc_evol.png')
     plt.show()
+
 
     # # Plot time evolution of warp inclination in 3D for all iters 
     fig = plt.figure(figsize=(10, 6))
