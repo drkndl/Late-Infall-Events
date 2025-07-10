@@ -6,10 +6,12 @@ from read import get_domain_spherical, get_data
 import matplotlib.pyplot as plt
 from no_thoughts_just_plots import quiver_plot_3d, contours_3D, plot_surf_dens, plot_twist_arrows
 import astropy.constants as c
+import pandas as pd
 au = c.au.cgs.value
 G = 6.67e-8               # Gravitational constant in cgs units
 Msun = 1.989e33           # Mass of the Sun in g
 Mstar = 0.7 * Msun        # Mass of the primary star in IRAS 04125+2902 (Barber et al. 2024)
+Mcomp = 3.38e32           # Mass of the companion in g
 dt = 1.87e7               # Timestep length of simulations in sec
 ninterm = 200             # Total number of timesteps between outputs in FARGO simulations
 stoky = 3.156e7 * 1e3     # 1 kyr in sec
@@ -336,38 +338,71 @@ def calc_simtime(it, ninterm=ninterm, dt=dt, stoky=stoky):
 
 
 
-def isolate_warp(dens, vx, vy, vz, Lx, Ly, Lz, threshold):
+def isolate_disk(X, Y, Z, cenX, cenY, cenZ, buffer, dens, vx, vy, vz, Lx, Ly, Lz, threshold):
     """
-    A crude way to isolate the warp in the primary disk: applying a density threshold to capture the highest densities in the simulation output
+    A crude way to isolate the disk: first isolating the box surrounding the disk of interest (primary or secondary) and then applying a density threshold to capture the highest densities in the simulation output to obtain the disk and reject the background
 
     Inputs:
     ------
+    X:            3D meshgrid of Cartesian X values with shape (n_theta-1, n_r-1, n_phi-1)
+    Y:            3D meshgrid of Cartesian Y values with shape (n_theta-1, n_r-1, n_phi-1)
+    Z:            3D meshgrid of Cartesian Z values with shape (n_theta-1, n_r-1, n_phi-1) 
+    cenX:         Stellar X-coordinate (float)
+    cenY:         Stellar Y-coordinate (float)
+    cenZ:         Stellar Z-coordinate (float) 
+    buffer:       Size of the box to be isolated around the star 
     dens:         3D array of centered density in g/cm^3 with shape (n_theta-1, n_r-1, n_phi-1)
+    vx:           3D meshgrid of Cartesian X velocities with shape (n_theta-1, n_r-1, n_phi-1)
+    vy:           3D meshgrid of Cartesian Y velocities with shape (n_theta-1, n_r-1, n_phi-1)
+    vz:           3D meshgrid of Cartesian Z velocities with shape (n_theta-1, n_r-1, n_phi-1) 
+    Lx:           Angular momentum array in x-direction with size (theta-1, n_r-1, n_phi-1)
+    Ly:           Angular momentum array in y-direction with size (theta-1, n_r-1, n_phi-1)
+    Lz:           Angular momentum array in z-direction with size (theta-1, n_r-1, n_phi-1)        
     threshold:    Threshold density by which we filter the dens array
 
     Outputs:
     -------
-    warp_dens:    3D array of filtered density in g/cm^3 with shape (n_theta-1, n_r-1, n_phi-1)
-    ids:          3D array of indices corresponding to warp_dens
+    disk_dens:    3D array of filtered density in g/cm^3 with shape (n_theta-1, n_r-1, n_phi-1)
+    disk_vx:      3D array of filtered x velocities in cm/s with shape (n_theta-1, n_r-1, n_phi-1)
+    disk_vy:      3D array of filtered y velocities in cm/s with shape (n_theta-1, n_r-1, n_phi-1)
+    disk_vz:      3D array of filtered z velocities in cm/s with shape (n_theta-1, n_r-1, n_phi-1)
+    disk_Lx:      3D array of filtered x angular momenta in CGS with shape (n_theta-1, n_r-1, n_phi-1)
+    disk_Ly:      3D array of filtered y angular momenta in CGS with shape (n_theta-1, n_r-1, n_phi-1)
+    disk_Lz:      3D array of filtered z angular momenta in CGS with shape (n_theta-1, n_r-1, n_phi-1)
+    ids:          3D array of indices corresponding to disk_dens
     """
 
+    # First isolating the box around the disk of interest to avoid capturing points outside disk that meet density threshold
+    box_mask = (
+        (X >= cenX - buffer) & (X <= cenX + buffer) &
+        (Y >= cenY - buffer) & (Y <= cenY + buffer) &
+        (Z >= cenZ - buffer) & (Z <= cenZ + buffer)
+    )
+    box_dens = np.where(box_mask, dens, np.nan)
+    box_vx = np.where(box_mask, vx, np.nan)
+    box_vy = np.where(box_mask, vy, np.nan)
+    box_vz = np.where(box_mask, vz, np.nan)
+    box_Lx = np.where(box_mask, Lx, np.nan)
+    box_Ly = np.where(box_mask, Ly, np.nan)
+    box_Lz = np.where(box_mask, Lz, np.nan)
+
     # Filtering densities greater than a given threshold; values below the threshold are designated nan
-    mask = dens > 10**threshold
-    warp_dens = np.where(mask, dens, np.nan)
-    warp_vx = np.where(mask, vx, np.nan)
-    warp_vy = np.where(mask, vy, np.nan)
-    warp_vz = np.where(mask, vz, np.nan)
-    warp_Lx = np.where(mask, Lx, np.nan)
-    warp_Ly = np.where(mask, Ly, np.nan)
-    warp_Lz = np.where(mask, Lz, np.nan)
+    dens_mask = dens > 10**threshold
+    disk_dens = np.where(dens_mask, box_dens, np.nan)
+    disk_vx = np.where(dens_mask, box_vx, np.nan)
+    disk_vy = np.where(dens_mask, box_vy, np.nan)
+    disk_vz = np.where(dens_mask, box_vz, np.nan)
+    disk_Lx = np.where(dens_mask, box_Lx, np.nan)
+    disk_Ly = np.where(dens_mask, box_Ly, np.nan)
+    disk_Lz = np.where(dens_mask, box_Lz, np.nan)
 
     # Also finding the corresponding x, y, z indices of the filtered densities
-    ids = ~np.isnan(warp_dens)
+    ids = ~np.isnan(disk_dens)
 
-    return warp_dens, warp_vx, warp_vy, warp_vz, warp_Lx, warp_Ly, warp_Lz, ids
+    return disk_dens, disk_vx, disk_vy, disk_vz, disk_Lx, disk_Ly, disk_Lz, ids
 
 
-def isolate_secondary_box(X, Y, Z, secX, secY, secZ, buffer, dens):
+def isolate_secondary_box(X, Y, Z, cenX, cenY, cenZ, buffer, dens):
     """
     Isolates the secondary simply by zooming into the simulation box around (secX, secY, secZ) obtained by visualization
 
@@ -380,9 +415,9 @@ def isolate_secondary_box(X, Y, Z, secX, secY, secZ, buffer, dens):
 
     # Logical mask to select points within the box
     mask = (
-        (X >= secX - buffer) & (X <= secX + buffer) &
-        (Y >= secY - buffer) & (Y <= secY + buffer) &
-        (Z >= secZ - buffer) & (Z <= secZ + buffer)
+        (X >= cenX - buffer) & (X <= cenX + buffer) &
+        (Y >= cenY - buffer) & (Y <= cenY + buffer) &
+        (Z >= cenZ - buffer) & (Z <= cenZ + buffer)
     )
 
     # Extract the density values within the box
@@ -498,8 +533,8 @@ def calc_total_L(Lx_avg, Ly_avg, Lz_avg):
 
 def main():
 
-    folder = Path("../iras04125_lowres_it450_cmass10/")         # Folder with the output files
-    fig_imgs = Path("iras04125_lowres_it450_cmass10/imgs/")      # Folder to save images
+    folder = Path("../iras04125_lowres_it450_b025/")         # Folder with the output files
+    fig_imgs = Path("iras04125_lowres_it450_b025/imgs/")      # Folder to save images
     it = 450                                                     # FARGO snapshot
     sim_name = str(folder).split('/')[1]                         # Simulation name (for plot labels)
 
@@ -551,7 +586,8 @@ def main():
     # Note 1: I am using centered densities to isolate the warp to match the indices corresponding to the warp with the angular momenta indices
     # Note 2: The warp_ids itself is a 3D Boolean array, but when applied to another array such as x[warp_ids], the latter array becomes 1D
     warp_thresh = -15   # log of density threshold for which we can see the warp in the primary
-    rho_c_warp, vx_c_warp, vy_c_warp, vz_c_warp, Lx_c_warp, Ly_c_warp, Lz_c_warp, warp_ids = isolate_warp(rho_c, vx_c, vy_c, vz_c, Lx, Ly, Lz, warp_thresh) 
+    warp_buffer = 150   # Isolates a box of 2 * warp_buffer around the star (AU)
+    rho_c_warp, vx_c_warp, vy_c_warp, vz_c_warp, Lx_c_warp, Ly_c_warp, Lz_c_warp, warp_ids = isolate_disk(X_c, Y_c, Z_c, Px * au, Py * au, Pz * au, warp_buffer * au, rho_c, vx_c, vy_c, vz_c, Lx, Ly, Lz, warp_thresh) 
 
     # Find the radial extent of the warp
     r_warp_extent = np.sqrt(X_c[warp_ids]**2 +  Y_c[warp_ids]**2 + Z_c[warp_ids]**2) / au
@@ -581,8 +617,8 @@ def main():
     plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, title=f"Warp twist {sim_name} t={int(calc_simtime(it))} kyr", savefig=True, figfolder=f'{fig_imgs}/warp_twist_arrows_it{it}.png', showfig=True)
 
     # Calculating and plotting the total angular momentum of the warped disk
-    Lx_disk, Ly_disk, Lz_disk = calc_total_L(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg)
-    quiver_plot_3d(np.array([Px]), np.array([Py]), np.array([Pz]), np.array([Lx_disk]), np.array([Ly_disk]), np.array([Lz_disk]), stagger=1, length=0.05, title=f"{sim_name} Total disk angular momentum", colorbarlabel="logL", savefig=False, figfolder=f'{fig_imgs}/{sim_name}_totalL.png', logmag=True)
+    # Lx_disk, Ly_disk, Lz_disk = calc_total_L(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg)
+    # quiver_plot_3d(np.array([Px]), np.array([Py]), np.array([Pz]), np.array([Lx_disk]), np.array([Ly_disk]), np.array([Lz_disk]), stagger=1, length=0.05, title=f"{sim_name} Total disk angular momentum", colorbarlabel="logL", savefig=False, figfolder=f'{fig_imgs}/{sim_name}_totalL.png', logmag=True)
 
     # Plotting warp surface density
     # plot_surf_dens(X_c, Y_c, Z_c, surf_dens, warp_ids, domains["r"], savefig=False, figfolder=f'../warp_L_thresh{warp_thresh}_it{it}.png', showfig=False)
@@ -598,61 +634,19 @@ def main():
     # print("Max Warp eccentricity: ", np.max(e[warp_ids]))
     # print("Mean warp eccentricity: ", np.mean(e[warp_ids]))
 
-    no_secondary_all_my_homies_hate_secondary
 
-    ######## Isolating the secondary disk box: (X=-150AU,Y=300,Z=600) (R=?,theta=30°,phi=115°) ##########
+    ####################################### Isolating the secondary disk ###########################################
 
-    # Roughly the Cartesian central coordinate of the secondary disk obtained through visualization
-    secx = -150       # AU
-    secy = 200        # AU
-    secz = 700        # AU
-    buffer = 400      # AU
 
-    # Isolating the secondary box and its corresponding density
-    X_secbox, Y_secbox, Z_secbox, rho_c_secbox, secbox_ids = isolate_secondary_box(X_c, Y_c, Z_c, secx * au, secy * au, secz * au, buffer * au, rho_c)
-
-    # Plotting the secondary densities box 
-    contours_3D(X_secbox/au, Y_secbox/au, Z_secbox/au, rho_c_secbox, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\rho$ Secondary Disk Box', savefig=True, figfolder=f'../secondary_dens_box.png')
-
-    # Now applying the density threshold to the secondary box to get the secondary disk itself
-    sec_thresh = -15.5   # log of density threshold for which we can see the secondary
-    rho_c_sec, sec_ids = isolate_warp(rho_c_secbox, sec_thresh)
-
-    # Plotting the secondary densities
-    contours_3D(X_secbox/au, Y_secbox/au, Z_secbox/au, rho_c_sec, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\rho$ Secondary Disk', savefig=False, figfolder=f'../secondary_dens_thresh{sec_thresh}.png')
-
-    # Plotting the Cartesian secondary disk angular momenta
-    Lx_secbox, Ly_secbox, Lz_secbox = Lx[secbox_ids], Ly[secbox_ids], Lz[secbox_ids]
-    quiver_plot_3d(X_secbox[sec_ids]/au, Y_secbox[sec_ids]/au, Z_secbox[sec_ids]/au, Lx_secbox[sec_ids], Ly_secbox[sec_ids], Lz_secbox[sec_ids], stagger=1, length=10, title="Secondary disk angular momenta", colorbarlabel="logL", savefig=False, figfolder=f'../secondary_L_thresh{sec_thresh}.png', logmag=False)
-
-    # Plotting secondary disk Laplace-Runge-Lenz vector
-    # Ax_secbox, Ay_secbox, Az_secbox = Ax[secbox_ids], Ay[secbox_ids], Az[secbox_ids]
-    # quiver_plot_3d(X_secbox[sec_ids]/au, Y_secbox[sec_ids]/au, Z_secbox[sec_ids]/au, Ax_secbox[sec_ids], Ay_secbox[sec_ids], Az_secbox[sec_ids], stagger=1, length=10, title=rf'Secondary disk LRL', colorbarlabel=r'$\log(A [g^2cm^3/s^2])$', savefig=False, figfolder=f'../secondary_LRL_thresh{sec_thresh}.png', logmag=False)
-
-    # Plotting secondary disk eccentricity
-    # ex_secbox, ey_secbox, ez_secbox = ex[secbox_ids], ey[secbox_ids], ez[secbox_ids]
-    # quiver_plot_3d(X_secbox[sec_ids]/au, Y_secbox[sec_ids]/au, Z_secbox[sec_ids]/au, ex_secbox[sec_ids], ey_secbox[sec_ids], ez_secbox[sec_ids], stagger=1, length=10, title=rf'Secondary disk Eccentricity', colorbarlabel=r'$\log(e)$', savefig=False, figfolder=f'../secondary_ecc_thresh{sec_thresh}.png', logmag=False)
-
-    # Characterizing secondary disk eccentricity 
-    # e_secbox = e[secbox_ids]
-    # print("Min Warp eccentricity: ", np.min(e_secbox[sec_ids]))
-    # print("Max Warp eccentricity: ", np.max(e_secbox[sec_ids]))
-    # print("Mean Warp eccentricity: ", np.mean(e_secbox[sec_ids]))
+    # Loading central coordinates of the secondary for all iterations in the simulation
+    df_planet = pd.read_table(folder / "planet0.dat", header = None) #, sep='\s')
+    comp_x = df_planet[1]
+    comp_y = df_planet[2]
+    comp_z = df_planet[3]
+    
 
 
     ####################################################################################################
-
-    # quiver_plot_3d(X[::7, :20:7, ::7]/au, Y[::7, :20:7, ::7]/au, ZCYL[::7, :20:7, ::7]/au, Lx[::7, :20:7, ::7], Ly[::7, :20:7, ::7], Lz[::7, :20:7, ::7])
-    # quiver_plot_3d(X[50, :170:5, ::5]/au, Y[50, :170:5, ::5]/au, ZCYL[50, :170:5, ::5]/au, Lx[50, :170:5, ::5], Ly[50, :170:5, ::5], Lz[50, :170:5, ::5])
-
-    # fig = plt.figure(figsize=(10, 7))
-    # contours_3D(X[::5, :20:5, ::5]/au, Y[::5, :20:5, ::5]/au, ZCYL[::5, :20:5, ::5]/au, np.log10(rho[::5, :20:5, ::5]), fig, xlabel='x', ylabel='y', zlabel='z', colorbarlabel='dens', title='dens')
-    # print(L[0, 0, 0, :].shape)
-    # print(L.shape)
-    # print(L[0, 0, 0, :])
-    # print(L[0,0,0,-1])
-    # print(L[:, :, :, 0], L[:, :, :, 0].shape)
-    # print(L[:, :, :, 0], L[:, :, :, 1].shape)
 
 
 if __name__ == "__main__":
