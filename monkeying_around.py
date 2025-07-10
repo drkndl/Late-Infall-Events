@@ -210,3 +210,31 @@ plt.show()
     # print("Min Warp eccentricity: ", np.min(e_secbox[sec_ids]))
     # print("Max Warp eccentricity: ", np.max(e_secbox[sec_ids]))
     # print("Mean Warp eccentricity: ", np.mean(e_secbox[sec_ids]))
+
+def isolate_secondary_box(X, Y, Z, cenX, cenY, cenZ, buffer, dens):
+    """
+    Isolates the secondary simply by zooming into the simulation box around (secX, secY, secZ) obtained by visualization
+
+    Inputs:
+    ------
+    X: 
+    Y: 
+    Z: 
+    """
+
+    # Logical mask to select points within the box
+    mask = (
+        (X >= cenX - buffer) & (X <= cenX + buffer) &
+        (Y >= cenY - buffer) & (Y <= cenY + buffer) &
+        (Z >= cenZ - buffer) & (Z <= cenZ + buffer)
+    )
+
+    # Extract the density values within the box
+    sec_dens = dens[mask]
+
+    # Extract corresponding coordinates
+    X_sec = X[mask]
+    Y_sec = Y[mask]
+    Z_sec = Z[mask]
+
+    return X_sec, Y_sec, Z_sec, sec_dens, mask

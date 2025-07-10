@@ -11,7 +11,6 @@ au = c.au.cgs.value
 G = 6.67e-8               # Gravitational constant in cgs units
 Msun = 1.989e33           # Mass of the Sun in g
 Mstar = 0.7 * Msun        # Mass of the primary star in IRAS 04125+2902 (Barber et al. 2024)
-Mcomp = 3.38e32           # Mass of the companion in g
 dt = 1.87e7               # Timestep length of simulations in sec
 ninterm = 200             # Total number of timesteps between outputs in FARGO simulations
 stoky = 3.156e7 * 1e3     # 1 kyr in sec
@@ -402,36 +401,6 @@ def isolate_disk(X, Y, Z, cenX, cenY, cenZ, buffer, dens, vx, vy, vz, Lx, Ly, Lz
     return disk_dens, disk_vx, disk_vy, disk_vz, disk_Lx, disk_Ly, disk_Lz, ids
 
 
-def isolate_secondary_box(X, Y, Z, cenX, cenY, cenZ, buffer, dens):
-    """
-    Isolates the secondary simply by zooming into the simulation box around (secX, secY, secZ) obtained by visualization
-
-    Inputs:
-    ------
-    X: 
-    Y: 
-    Z: 
-    """
-
-    # Logical mask to select points within the box
-    mask = (
-        (X >= cenX - buffer) & (X <= cenX + buffer) &
-        (Y >= cenY - buffer) & (Y <= cenY + buffer) &
-        (Z >= cenZ - buffer) & (Z <= cenZ + buffer)
-    )
-
-    # Extract the density values within the box
-    sec_dens = dens[mask]
-
-    # Extract corresponding coordinates
-    X_sec = X[mask]
-    Y_sec = Y[mask]
-    Z_sec = Z[mask]
-
-    return X_sec, Y_sec, Z_sec, sec_dens, mask
-
-
-
 def calc_L_average(Lx, Ly, Lz):
     """
     Calculates the angular momentum averaged across the theta and phi directions to find the radial Ls
@@ -455,6 +424,7 @@ def calc_L_average(Lx, Ly, Lz):
     Lz_avg = np.nansum(Lz, axis=(0,2))
 
     return Lx_avg, Ly_avg, Lz_avg
+
 
 
 def calc_inc_twist(Lx_avg, Ly_avg, Lz_avg, R, savefig, plot=True):
@@ -594,11 +564,12 @@ def main():
     mask = (domains["r"]/au >= r_warp_extent.min()) & (domains["r"]/au <= r_warp_extent.max())
     r_select = domains["r"][mask]
 
+
     #################################### Plotting warp properties #####################################
 
 
     # Plotting the warp densities 
-    contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_warp, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'{sim_name} $\log(\rho)$ above $\rho = 10^{{{warp_thresh}}} g/cm^3$, t = {int(it * dt * ninterm / stoky)} kyr', savefig=True, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=True)
+    contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_warp, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'{sim_name} $\log(\rho)$ above $\rho = 10^{{{warp_thresh}}} g/cm^3$, t = {int(it * dt * ninterm / stoky)} kyr', savefig=False, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=True)
 
     # Another way to plot the warp densities
     # contours_3D(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, rho_c[warp_ids], fig, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$')
@@ -614,10 +585,10 @@ def main():
     inc, twist = calc_inc_twist(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], savefig=False, plot=False)
 
     # Calculating and plotting the radial profile of warp precession as a quiver plot
-    plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, title=f"Warp twist {sim_name} t={int(calc_simtime(it))} kyr", savefig=True, figfolder=f'{fig_imgs}/warp_twist_arrows_it{it}.png', showfig=True)
+    plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, title=f"Warp twist {sim_name} t={int(calc_simtime(it))} kyr", savefig=False, figfolder=f'{fig_imgs}/warp_twist_arrows_it{it}.png', showfig=True)
 
     # Calculating and plotting the total angular momentum of the warped disk
-    # Lx_disk, Ly_disk, Lz_disk = calc_total_L(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg)
+    Lx_disk, Ly_disk, Lz_disk = calc_total_L(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg)
     # quiver_plot_3d(np.array([Px]), np.array([Py]), np.array([Pz]), np.array([Lx_disk]), np.array([Ly_disk]), np.array([Lz_disk]), stagger=1, length=0.05, title=f"{sim_name} Total disk angular momentum", colorbarlabel="logL", savefig=False, figfolder=f'{fig_imgs}/{sim_name}_totalL.png', logmag=True)
 
     # Plotting warp surface density
@@ -635,15 +606,71 @@ def main():
     # print("Mean warp eccentricity: ", np.mean(e[warp_ids]))
 
 
-    ####################################### Isolating the secondary disk ###########################################
+    ############################### Loading / calculating companion properties #####################################
 
 
-    # Loading central coordinates of the secondary for all iterations in the simulation
+    # Loading central coordinates of the companion for the given iteration it in the simulation
     df_planet = pd.read_table(folder / "planet0.dat", header = None) #, sep='\s')
-    comp_x = df_planet[1]
-    comp_y = df_planet[2]
-    comp_z = df_planet[3]
+    comp_cenx = df_planet[1].iloc[it]        # X-coordinate of companion
+    comp_ceny = df_planet[2].iloc[it]        # Y-coordinate of companion
+    comp_cenz = df_planet[3].iloc[it]        # Z-coordinate of companion
+    comp_cen_vx = df_planet[4].iloc[it]      # X velocity of companion
+    comp_cen_vy = df_planet[5].iloc[it]      # Y velocity of companion
+    comp_cen_vz = df_planet[6].iloc[it]      # Z velocity of companion
+    Mcomp = df_planet[7].iloc[it]            # Mass of the companion in g
     
+    # Transforming our (X, Y, Z) and our (vx, vy, vz) to have the companion at the centre of the grid
+    comp_X = X - comp_cenx
+    comp_Y = Y - comp_ceny
+    comp_Z = ZCYL - comp_cenz
+    comp_vx = vx - comp_cen_vx
+    comp_vy = vy - comp_cen_vy
+    comp_vz = vz - comp_cen_vz 
+
+    # Centering these new grids
+    comp_Xc = centering(comp_X)
+    comp_Yc = centering(comp_Y)
+    comp_Zc = centering(comp_Z)
+    comp_vx_c = centering(comp_vx)
+    comp_vy_c = centering(comp_vy)
+    comp_vz_c = centering(comp_vz)
+
+    # Angular momentum, eccentricity of the secondary disk is to be calculated with respect to the companion star
+    Lx_comp, Ly_comp, Lz_comp = calc_angular_momentum(mass, comp_X, comp_Y, comp_Z, comp_vx, comp_vy, comp_vz)
+    Ax_comp, Ay_comp, Az_comp = calc_LRL(mass, Mcomp, comp_vx_c, comp_vy_c, comp_vz_c, Lx_comp, Ly_comp, Lz_comp, comp_Xc, comp_Yc, comp_Zc)
+    ex_comp, ey_comp, ez_comp = calc_eccen(Ax_comp, Ay_comp, Az_comp, mass, Mcomp)
+    e_comp = np.sqrt(ex_comp**2 + ey_comp**2 + ez_comp**2)
+
+
+    ####################################### Isolating the companion disk ###########################################
+
+
+    comp_thresh = -17   # log of density threshold for which we can see the companion
+    comp_buffer = 100   # Isolates a box of 2 * comp_buffer around the star (AU)
+    rho_c_compmask, vx_c_compmask, vy_c_compmask, vz_c_compmask, Lx_c_compmask, Ly_c_compmask, Lz_c_compmask, comp_ids = isolate_disk(comp_Xc, comp_Yc, comp_Zc, 0, 0, 0, comp_buffer * au, rho_c, comp_vx_c, comp_vy_c, comp_vz_c, Lx_comp, Ly_comp, Lz_comp, comp_thresh)  
+
+    # Find the radial extent of the companion
+    r_comp_extent = np.sqrt(X_c[comp_ids]**2 +  Y_c[comp_ids]**2 + Z_c[comp_ids]**2) / au
+    comp_mask = (domains["r"]/au >= r_comp_extent.min()) & (domains["r"]/au <= r_comp_extent.max())
+    r_comp_select = domains["r"][comp_mask]
+
+
+    ####################################### Plotting the companion properties #####################################
+
+
+    # Plotting the companion densities (with the grid centre being the primary star!)
+    contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_compmask, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'{sim_name} Secondary $\rho$ above $\rho = 10^{{{comp_thresh}}} g/cm^3$, t = {int(it * dt * ninterm / stoky)} kyr', savefig=False, figfolder=f'{fig_imgs}/comp_dens_thresh{comp_thresh}_it{it}.png', showfig=True)
+
+    # Plotting the companion densities (with the grid centre being the companion star!)
+    # contours_3D(comp_Xc/au, comp_Yc/au, comp_Zc/au, rho_c_compmask, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'{sim_name} Secondary $\rho$ above $\rho = 10^{{{comp_thresh}}} g/cm^3$, t = {int(it * dt * ninterm / stoky)} kyr', savefig=False, figfolder=f'{fig_imgs}/comp_dens_thresh{comp_thresh}_it{it}.png', showfig=True)
+
+    # Plotting the Cartesian companion angular momenta (with the grid centre being the primary star!)
+    quiver_plot_3d(X_c[comp_ids]/au, Y_c[comp_ids]/au, Z_c[comp_ids]/au, Lx_comp[comp_ids], Ly_comp[comp_ids], Lz_comp[comp_ids], stagger=1, length=20, title=f"{sim_name}: Companion angular momenta, t = {int(it * dt * ninterm / stoky)} kyr", colorbarlabel="logL", savefig=False, figfolder=f'{fig_imgs}/comp_L_thresh{comp_thresh}_it{it}.png', logmag=True)
+
+    # Calculating and plotting the total angular momentum of the warped disk
+    Lx_comp_avg, Ly_comp_avg, Lz_comp_avg = calc_L_average(Lx_c_compmask, Ly_c_compmask, Lz_c_compmask)
+    Lx_comp_disk, Ly_comp_disk, Lz_comp_disk = calc_total_L(Lx_comp_avg, Ly_comp_avg, Lz_comp_avg)
+    quiver_plot_3d(np.array([Px / au, comp_cenx / au]), np.array([Py / au, comp_ceny / au]), np.array([Pz / au, comp_cenz / au]), np.array([Lx_disk, Lx_comp_disk]), np.array([Ly_disk, Ly_comp_disk]), np.array([Lz_disk, Lz_comp_disk]), stagger=1, length=50, title=f"{sim_name} Total Primary & Sec angular momenta", colorbarlabel="logL", savefig=False, figfolder=f'{fig_imgs}/{sim_name}_totalL.png', logmag=True)
 
 
     ####################################################################################################
