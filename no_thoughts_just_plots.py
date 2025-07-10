@@ -4,6 +4,8 @@ from viewarr import *
 from matplotlib import cm
 from matplotlib import colors
 from mpl_toolkits.mplot3d import axes3d
+from matplotlib.cm import ScalarMappable
+from matplotlib.colors import Normalize
 #from matplotlib.ticker import LinearLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.interpolate import RegularGridInterpolator
@@ -411,6 +413,61 @@ def plot_twist_arrows(Lx_avg, Ly_avg, Lz_avg, R, Rwarp, title, savefig, showfig,
         plt.show()
     else:
         plt.close()
+
+
+def plot_total_disks_bonanza(X, Y, Z, p_dens, s_dens, LX, LY, LZ, Ldx, Ldy, Ldz, length, colorbarlabel, title, figfolder, azim=-62, elev=-41, savefig=False, showfig=True):
+    """
+    A plot of primary + secondary densities and their total disk angular momenta
+    """
+
+    ax = plt.figure(figsize=(8,6)).add_subplot(projection='3d')
+
+    # Colorbar formatting for the densities
+    all_values = np.concatenate([p_dens, s_dens])
+    vmin = all_values.min()
+    vmax = all_values.max()
+    norm = Normalize(vmin=all_values.min(), vmax=all_values.max())
+    cmap = plt.cm.plasma
+
+    # Plotting the densities
+    ax.scatter(X.flatten(), Y.flatten(), Z.flatten(), c=p_dens.flatten(), cmap=cmap, s=7, edgecolor='none', alpha=0.5)
+    ax.scatter(X.flatten(), Y.flatten(), Z.flatten(), c=s_dens.flatten(), cmap=cmap, s=7, edgecolor='none', alpha=0.5)
+
+    # Plotting the angular momenta
+    ax.quiver(LX, LY, LZ, Ldx, Ldy, Ldz, length=length, pivot='tail', alpha=0.8, color="black", arrow_length_ratio = 0.5, normalize=True)
+
+    # Create a ScalarMappable for colorbar
+    sm = ScalarMappable(cmap=cmap, norm=norm)
+    sm.set_clim(vmin, vmax)
+    sm.set_array([])  # Dummy array for colorbar
+
+    # Colorbar formatting
+    plt.colorbar(sm, pad=0.08, label=colorbarlabel) #, shrink=0.85), fraction=0.046)
+
+    # Plot formatting
+    ax.set_xlabel("X [AU]")
+    ax.set_ylabel("Y [AU]")
+    ax.set_zlabel("Z [AU]")
+    # ax.set_xlim()
+    # ax.set_ylim()
+    # ax.set_zlim()
+    ax.set_title(title, pad=30)
+
+    # Initial camera position of the 3D plot (default: elev=-41, azim=-62 for best view of warp)
+    ax.view_init(elev=elev, azim=azim)   
+    
+    plt.tight_layout()
+
+    # Save the figure?
+    if savefig == True:
+        plt.savefig(figfolder)
+
+    # Display the figure?
+    if showfig:
+        plt.show()
+    else:
+        plt.close()
+
 
 
 
