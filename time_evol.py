@@ -3,20 +3,21 @@
 import numpy as np
 from pathlib import Path
 from read import get_domain_spherical, get_data
-from analysis import sph_to_cart, vel_sph_to_cart, centering, calc_angular_momentum, calc_cell_volume, calc_eccen, calc_LRL, calc_mass, calc_surfdens, isolate_disk, calc_L_average, calc_simtime, calc_inc_twist
+from analysis import sph_to_cart, vel_sph_to_cart, centering, calc_angular_momentum, calc_cell_volume, calc_eccen, calc_LRL, calc_mass, calc_surfdens, isolate_disk, calc_L_average, calc_simtime, calc_inc_twist, calc_total_L
 import matplotlib.pyplot as plt
 from matplotlib import cm
 from mpl_toolkits.mplot3d import Axes3D
 from PIL import Image
+import pandas as pd
 import os
-from no_thoughts_just_plots import quiver_plot_3d, contours_3D, plot_surf_dens, plot_twist_arrows, make_evol_GIF
+from no_thoughts_just_plots import quiver_plot_3d, contours_3D, plot_surf_dens, plot_twist_arrows, make_evol_GIF, plot_total_disks_bonanza
 import astropy.constants as c
 au = c.au.cgs.value
 G = 6.67e-8               # Gravitational constant in cgs units
 Msun = 1.989e33           # Mass of the Sun in g
 Mstar = 0.7 * Msun        # Mass of the primary star in IRAS 04125+2902 (Barber et al. 2024)
 dt = 1.87e7               # Timestep length of simulations in sec
-ninterm = 200              # Total number of timesteps between outputs in FARGO simulations
+ninterm = 200             # Total number of timesteps between outputs in FARGO simulations
 stoky = 3.156e7 * 1e3     # 1 kyr in sec
 
 
@@ -27,7 +28,7 @@ def main():
     fig_imgs = Path("iras04125_lowres_it450_b025/imgs/")      # Folder to save images    
     iter_total = 450                                    # FARGO snapshot
 
-    first_it = 100
+    first_it = 150
     iter_check = np.arange(first_it, iter_total+1, 25)                       # Some iterations to plot
     sim_name = str(folder).split('/')[1]                                     # Simulation name (for plot labels)
     dt_years = calc_simtime(np.asarray(range(first_it, iter_total+1)))       # Convert iterations to kyrs
@@ -35,6 +36,7 @@ def main():
 
     inc_it = []                                               # List to save disk inclination at each iteration
     prec_it = []                                              # List to save disk precession at each iteration
+    L_angle_it = []                                           # List to save L angle between primary and companion at each iteration
     surf_dens_iter = []                                       # List to save surface density at each iter_check
     r_surf_dens_iter = []                                     # List to save surface density radii at each iter_check
     inc_itercheck = []                                        # List to save disk inclination at each iter_check
@@ -104,7 +106,7 @@ def main():
 
 
         # Plotting the warp densities 
-        contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_warp, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'{sim_name} $\log(\rho)$ above $\rho = 10^{{{warp_thresh}}} g/cm^3$, t = {int(it * dt * ninterm / stoky)} kyr', savefig=True, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=False)
+        # contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_warp, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'{sim_name} $\log(\rho)$ above $\rho = 10^{{{warp_thresh}}} g/cm^3$, t = {int(it * dt * ninterm / stoky)} kyr', savefig=True, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=False)
 
         # Plotting the Cartesian warp angular momenta
         # quiver_plot_3d(X_c/au, Y_c/au, Z_c/au, Lx_c_warp, Ly_c_warp, Lz_c_warp, stagger=2, length=5, title="Warp angular momenta", colorbarlabel="logL", savefig=False, figfolder=f'../warp_L_thresh{warp_thresh}_it{it}.png', logmag=True, ignorecol=True, showfig=False)
@@ -115,8 +117,12 @@ def main():
         inc_it.append(inc)
         prec_it.append(twist)
 
+        # Calculating and plotting the total angular momentum of the warped disk
+        Lx_disk, Ly_disk, Lz_disk = calc_total_L(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg)
+        L_prim_mag = np.sqrt(Lx_disk**2 + Ly_disk**2 + Lz_disk**2)
+
         # Calculating and plotting the radial profile of warp precession as a quiver plot
-        plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, title=f"Warp twist {sim_name} t={int(calc_simtime(it))} kyr", savefig=True, figfolder=f'{fig_imgs}/warp_twist_arrows_it{it}.png', showfig=False)
+        # plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, title=f"Warp twist {sim_name} t={int(calc_simtime(it))} kyr", savefig=True, figfolder=f'{fig_imgs}/warp_twist_arrows_it{it}.png', showfig=False)
 
         # Calculating warp surface density
         if it in iter_check:
@@ -126,85 +132,173 @@ def main():
             inc_itercheck.append(inc)
             prec_itercheck.append(twist)
 
+        
+        ############################### Loading / calculating companion properties #####################################
+
+
+        # Loading central coordinates of the companion for the given iteration it in the simulation
+        df_planet = pd.read_table(folder / "planet0.dat", header = None) #, sep='\s')
+        comp_cenx = df_planet[1].iloc[it]        # X-coordinate of companion
+        comp_ceny = df_planet[2].iloc[it]        # Y-coordinate of companion
+        comp_cenz = df_planet[3].iloc[it]        # Z-coordinate of companion
+        comp_cen_vx = df_planet[4].iloc[it]      # X velocity of companion
+        comp_cen_vy = df_planet[5].iloc[it]      # Y velocity of companion
+        comp_cen_vz = df_planet[6].iloc[it]      # Z velocity of companion
+        Mcomp = df_planet[7].iloc[it]            # Mass of the companion in g
+        
+        # Transforming our (X, Y, Z) and our (vx, vy, vz) to have the companion at the centre of the grid
+        comp_X = X - comp_cenx
+        comp_Y = Y - comp_ceny
+        comp_Z = ZCYL - comp_cenz
+        comp_vx = vx - comp_cen_vx
+        comp_vy = vy - comp_cen_vy
+        comp_vz = vz - comp_cen_vz 
+
+        # Centering these new grids
+        comp_Xc = centering(comp_X)
+        comp_Yc = centering(comp_Y)
+        comp_Zc = centering(comp_Z)
+        comp_vx_c = centering(comp_vx)
+        comp_vy_c = centering(comp_vy)
+        comp_vz_c = centering(comp_vz)
+
+        # Angular momentum, eccentricity of the secondary disk is to be calculated with respect to the companion star
+        Lx_comp, Ly_comp, Lz_comp = calc_angular_momentum(mass, comp_X, comp_Y, comp_Z, comp_vx, comp_vy, comp_vz)
+        Ax_comp, Ay_comp, Az_comp = calc_LRL(mass, Mcomp, comp_vx_c, comp_vy_c, comp_vz_c, Lx_comp, Ly_comp, Lz_comp, comp_Xc, comp_Yc, comp_Zc)
+        ex_comp, ey_comp, ez_comp = calc_eccen(Ax_comp, Ay_comp, Az_comp, mass, Mcomp)
+        e_comp = np.sqrt(ex_comp**2 + ey_comp**2 + ez_comp**2)
+
+
+        ####################################### Isolating the companion disk ###########################################
+
+
+        comp_thresh = -17.5   # log of density threshold for which we can see the companion
+        comp_buffer = 70    # Isolates a box of 2 * comp_buffer around the star (AU)
+        rho_c_compmask, vx_c_compmask, vy_c_compmask, vz_c_compmask, Lx_c_compmask, Ly_c_compmask, Lz_c_compmask, comp_ids = isolate_disk(comp_Xc, comp_Yc, comp_Zc, 0, 0, 0, comp_buffer * au, rho_c, comp_vx_c, comp_vy_c, comp_vz_c, Lx_comp, Ly_comp, Lz_comp, comp_thresh)  
+
+        # Find the radial extent of the companion
+        r_comp_extent = np.sqrt(X_c[comp_ids]**2 +  Y_c[comp_ids]**2 + Z_c[comp_ids]**2) / au
+        comp_mask = (domains["r"]/au >= r_comp_extent.min()) & (domains["r"]/au <= r_comp_extent.max())
+        r_comp_select = domains["r"][comp_mask]
+
+
+        ####################################### Plotting the companion properties #####################################
+
+
+        # Plotting the companion densities (with the grid centre being the primary star!)
+        # contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_compmask, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'{sim_name} Secondary $\rho$ above $\rho = 10^{{{comp_thresh}}} g/cm^3$, t = {int(it * dt * ninterm / stoky)} kyr', savefig=True, figfolder=f'{fig_imgs}/comp_dens_thresh{comp_thresh}_it{it}.png', showfig=True)
+
+        # Plotting the companion densities (with the grid centre being the companion star!)
+        # contours_3D(comp_Xc/au, comp_Yc/au, comp_Zc/au, rho_c_compmask, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'{sim_name} Secondary $\rho$ above $\rho = 10^{{{comp_thresh}}} g/cm^3$, t = {int(it * dt * ninterm / stoky)} kyr', savefig=False, figfolder=f'{fig_imgs}/comp_dens_thresh{comp_thresh}_it{it}.png', showfig=True)
+
+        # Plotting the Cartesian companion angular momenta (with the grid centre being the primary star!)
+        # quiver_plot_3d(X_c[comp_ids]/au, Y_c[comp_ids]/au, Z_c[comp_ids]/au, Lx_comp[comp_ids], Ly_comp[comp_ids], Lz_comp[comp_ids], stagger=1, length=20, title=f"{sim_name}: Companion angular momenta, t = {int(it * dt * ninterm / stoky)} kyr", colorbarlabel="logL", savefig=False, figfolder=f'{fig_imgs}/comp_L_thresh{comp_thresh}_it{it}.png', logmag=True)
+
+        # Visualizing both primary and secondary disks and their total angular momenta
+        Lx_comp_avg, Ly_comp_avg, Lz_comp_avg = calc_L_average(Lx_c_compmask, Ly_c_compmask, Lz_c_compmask)
+        Lx_comp_disk, Ly_comp_disk, Lz_comp_disk = calc_total_L(Lx_comp_avg, Ly_comp_avg, Lz_comp_avg)
+        L_comp_mag = np.sqrt(Lx_comp_disk**2 + Ly_comp_disk**2 + Lz_comp_disk**2)
+
+        plot_total_disks_bonanza(X_c/au, Y_c/au, Z_c/au, rho_c_warp, rho_c_compmask, np.array([Px / au, comp_cenx / au]), np.array([Py / au, comp_ceny / au]), np.array([Pz / au, comp_cenz / au]), np.array([Lx_disk, Lx_comp_disk]), np.array([Ly_disk, Ly_comp_disk]), np.array([Lz_disk, Lz_comp_disk]), length=80, colorbarlabel=r'$\rho_{norm}$', title=rf'{sim_name} Primary + Secondary $\rho$ and L, t = {int(it * dt * ninterm / stoky)} kyr', savefig=True, figfolder=f'{fig_imgs}/total_bonanza_it{it}.png', showfig=False)
+
+        # Calculating the angle between the primary and companion disks' angular momenta
+        L_angle = np.arccos((Lx_disk * Lx_comp_disk + Ly_disk * Ly_comp_disk + Lz_disk * Lz_comp_disk) / (np.abs(L_prim_mag) * np.abs(L_prim_mag)))
+        L_angle_it.append(np.degrees(L_angle))
+
     
-    # Plot time evolution of warp inclination in 2D for some specific iters in iter_check
-    cols = cm.get_cmap('viridis', len(iter_check))
-    for i in range(len(iter_check)):
-        plt.plot(rc/au, inc_itercheck[i], color=cols(i), label=f"{int(dtkyrs_check[i])} kyr")
-    plt.xlabel("R [AU]")
-    plt.ylabel("Warp inclination [°]")
-    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-    plt.title(f"{sim_name}: Time evolution of warp inclination")
-    plt.tight_layout()
-    plt.savefig(f'{fig_imgs}/warp_inc_evol.png')
-    plt.show()
+    # # Plot time evolution of warp inclination in 2D for some specific iters in iter_check
+    # cols = cm.get_cmap('viridis', len(iter_check))
+    # for i in range(len(iter_check)):
+    #     plt.plot(rc/au, inc_itercheck[i], color=cols(i), label=f"{int(dtkyrs_check[i])} kyr")
+    # plt.xlabel("R [AU]")
+    # plt.ylabel("Warp inclination [°]")
+    # plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    # plt.title(f"{sim_name}: Time evolution of warp inclination")
+    # plt.tight_layout()
+    # plt.savefig(f'{fig_imgs}/warp_inc_evol.png')
+    # plt.show()
 
 
     # # Plot time evolution of warp inclination in 3D for all iters 
-    fig = plt.figure(figsize=(10, 6))
-    ax = fig.add_subplot(111, projection='3d')
-    r_warp_extent = np.sqrt(X_c[warp_ids]**2 +  Y_c[warp_ids]**2 + Z_c[warp_ids]**2) / au
-    mask = (rc/au >= r_warp_extent.min()) & (rc/au <= r_warp_extent.max())
-    for i in range(len(dt_years[::4])):
-        r_select = rc[mask]
-        inc_it_select = inc_it[i][mask]
-        ax.plot(r_select/au, [dt_years[::4][i]] * len(r_select), inc_it_select, color=plt.cm.viridis(i/len(dt_years[::4])))
+    # fig = plt.figure(figsize=(10, 6))
+    # ax = fig.add_subplot(111, projection='3d')
+    # r_warp_extent = np.sqrt(X_c[warp_ids]**2 +  Y_c[warp_ids]**2 + Z_c[warp_ids]**2) / au
+    # mask = (rc/au >= r_warp_extent.min()) & (rc/au <= r_warp_extent.max())
+    # for i in range(len(dt_years[::4])):
+    #     r_select = rc[mask]
+    #     inc_it_select = inc_it[i][mask]
+    #     ax.plot(r_select/au, [dt_years[::4][i]] * len(r_select), inc_it_select, color=plt.cm.viridis(i/len(dt_years[::4])))
 
-    ax.view_init(elev=35, azim=-31)
-    ax.set_xlabel('R [AU]')
-    ax.set_ylabel('Time [kyr]')
-    ax.set_zlabel('Warp inclination [°]')
-    ax.set_title(f'{sim_name}: Time evolution of warp inclination')
-    # plt.colorbar(surf, label='Angle')
-    plt.tight_layout()
-    plt.savefig(f'{fig_imgs}/warp_inc_evol_3D.png')
-    plt.show()
+    # ax.view_init(elev=35, azim=-31)
+    # ax.set_xlabel('R [AU]')
+    # ax.set_ylabel('Time [kyr]')
+    # ax.set_zlabel('Warp inclination [°]')
+    # ax.set_title(f'{sim_name}: Time evolution of warp inclination')
+    # # plt.colorbar(surf, label='Angle')
+    # plt.tight_layout()
+    # plt.savefig(f'{fig_imgs}/warp_inc_evol_3D.png')
+    # plt.show()
+
 
     # # Plot time evolution of warp precession in 2D for some specific iters in iter_check
-    for i in range(len(iter_check)):
-        plt.plot(rc/au, prec_itercheck[i], color=cols(i), label=f"{int(dtkyrs_check[i])} kyr")
-    plt.xlabel("R [AU]")
-    plt.ylabel("Warp precession [°]")
-    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-    plt.title(f"{sim_name}: Time evolution of warp twist")
+    # for i in range(len(iter_check)):
+    #     plt.plot(rc/au, prec_itercheck[i], color=cols(i), label=f"{int(dtkyrs_check[i])} kyr")
+    # plt.xlabel("R [AU]")
+    # plt.ylabel("Warp precession [°]")
+    # plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    # plt.title(f"{sim_name}: Time evolution of warp twist")
+    # plt.tight_layout()
+    # plt.savefig(f'{fig_imgs}/warp_twist_evol.png')
+    # plt.show()
+
+
+    # # Plot time evolution of warp precession in 3D for all iters 
+    # fig = plt.figure(figsize=(10, 6))
+    # ax = fig.add_subplot(111, projection='3d')
+    # r_warp_extent = np.sqrt(X_c[warp_ids]**2 +  Y_c[warp_ids]**2 + Z_c[warp_ids]**2) / au
+    # mask = (rc/au >= r_warp_extent.min()) & (rc/au <= r_warp_extent.max())
+    # for i in range(len(dt_years[::4])):
+    #     r_select = rc[mask]
+    #     prec_it_select = prec_it[i][mask]
+    #     ax.plot(r_select/au, [dt_years[::4][i]] * len(r_select), prec_it_select, color=plt.cm.viridis(i/len(dt_years[::4])))
+
+    # ax.view_init(elev=35, azim=-31)
+    # ax.set_xlabel('R [AU]')
+    # ax.set_ylabel('Time [kyr]')
+    # ax.set_zlabel('Warp precession [°]')
+    # ax.set_title(f'{sim_name}: Time evolution of warp precession')
+    # # plt.colorbar(surf, label='Angle')
+    # plt.tight_layout()
+    # plt.savefig(f'{fig_imgs}/warp_twist_evol_3D.png')
+    # plt.show()
+
+
+    # # Plot time evolution of surface densities
+    # for i in range(len(surf_dens_iter)):
+    #     plt.plot(r_surf_dens_iter[i]/au, surf_dens_iter[i], color=cols(i), label=f"{int(dtkyrs_check[i])} kyr")
+    # plt.xlabel("R [AU]")
+    # plt.ylabel(r"$\Sigma [g/cm^2]$")
+    # plt.title(f"{sim_name}: Time evolution of warp surface density")
+    # plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    # plt.tight_layout()
+    # plt.savefig(f'{fig_imgs}/warp_surfdens_evol.png')
+    # plt.show()
+
+
+    # Plot time evolution of L angle between primary and companion disks
+    plt.plot(dt_years, L_angle_it, color="black")
+    plt.xlabel("Time [kyrs]")
+    plt.ylabel("Angle b/w Primary & Secondary [°]")
+    plt.title(f"{sim_name}: Time evolution of angle between disks")
     plt.tight_layout()
-    plt.savefig(f'{fig_imgs}/warp_twist_evol.png')
+    plt.savefig(f'{fig_imgs}/disk_angles_evol.png')
     plt.show()
 
-    # Plot time evolution of warp precession in 3D for all iters 
-    fig = plt.figure(figsize=(10, 6))
-    ax = fig.add_subplot(111, projection='3d')
-    r_warp_extent = np.sqrt(X_c[warp_ids]**2 +  Y_c[warp_ids]**2 + Z_c[warp_ids]**2) / au
-    mask = (rc/au >= r_warp_extent.min()) & (rc/au <= r_warp_extent.max())
-    for i in range(len(dt_years[::4])):
-        r_select = rc[mask]
-        prec_it_select = prec_it[i][mask]
-        ax.plot(r_select/au, [dt_years[::4][i]] * len(r_select), prec_it_select, color=plt.cm.viridis(i/len(dt_years[::4])))
-
-    ax.view_init(elev=35, azim=-31)
-    ax.set_xlabel('R [AU]')
-    ax.set_ylabel('Time [kyr]')
-    ax.set_zlabel('Warp precession [°]')
-    ax.set_title(f'{sim_name}: Time evolution of warp precession')
-    # plt.colorbar(surf, label='Angle')
-    plt.tight_layout()
-    plt.savefig(f'{fig_imgs}/warp_twist_evol_3D.png')
-    plt.show()
-
-    # Plot time evolution of surface densities
-    for i in range(len(surf_dens_iter)):
-        plt.plot(r_surf_dens_iter[i]/au, surf_dens_iter[i], color=cols(i), label=f"{int(dtkyrs_check[i])} kyr")
-    plt.xlabel("R [AU]")
-    plt.ylabel(r"$\Sigma [g/cm^2]$")
-    plt.title(f"{sim_name}: Time evolution of warp surface density")
-    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-    plt.tight_layout()
-    plt.savefig(f'{fig_imgs}/warp_surfdens_evol.png')
-    plt.show()
 
     # Make a time evolution GIF out of the 3D surface density and twist plots
-    make_evol_GIF(fig_imgs, "warp_dens_thresh", "warp_dens_movie")
-    make_evol_GIF(fig_imgs, "warp_twist_arrows", "warp_twist_movie")
+    # make_evol_GIF(fig_imgs, "warp_dens_thresh", "warp_dens_movie")
+    # make_evol_GIF(fig_imgs, "warp_twist_arrows", "warp_twist_movie")
+    make_evol_GIF(fig_imgs, "total_bonanza", "total_bonanza_movie")
 
 
 if __name__ == "__main__":

@@ -427,11 +427,11 @@ def plot_total_disks_bonanza(X, Y, Z, p_dens, s_dens, LX, LY, LZ, Ldx, Ldy, Ldz,
     vmin = all_values.min()
     vmax = all_values.max()
     norm = Normalize(vmin=all_values.min(), vmax=all_values.max())
-    cmap = plt.cm.plasma
+    cmap = plt.cm.coolwarm
 
     # Plotting the densities
-    ax.scatter(X.flatten(), Y.flatten(), Z.flatten(), c=p_dens.flatten(), cmap=cmap, s=7, edgecolor='none', alpha=0.5)
-    ax.scatter(X.flatten(), Y.flatten(), Z.flatten(), c=s_dens.flatten(), cmap=cmap, s=7, edgecolor='none', alpha=0.5)
+    ax.scatter(X.flatten(), Y.flatten(), Z.flatten(), c=p_dens.flatten(), cmap=cmap, s=7, edgecolor='none', alpha=0.3)
+    ax.scatter(X.flatten(), Y.flatten(), Z.flatten(), c=s_dens.flatten(), cmap=cmap, s=7, edgecolor='none', alpha=0.3)
 
     # Plotting the angular momenta
     ax.quiver(LX, LY, LZ, Ldx, Ldy, Ldz, length=length, pivot='tail', alpha=0.8, color="black", arrow_length_ratio = 0.5, normalize=True)
