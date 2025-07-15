@@ -448,9 +448,9 @@ def plot_total_disks_bonanza(X, Y, Z, p_dens, s_dens, LX, LY, LZ, Ldx, Ldy, Ldz,
     ax.set_xlabel("X [AU]")
     ax.set_ylabel("Y [AU]")
     ax.set_zlabel("Z [AU]")
-    # ax.set_xlim()
-    # ax.set_ylim()
-    # ax.set_zlim()
+    ax.set_xlim(-600, 600)
+    ax.set_ylim(-600, 600)
+    ax.set_zlim(-600, 600)
     ax.set_title(title, pad=30)
 
     # Initial camera position of the 3D plot (default: elev=-41, azim=-62 for best view of warp)
