@@ -504,7 +504,7 @@ def calc_total_L(Lx_avg, Ly_avg, Lz_avg):
 def main():
 
     folder = Path("../../Documents/iras04125_lowres_it450_nocomp/")         # Folder with the output files
-    fig_imgs = Path("iras04125_lowres_it450_nocomp2/imgs/")     # Folder to save images
+    fig_imgs = Path("iras04125_lowres_it450_nocomp/imgs/")     # Folder to save images
     it = 450                                                     # FARGO snapshot
     sim_name = str(folder).split('/')[1]                         # Simulation name (for plot labels)
 
@@ -555,7 +555,7 @@ def main():
 
     # Note 1: I am using centered densities to isolate the warp to match the indices corresponding to the warp with the angular momenta indices
     # Note 2: The warp_ids itself is a 3D Boolean array, but when applied to another array such as x[warp_ids], the latter array becomes 1D
-    warp_thresh = -14   # log of density threshold for which we can see the warp in the primary
+    warp_thresh = -14.5   # log of density threshold for which we can see the warp in the primary
     warp_buffer = 150   # Isolates a box of 2 * warp_buffer around the star (AU)
     rho_c_warp, vx_c_warp, vy_c_warp, vz_c_warp, Lx_c_warp, Ly_c_warp, Lz_c_warp, warp_ids = isolate_disk(X_c, Y_c, Z_c, Px * au, Py * au, Pz * au, warp_buffer * au, rho_c, vx_c, vy_c, vz_c, Lx, Ly, Lz, warp_thresh) 
 

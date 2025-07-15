@@ -139,7 +139,7 @@ def contours_3D(X, Y, Z, data, xlabel, ylabel, zlabel, colorbarlabel, title, sav
     ax.set_zlabel(zlabel)
     # ax.set_xlim()
     # ax.set_ylim()
-    # ax.set_zlim()
+    ax.set_zlim(-10, 10)
     ax.set_title(title, pad=30)
 
     # Initial camera position of the 3D plot (default: elev=-41, azim=-62 for best view of warp)
