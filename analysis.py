@@ -2,7 +2,7 @@
 
 import numpy as np
 from pathlib import Path
-from read import get_domain_spherical, get_data
+from read import get_domain_spherical, get_data, load_par_file
 import matplotlib.pyplot as plt
 from no_thoughts_just_plots import quiver_plot_3d, contours_3D, plot_surf_dens, plot_twist_arrows, plot_total_disks_bonanza
 import astropy.constants as c
@@ -503,10 +503,17 @@ def calc_total_L(Lx_avg, Ly_avg, Lz_avg):
 
 def main():
 
-    folder = Path("../../Documents/iras04125_lowres_it450_nocomp/")         # Folder with the output files
-    fig_imgs = Path("iras04125_lowres_it450_nocomp/imgs/")     # Folder to save images
-    it = 450                                                     # FARGO snapshot
-    sim_name = str(folder).split('/')[1]                         # Simulation name (for plot labels)
+    folder = Path("../iras04125_lowres_it450/")         # Folder with the output files
+    fig_imgs = Path("iras04125_lowres_it450/imgs/")     # Folder to save images
+    it = 450                                                       # FARGO snapshot of interest
+    sim_name = str(fig_imgs).split('/')[0]                         # Simulation name (for plot labels)
+    sim_params = load_par_file(f"{sim_name}/{sim_name}.par")       # Loading simulation parameters from the .par file
+    print(sim_params)
+    
+    # Save simulation parameters into dictionary for plotting purposes
+    plot_args = {"Time": f"{int(calc_simtime(it))} kyr", "b": sim_params['ImpactParameter'] }
+    print(plot_args)
+    
 
     ###################### Load data (theta = 100, r = 250, phi = 225) ################################
 
@@ -564,15 +571,18 @@ def main():
     mask = (domains["r"]/au >= r_warp_extent.min()) & (domains["r"]/au <= r_warp_extent.max())
     r_select = domains["r"][mask]
 
+    plot_args[r"$\mathrm{Box}_{\mathrm{prim}}$"] = f"{2 * warp_buffer} AU"
+    plot_args[r"$\rho_{\mathrm{prim}} \geq$"] = fr"$10^{{{warp_thresh}}} g/cm^3$"
+    
 
     #################################### Plotting warp properties #####################################
 
 
     # Plotting the warp densities 
-    contours_3D(X_c/au, Y_c/au, Z_c/au, np.log10(rho_c_warp), xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'{sim_name} $\log(\rho)$ above $\rho = 10^{{{warp_thresh}}} g/cm^3$, t = {int(it * dt * ninterm / stoky)} kyr', savefig=False, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=True)
-
+    contours_3D(X_c/au, Y_c/au, Z_c/au, np.log10(rho_c_warp), plot_args, colorbarlabel=r'$\log(\rho) [g/cm^3]$', title=r'Primary disk: $\log(\rho)$', savefig=False, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=True)
+    
     # Another way to plot the warp densities
-    # contours_3D(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, rho_c[warp_ids], fig, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$')
+    # contours_3D(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, rho_c[warp_ids], fig, colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$')
 
     # Plotting the Cartesian warp angular momenta
     # quiver_plot_3d(X_c/au, Y_c/au, Z_c/au, Lx_c_warp, Ly_c_warp, Lz_c_warp, stagger=5, length=2, title="Warp angular momenta 2", colorbarlabel="logL", savefig=False, figfolder=f'../warp_L_thresh{warp_thresh}_it{it}.png', logmag=True, ignorecol=True)
@@ -585,14 +595,14 @@ def main():
     inc, twist = calc_inc_twist(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], savefig=False, plot=False)
 
     # Calculating and plotting the radial profile of warp precession as a quiver plot
-    plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, title=f"Warp twist {sim_name} t={int(calc_simtime(it))} kyr", savefig=False, figfolder=f'{fig_imgs}/warp_twist_arrows_it{it}.png', showfig=True)
+    plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, plot_args, title="Primary disk: Twist", savefig=False, figfolder=f'{fig_imgs}/warp_twist_arrows_it{it}.png', showfig=True)
 
     # Calculating and plotting the total angular momentum of the warped disk
     Lx_disk, Ly_disk, Lz_disk = calc_total_L(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg)
     # quiver_plot_3d(np.array([Px]), np.array([Py]), np.array([Pz]), np.array([Lx_disk]), np.array([Ly_disk]), np.array([Lz_disk]), stagger=1, length=0.05, title=f"{sim_name} Total disk angular momentum", colorbarlabel="logL", savefig=False, figfolder=f'{fig_imgs}/{sim_name}_totalL.png', logmag=True)
 
     # Plotting warp surface density
-    # plot_surf_dens(X_c, Y_c, Z_c, surf_dens, warp_ids, domains["r"], savefig=False, figfolder=f'../warp_L_thresh{warp_thresh}_it{it}.png', showfig=False)
+    # plot_surf_dens(X_c, Y_c, Z_c, surf_dens, warp_ids, domains["r"], savefig=False, figfolder=f'../warp_L_thresh{warp_thresh}_it{it}.png', showfig=True)
 
     # Plotting warp Laplace-Runge-Lenz vector
     # quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Ax[warp_ids], Ay[warp_ids], Az[warp_ids], stagger=70, length=3, title=rf'Warp LRL', colorbarlabel=r'$\log(A [g^2cm^3/s^2])$', savefig=True, figfolder=f'../warp_{it}_LRL.png', logmag=True)
@@ -604,7 +614,7 @@ def main():
     # print("Min Warp eccentricity: ", np.min(e[warp_ids]))
     # print("Max Warp eccentricity: ", np.max(e[warp_ids]))
     # print("Mean warp eccentricity: ", np.mean(e[warp_ids]))
-    sknjwkfkf
+   
 
     ############################### Loading / calculating companion properties #####################################
 
@@ -654,15 +664,18 @@ def main():
     comp_mask = (domains["r"]/au >= r_comp_extent.min()) & (domains["r"]/au <= r_comp_extent.max())
     r_comp_select = domains["r"][comp_mask]
 
+    plot_args[r"$\mathrm{Box}_{\mathrm{sec}}$"] = f"{2 * comp_buffer} AU"
+    plot_args[r"$\rho_{\mathrm{sec}} \geq$"] = fr"$10^{{{comp_thresh}}} g/cm^3$"
+
 
     ####################################### Plotting the companion properties #####################################
 
 
     # Plotting the companion densities (with the grid centre being the primary star!)
-    # contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_compmask, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'{sim_name} Secondary $\rho$ above $\rho = 10^{{{comp_thresh}}} g/cm^3$, t = {int(it * dt * ninterm / stoky)} kyr', savefig=True, figfolder=f'{fig_imgs}/comp_dens_thresh{comp_thresh}_it{it}.png', showfig=True)
+    contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_compmask, plot_args, colorbarlabel=r'$\rho [g/cm^3]$', title=r'Secondary disk: $\rho$', savefig=False, figfolder=f'{fig_imgs}/comp_dens_thresh{comp_thresh}_it{it}.png', showfig=True)
 
     # Plotting the companion densities (with the grid centre being the companion star!)
-    # contours_3D(comp_Xc/au, comp_Yc/au, comp_Zc/au, rho_c_compmask, xlabel='X [AU]', ylabel='Y [AU]', zlabel='Z [AU]', colorbarlabel=r'$\rho [g/cm^3]$', title=rf'{sim_name} Secondary $\rho$ above $\rho = 10^{{{comp_thresh}}} g/cm^3$, t = {int(it * dt * ninterm / stoky)} kyr', savefig=False, figfolder=f'{fig_imgs}/comp_dens_thresh{comp_thresh}_it{it}.png', showfig=True)
+    # contours_3D(comp_Xc/au, comp_Yc/au, comp_Zc/au, rho_c_compmask, colorbarlabel=r'$\rho [g/cm^3]$', title=rf'{sim_name} Secondary $\rho$ above $\rho = 10^{{{comp_thresh}}} g/cm^3$, t = {int(it * dt * ninterm / stoky)} kyr', savefig=False, figfolder=f'{fig_imgs}/comp_dens_thresh{comp_thresh}_it{it}.png', showfig=True)
 
     # Plotting the Cartesian companion angular momenta (with the grid centre being the primary star!)
     # quiver_plot_3d(X_c[comp_ids]/au, Y_c[comp_ids]/au, Z_c[comp_ids]/au, Lx_comp[comp_ids], Ly_comp[comp_ids], Lz_comp[comp_ids], stagger=1, length=20, title=f"{sim_name}: Companion angular momenta, t = {int(it * dt * ninterm / stoky)} kyr", colorbarlabel="logL", savefig=False, figfolder=f'{fig_imgs}/comp_L_thresh{comp_thresh}_it{it}.png', logmag=True)
@@ -670,7 +683,8 @@ def main():
     # Visualizing both primary and secondary disks and their total angular momenta
     Lx_comp_avg, Ly_comp_avg, Lz_comp_avg = calc_L_average(Lx_c_compmask, Ly_c_compmask, Lz_c_compmask)
     Lx_comp_disk, Ly_comp_disk, Lz_comp_disk = calc_total_L(Lx_comp_avg, Ly_comp_avg, Lz_comp_avg)
-    plot_total_disks_bonanza(X_c/au, Y_c/au, Z_c/au, rho_c_warp, rho_c_compmask, np.array([Px / au, comp_cenx / au]), np.array([Py / au, comp_ceny / au]), np.array([Pz / au, comp_cenz / au]), np.array([Lx_disk, Lx_comp_disk]), np.array([Ly_disk, Ly_comp_disk]), np.array([Lz_disk, Lz_comp_disk]), length=100, colorbarlabel=r'$\rho_{norm}$', title=rf'{sim_name} Primary + Secondary $\rho$ and L, t = {int(it * dt * ninterm / stoky)} kyr', savefig=True, figfolder=f'{fig_imgs}/total_bonanza_it{it}.png', showfig=True)
+
+    plot_total_disks_bonanza(X_c/au, Y_c/au, Z_c/au, rho_c_warp, rho_c_compmask, np.array([Px / au, comp_cenx / au]), np.array([Py / au, comp_ceny / au]), np.array([Pz / au, comp_cenz / au]), np.array([Lx_disk, Lx_comp_disk]), np.array([Ly_disk, Ly_comp_disk]), np.array([Lz_disk, Lz_comp_disk]), plot_args, length=150, colorbarlabel=r'$\rho_{norm}$', title=r'Disks $\rho$ and L', savefig=False, figfolder=f'{fig_imgs}/total_bonanza_it{it}.png', showfig=True)
 
 
     ####################################################################################################

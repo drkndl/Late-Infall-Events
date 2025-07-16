@@ -48,3 +48,32 @@ def get_data(folder, quant, iter, domains):
     
     data = np.fromfile(folder / f"gas{quant}{iter}.dat").reshape(domains["theta"].size, domains["r"].size, domains["phi"].size)
     return data
+
+
+
+def load_par_file(filepath):
+    """
+    Load the parameters in the simulation par file
+    """
+    
+    params = {}
+    with open(filepath, 'r') as file:
+        for line in file:
+            line = line.strip()
+
+            if not line or line.startswith('#'):
+                continue  # Skip comments or empty lines
+
+            parts = line.split(maxsplit=2)
+            if len(parts) >= 2:
+                key = parts[0]
+                value_str = parts[1]
+                try:
+                    value = float(value_str)
+                    if value.is_integer():
+                        value = int(value)
+                except ValueError:
+                    value = value_str  # Keep as string if not numeric
+                params[key] = value
+
+    return params

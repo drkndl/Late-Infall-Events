@@ -101,7 +101,7 @@ def interactive_2D(data, indices, x, y, idxnames):
     plt.show()
 
 
-def contours_3D(X, Y, Z, data, xlabel, ylabel, zlabel, colorbarlabel, title, savefig, figfolder, showfig=True, azim=-62, elev=-41):
+def contours_3D(X, Y, Z, data, sim_params, colorbarlabel, title, savefig, figfolder, showfig=True, azim=-62, elev=-29):
     """
     Plot a 3D contour plot of a FARGO scalar field (dens/vx/energy etc) in Cartesian coords
     
@@ -111,7 +111,6 @@ def contours_3D(X, Y, Z, data, xlabel, ylabel, zlabel, colorbarlabel, title, sav
     Y:                       3D array of Cartesian Y meshgrid
     Z:                       3D array of Cartesian Z meshgrid
     data:                    3D array of quantity to be visualized
-    xlabel/ylabel/zlabel:    Axis labels (str)
     colorbarlabel:           Colour bar label (str)
     title:                   Image title (str)
     savefig:                 Boolean to save figure if True
@@ -133,13 +132,18 @@ def contours_3D(X, Y, Z, data, xlabel, ylabel, zlabel, colorbarlabel, title, sav
     # Colorbar formatting
     plt.colorbar(p, pad=0.08, label=colorbarlabel) #, shrink=0.85), fraction=0.046)
 
+    # Adding a textbox to show simulation parameters
+    param_text = '\n'.join(f'{key}: {value}' for key, value in sim_params.items())
+    props = dict(boxstyle='round', facecolor='white', pad=0.6, alpha=0.3)   
+    ax.text2D(0.9, 0.1, param_text, transform=ax.transAxes, fontsize=9, horizontalalignment='center', verticalalignment='center', bbox=props)
+
     # Plot formatting
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
-    ax.set_zlabel(zlabel)
+    ax.set_xlabel("X [AU]")
+    ax.set_ylabel("Y [AU]")
+    ax.set_zlabel("Z [AU]")
     # ax.set_xlim()
     # ax.set_ylim()
-    ax.set_zlim(-10, 10)
+    # ax.set_zlim(-10, 10)
     ax.set_title(title, pad=30)
 
     # Initial camera position of the 3D plot (default: elev=-41, azim=-62 for best view of warp)
@@ -276,7 +280,7 @@ def quiver_plot_3d(X, Y, Z, dx, dy, dz, stagger, length, title, colorbarlabel, s
     ignorecols:     Boolean to remove arrow colours if True
     """
 
-    ax = plt.figure(figsize=(8,6)).add_subplot(projection='3d')
+    ax = plt.figure(figsize=(6,6)).add_subplot(projection='3d')
 
     if logmag == True:
         # Map arrows to colormap according to the log of the magnitude of (dx, dy, dz)
@@ -356,7 +360,7 @@ def plot_surf_dens(X, Y, Z, surf_dens, warp_ids, r, savefig, figfolder, showfig)
 
 
 
-def plot_twist_arrows(Lx_avg, Ly_avg, Lz_avg, R, Rwarp, title, savefig, showfig, figfolder):   
+def plot_twist_arrows(Lx_avg, Ly_avg, Lz_avg, R, Rwarp, sim_params, title, savefig, showfig, figfolder):   
     """
     Function to plot the warped disk twist/precession through a 3D quiver plot as a function of radius
     """
@@ -368,7 +372,7 @@ def plot_twist_arrows(Lx_avg, Ly_avg, Lz_avg, R, Rwarp, title, savefig, showfig,
     Lavg_mag = np.sqrt(Lx_avg**2 + Ly_avg**2 + Lz_avg**2)
     Lxy_proj = np.sqrt(Lx_avg**2 + Ly_avg**2)
 
-    fig = plt.figure(figsize=(7,6))
+    fig = plt.figure(figsize=(6,5))
     ax = fig.add_subplot(111, projection='3d')
 
     # Defining arrow colours according to twist value
@@ -389,6 +393,11 @@ def plot_twist_arrows(Lx_avg, Ly_avg, Lz_avg, R, Rwarp, title, savefig, showfig,
     #     p = ax.scatter(X.flatten()/au, Y.flatten()/au, Z.flatten()/au, c=dens.flatten(), cmap='plasma', s=7, edgecolor='none', alpha=0.1)
     #     # Colorbar formatting
     #     plt.colorbar(p, pad=0.08, label=r'$\rho [g/cm^3]$') #, shrink=0.85), fraction=0.046)
+
+    # Adding a textbox to show simulation parameters
+    param_text = '\n'.join(f'{key}: {value}' for key, value in sim_params.items())
+    props = dict(boxstyle='round', facecolor='white', pad=0.6, alpha=0.3)   
+    ax.text2D(0.9, 0.9, param_text, transform=ax.transAxes, fontsize=9, horizontalalignment='center', verticalalignment='center', bbox=props)
 
     ax.set_xlabel('X [AU]')
     ax.set_ylabel('Y [AU]')
@@ -415,7 +424,7 @@ def plot_twist_arrows(Lx_avg, Ly_avg, Lz_avg, R, Rwarp, title, savefig, showfig,
         plt.close()
 
 
-def plot_total_disks_bonanza(X, Y, Z, p_dens, s_dens, LX, LY, LZ, Ldx, Ldy, Ldz, length, colorbarlabel, title, figfolder, azim=-62, elev=-41, savefig=False, showfig=True):
+def plot_total_disks_bonanza(X, Y, Z, p_dens, s_dens, LX, LY, LZ, Ldx, Ldy, Ldz, sim_params, length, colorbarlabel, title, figfolder, azim=-62, elev=-41, savefig=False, showfig=True):
     """
     A plot of primary + secondary densities and their total disk angular momenta
     """
@@ -427,7 +436,7 @@ def plot_total_disks_bonanza(X, Y, Z, p_dens, s_dens, LX, LY, LZ, Ldx, Ldy, Ldz,
     vmin = all_values.min()
     vmax = all_values.max()
     norm = Normalize(vmin=all_values.min(), vmax=all_values.max())
-    cmap = plt.cm.coolwarm
+    cmap = plt.cm.Spectral
 
     # Plotting the densities
     ax.scatter(X.flatten(), Y.flatten(), Z.flatten(), c=p_dens.flatten(), cmap=cmap, s=7, edgecolor='none', alpha=0.3)
@@ -444,13 +453,18 @@ def plot_total_disks_bonanza(X, Y, Z, p_dens, s_dens, LX, LY, LZ, Ldx, Ldy, Ldz,
     # Colorbar formatting
     plt.colorbar(sm, pad=0.08, label=colorbarlabel) #, shrink=0.85), fraction=0.046)
 
+    # Adding a textbox to show simulation parameters
+    param_text = '\n'.join(f'{key}: {value}' for key, value in sim_params.items())
+    props = dict(boxstyle='round', facecolor='white', pad=0.6, alpha=0.3)   
+    ax.text2D(0.02, 0.98, param_text, transform=ax.transAxes, fontsize=9, horizontalalignment='center', verticalalignment='center', bbox=props)
+
     # Plot formatting
     ax.set_xlabel("X [AU]")
     ax.set_ylabel("Y [AU]")
     ax.set_zlabel("Z [AU]")
-    ax.set_xlim(-600, 600)
-    ax.set_ylim(-600, 600)
-    ax.set_zlim(-600, 600)
+    ax.set_xlim(-500, 500)
+    ax.set_ylim(-500, 500)
+    ax.set_zlim(-500, 500)
     ax.set_title(title, pad=30)
 
     # Initial camera position of the 3D plot (default: elev=-41, azim=-62 for best view of warp)
