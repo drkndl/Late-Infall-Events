@@ -1,0 +1,67 @@
+Setup       nocloud_nocomp
+
+### Disk parameters
+
+Sigma0          310.547                 Surface Density at R0 (=5.2AU in CGS unit system)
+Alpha           1.0e-3                  Uniform kinematic viscosity
+SigmaSlope      1.5                     Slope of surface
+Rin             0.0                     Inner radius of exponential cutoff (0 disables inner cutoff)
+Rout            1.495979e+15            Outer radius of exponential cutoff
+RhoFloorGas     1.0e-24                 Floor density (gas)
+RhoFloorDust    1.0e-24                 Floor density (dust)
+AspectRatio     0.03799                 Aspect ratio at R0 (sets temperature at R0)
+FlaringIndex    0.25                    Flaring index (sets the slope of the temperature, 0.25 = passive irradiation)
+Tfloor          10                      Floor temperature
+TurbSeed        42                      Seed for turbulence rng
+NWaves          100000                  Number of waves for turbulence
+PSIndex         4.0                     Power law index of the turbulence power spectrum
+TurbFactor      1.0                     Turbulent velocities are multiplied by this factor
+
+### Cloudlet parameters
+
+ImpactParameter   0.7               Impact parameter in terms of the critical impact parameter
+VInf              5.0e+4            Velocity of the cloudlet at infinity
+DistIni           4.48793613e+16    Initial distance of cloudlet center from star
+CloudletRadius    2.24396806e+16    Radius of cloudlet
+CloudletMass      9.9455e+30        Mass of cloudlet
+RotAngleX         0.0               Rotation angle around x-axis
+RotAngleY         0.0               Rotation angle around y-axis
+RotAxFirst        0                 Determines around which axis the trajectory is rotated first: 0 is x-axis and 1 is y-axis
+Prograde          0                 Trajectory is prograde for 1 and retrograde for 0
+NHyperbolic       200               Number of points per cartesian dimension to consider for the hyporbolic trajectory
+RC0               1.0e+18           Assumed initial distance where cloudlet was still spherical
+
+### Planet parameters
+
+PlanetConfig        planets/zero.cfg
+ThicknessSmoothing  0.1                 Smoothing parameters in disk thickness
+
+### Numerical method parameters
+
+Disk          YES
+OmegaFrame    0.0
+Frame         F
+IndirectTerm  Yes
+
+### Mesh parameters
+
+Nx        80                          Azimuthal number of zones 
+Ny        75                          Radial number of zones
+Nz        105                         Number of zones in colatitude
+Ymin      1.496e+14                   Inner boundary radius
+Ymax      7.47989355e+16              Outer boundary radius
+Zmin      0.17453292519943            Theta lower limit (10 deg)
+Zmax      2.96705972839036            Theta upper limit (170 deg)
+Xmin      -3.141592653589793          Phi upper limit
+Xmax      3.141592653589793           Phi lower limit
+Spacing   Log
+
+### Output control parameters
+
+OutputDir     @outputs/cloudlet_test           Output directory
+Ntot          50600                            Total number of time steps
+Ninterm       200                              Time steps between outputs
+DT            1.87e7                           Time step length
+
+Field       gasdens
+PlotLine    field[-1,:,:]

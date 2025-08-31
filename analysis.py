@@ -505,7 +505,7 @@ def main():
 
     folder = Path("../iras04125_lowres_it450/")         # Folder with the output files
     fig_imgs = Path("iras04125_lowres_it450/imgs/")     # Folder to save images
-    it = 450                                                       # FARGO snapshot of interest
+    it = 20                                                       # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                         # Simulation name (for plot labels)
     sim_params = load_par_file(f"{sim_name}/{sim_name}.par")       # Loading simulation parameters from the .par file
     print(sim_params)
@@ -579,7 +579,7 @@ def main():
 
 
     # Plotting the warp densities 
-    contours_3D(X_c/au, Y_c/au, Z_c/au, np.log10(rho_c_warp), plot_args, colorbarlabel=r'$\log(\rho) [g/cm^3]$', title=r'Primary disk: $\log(\rho)$', savefig=False, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=True)
+    contours_3D(X_c/au, Y_c/au, Z_c/au, np.log10(rho_c_warp), r_select, plot_args, colorbarlabel=r'$\log(\rho) [g/cm^3]$', title=r'Primary disk: $\log(\rho)$', savefig=False, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=True)
     
     # Another way to plot the warp densities
     # contours_3D(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, rho_c[warp_ids], fig, colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$')
@@ -620,59 +620,59 @@ def main():
 
 
     # Loading central coordinates of the companion for the given iteration it in the simulation
-    df_planet = pd.read_table(folder / "planet0.dat", header = None) #, sep='\s')
-    comp_cenx = df_planet[1].iloc[it]        # X-coordinate of companion
-    comp_ceny = df_planet[2].iloc[it]        # Y-coordinate of companion
-    comp_cenz = df_planet[3].iloc[it]        # Z-coordinate of companion
-    comp_cen_vx = df_planet[4].iloc[it]      # X velocity of companion
-    comp_cen_vy = df_planet[5].iloc[it]      # Y velocity of companion
-    comp_cen_vz = df_planet[6].iloc[it]      # Z velocity of companion
-    Mcomp = df_planet[7].iloc[it]            # Mass of the companion in g
+    # df_planet = pd.read_table(folder / "planet0.dat", header = None) #, sep='\s')
+    # comp_cenx = df_planet[1].iloc[it]        # X-coordinate of companion
+    # comp_ceny = df_planet[2].iloc[it]        # Y-coordinate of companion
+    # comp_cenz = df_planet[3].iloc[it]        # Z-coordinate of companion
+    # comp_cen_vx = df_planet[4].iloc[it]      # X velocity of companion
+    # comp_cen_vy = df_planet[5].iloc[it]      # Y velocity of companion
+    # comp_cen_vz = df_planet[6].iloc[it]      # Z velocity of companion
+    # Mcomp = df_planet[7].iloc[it]            # Mass of the companion in g
     
-    # Transforming our (X, Y, Z) and our (vx, vy, vz) to have the companion at the centre of the grid
-    comp_X = X - comp_cenx
-    comp_Y = Y - comp_ceny
-    comp_Z = ZCYL - comp_cenz
-    comp_vx = vx - comp_cen_vx
-    comp_vy = vy - comp_cen_vy
-    comp_vz = vz - comp_cen_vz 
+    # # Transforming our (X, Y, Z) and our (vx, vy, vz) to have the companion at the centre of the grid
+    # comp_X = X - comp_cenx
+    # comp_Y = Y - comp_ceny
+    # comp_Z = ZCYL - comp_cenz
+    # comp_vx = vx - comp_cen_vx
+    # comp_vy = vy - comp_cen_vy
+    # comp_vz = vz - comp_cen_vz 
 
-    # Centering these new grids
-    comp_Xc = centering(comp_X)
-    comp_Yc = centering(comp_Y)
-    comp_Zc = centering(comp_Z)
-    comp_vx_c = centering(comp_vx)
-    comp_vy_c = centering(comp_vy)
-    comp_vz_c = centering(comp_vz)
+    # # Centering these new grids
+    # comp_Xc = centering(comp_X)
+    # comp_Yc = centering(comp_Y)
+    # comp_Zc = centering(comp_Z)
+    # comp_vx_c = centering(comp_vx)
+    # comp_vy_c = centering(comp_vy)
+    # comp_vz_c = centering(comp_vz)
 
-    # Angular momentum, eccentricity of the secondary disk is to be calculated with respect to the companion star
-    Lx_comp, Ly_comp, Lz_comp = calc_angular_momentum(mass, comp_X, comp_Y, comp_Z, comp_vx, comp_vy, comp_vz)
-    Ax_comp, Ay_comp, Az_comp = calc_LRL(mass, Mcomp, comp_vx_c, comp_vy_c, comp_vz_c, Lx_comp, Ly_comp, Lz_comp, comp_Xc, comp_Yc, comp_Zc)
-    ex_comp, ey_comp, ez_comp = calc_eccen(Ax_comp, Ay_comp, Az_comp, mass, Mcomp)
-    e_comp = np.sqrt(ex_comp**2 + ey_comp**2 + ez_comp**2)
+    # # Angular momentum, eccentricity of the secondary disk is to be calculated with respect to the companion star
+    # Lx_comp, Ly_comp, Lz_comp = calc_angular_momentum(mass, comp_X, comp_Y, comp_Z, comp_vx, comp_vy, comp_vz)
+    # Ax_comp, Ay_comp, Az_comp = calc_LRL(mass, Mcomp, comp_vx_c, comp_vy_c, comp_vz_c, Lx_comp, Ly_comp, Lz_comp, comp_Xc, comp_Yc, comp_Zc)
+    # ex_comp, ey_comp, ez_comp = calc_eccen(Ax_comp, Ay_comp, Az_comp, mass, Mcomp)
+    # e_comp = np.sqrt(ex_comp**2 + ey_comp**2 + ez_comp**2)
 
 
     ####################################### Isolating the companion disk ###########################################
 
 
-    comp_thresh = -17.5   # log of density threshold for which we can see the companion
-    comp_buffer = 70    # Isolates a box of 2 * comp_buffer around the star (AU)
-    rho_c_compmask, vx_c_compmask, vy_c_compmask, vz_c_compmask, Lx_c_compmask, Ly_c_compmask, Lz_c_compmask, comp_ids = isolate_disk(comp_Xc, comp_Yc, comp_Zc, 0, 0, 0, comp_buffer * au, rho_c, comp_vx_c, comp_vy_c, comp_vz_c, Lx_comp, Ly_comp, Lz_comp, comp_thresh)  
+    # comp_thresh = -17.5   # log of density threshold for which we can see the companion
+    # comp_buffer = 70    # Isolates a box of 2 * comp_buffer around the star (AU)
+    # rho_c_compmask, vx_c_compmask, vy_c_compmask, vz_c_compmask, Lx_c_compmask, Ly_c_compmask, Lz_c_compmask, comp_ids = isolate_disk(comp_Xc, comp_Yc, comp_Zc, 0, 0, 0, comp_buffer * au, rho_c, comp_vx_c, comp_vy_c, comp_vz_c, Lx_comp, Ly_comp, Lz_comp, comp_thresh)  
 
-    # Find the radial extent of the companion
-    r_comp_extent = np.sqrt(X_c[comp_ids]**2 +  Y_c[comp_ids]**2 + Z_c[comp_ids]**2) / au
-    comp_mask = (domains["r"]/au >= r_comp_extent.min()) & (domains["r"]/au <= r_comp_extent.max())
-    r_comp_select = domains["r"][comp_mask]
+    # # Find the radial extent of the companion
+    # r_comp_extent = np.sqrt(X_c[comp_ids]**2 +  Y_c[comp_ids]**2 + Z_c[comp_ids]**2) / au
+    # comp_mask = (domains["r"]/au >= r_comp_extent.min()) & (domains["r"]/au <= r_comp_extent.max())
+    # r_comp_select = domains["r"][comp_mask]
 
-    plot_args[r"$\mathrm{Box}_{\mathrm{sec}}$"] = f"{2 * comp_buffer} AU"
-    plot_args[r"$\rho_{\mathrm{sec}} \geq$"] = fr"$10^{{{comp_thresh}}} g/cm^3$"
+    # plot_args[r"$\mathrm{Box}_{\mathrm{sec}}$"] = f"{2 * comp_buffer} AU"
+    # plot_args[r"$\rho_{\mathrm{sec}} \geq$"] = fr"$10^{{{comp_thresh}}} g/cm^3$"
 
 
     ####################################### Plotting the companion properties #####################################
 
 
     # Plotting the companion densities (with the grid centre being the primary star!)
-    contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_compmask, plot_args, colorbarlabel=r'$\rho [g/cm^3]$', title=r'Secondary disk: $\rho$', savefig=False, figfolder=f'{fig_imgs}/comp_dens_thresh{comp_thresh}_it{it}.png', showfig=True)
+    # contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_compmask, plot_args, colorbarlabel=r'$\rho [g/cm^3]$', title=r'Secondary disk: $\rho$', savefig=False, figfolder=f'{fig_imgs}/comp_dens_thresh{comp_thresh}_it{it}.png', showfig=True)
 
     # Plotting the companion densities (with the grid centre being the companion star!)
     # contours_3D(comp_Xc/au, comp_Yc/au, comp_Zc/au, rho_c_compmask, colorbarlabel=r'$\rho [g/cm^3]$', title=rf'{sim_name} Secondary $\rho$ above $\rho = 10^{{{comp_thresh}}} g/cm^3$, t = {int(it * dt * ninterm / stoky)} kyr', savefig=False, figfolder=f'{fig_imgs}/comp_dens_thresh{comp_thresh}_it{it}.png', showfig=True)
@@ -681,10 +681,10 @@ def main():
     # quiver_plot_3d(X_c[comp_ids]/au, Y_c[comp_ids]/au, Z_c[comp_ids]/au, Lx_comp[comp_ids], Ly_comp[comp_ids], Lz_comp[comp_ids], stagger=1, length=20, title=f"{sim_name}: Companion angular momenta, t = {int(it * dt * ninterm / stoky)} kyr", colorbarlabel="logL", savefig=False, figfolder=f'{fig_imgs}/comp_L_thresh{comp_thresh}_it{it}.png', logmag=True)
 
     # Visualizing both primary and secondary disks and their total angular momenta
-    Lx_comp_avg, Ly_comp_avg, Lz_comp_avg = calc_L_average(Lx_c_compmask, Ly_c_compmask, Lz_c_compmask)
-    Lx_comp_disk, Ly_comp_disk, Lz_comp_disk = calc_total_L(Lx_comp_avg, Ly_comp_avg, Lz_comp_avg)
+    # Lx_comp_avg, Ly_comp_avg, Lz_comp_avg = calc_L_average(Lx_c_compmask, Ly_c_compmask, Lz_c_compmask)
+    # Lx_comp_disk, Ly_comp_disk, Lz_comp_disk = calc_total_L(Lx_comp_avg, Ly_comp_avg, Lz_comp_avg)
 
-    plot_total_disks_bonanza(X_c/au, Y_c/au, Z_c/au, rho_c_warp, rho_c_compmask, np.array([Px / au, comp_cenx / au]), np.array([Py / au, comp_ceny / au]), np.array([Pz / au, comp_cenz / au]), np.array([Lx_disk, Lx_comp_disk]), np.array([Ly_disk, Ly_comp_disk]), np.array([Lz_disk, Lz_comp_disk]), plot_args, length=150, colorbarlabel=r'$\rho_{norm}$', title=r'Disks $\rho$ and L', savefig=False, figfolder=f'{fig_imgs}/total_bonanza_it{it}.png', showfig=True)
+    # plot_total_disks_bonanza(X_c/au, Y_c/au, Z_c/au, rho_c_warp, rho_c_compmask, np.array([Px / au, comp_cenx / au]), np.array([Py / au, comp_ceny / au]), np.array([Pz / au, comp_cenz / au]), np.array([Lx_disk, Lx_comp_disk]), np.array([Ly_disk, Ly_comp_disk]), np.array([Lz_disk, Lz_comp_disk]), plot_args, length=150, colorbarlabel=r'$\rho_{norm}$', title=r'Disks $\rho$ and L', savefig=False, figfolder=f'{fig_imgs}/total_bonanza_it{it}.png', showfig=True)
 
 
     ####################################################################################################

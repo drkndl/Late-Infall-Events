@@ -101,7 +101,7 @@ def interactive_2D(data, indices, x, y, idxnames):
     plt.show()
 
 
-def contours_3D(X, Y, Z, data, sim_params, colorbarlabel, title, savefig, figfolder, showfig=True, azim=-62, elev=-29):
+def contours_3D(X, Y, Z, data, Rwarp, sim_params, colorbarlabel, title, savefig, figfolder, showfig=True, azim=-62, elev=-29):
     """
     Plot a 3D contour plot of a FARGO scalar field (dens/vx/energy etc) in Cartesian coords
     
@@ -111,6 +111,8 @@ def contours_3D(X, Y, Z, data, sim_params, colorbarlabel, title, savefig, figfol
     Y:                       3D array of Cartesian Y meshgrid
     Z:                       3D array of Cartesian Z meshgrid
     data:                    3D array of quantity to be visualized
+    Rwarp:                   Radial extent of the warped disk
+    sim_params:              Dictionary of simulation parameterss
     colorbarlabel:           Colour bar label (str)
     title:                   Image title (str)
     savefig:                 Boolean to save figure if True
@@ -141,9 +143,9 @@ def contours_3D(X, Y, Z, data, sim_params, colorbarlabel, title, savefig, figfol
     ax.set_xlabel("X [AU]")
     ax.set_ylabel("Y [AU]")
     ax.set_zlabel("Z [AU]")
-    # ax.set_xlim()
-    # ax.set_ylim()
-    # ax.set_zlim(-10, 10)
+    ax.set_xlim(-Rwarp[-1]/au - 5, Rwarp[-1]/au + 5)
+    ax.set_ylim(-Rwarp[-1]/au - 5, Rwarp[-1]/au + 5)
+    ax.set_zlim(-30, 30)
     ax.set_title(title, pad=30)
 
     # Initial camera position of the 3D plot (default: elev=-41, azim=-62 for best view of warp)

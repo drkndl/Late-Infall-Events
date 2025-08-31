@@ -8,8 +8,8 @@ import astropy.constants as c
 au = c.au.cgs.value
 
 
-folder = Path("../iras04125_lowres_it450_b10/")         # Folder with the output files
-it = 450                                                               # FARGO snapshot
+folder = Path("../iras04125_lowres_it450/")         # Folder with the output files
+it = 70                                                              # FARGO snapshot
 
 ############# theta = 100, r = 250, phi = 225 ###########
 domains = get_domain_spherical(folder)
@@ -33,15 +33,15 @@ vx, vy, vz = vel_sph_to_cart(vthe, vrad, vphi, THETA, PHI)
 
 # Plot r-theta slice (flipping theta to match physics convention of spherical coords)
 labels = [r'$\pi - \theta$ [deg]',r'$\log r$ [AU]',r'$\phi$ [deg]']
-interactive_2D(np.log10(rho[::-1,:,:]), (1,0), np.log10(domains['r'] / au), np.rad2deg(domains['theta']), labels)
+# interactive_2D(np.log10(rho[::-1,:,:]), (1,0), np.log10(domains['r'] / au), np.rad2deg(domains['theta']), labels)
 # interactive_2D(np.log10(vsph[::-1,:,:]), (1,0), np.log10(domains['r'] / au), np.rad2deg(domains['theta']), labels)
 
 # Plot r-phi slice (flipping theta to match physics convention of spherical coords)
-interactive_2D(np.log10(rho[::-1,:,:]), (1,2), np.log10(domains['r'] / au), np.rad2deg(domains['phi']), labels)
+# interactive_2D(np.log10(rho[::-1,:,:]), (1,2), np.log10(domains['r'] / au), np.rad2deg(domains['phi']), labels)
 # interactive_2D(np.log10(vsph[::-1,:,:]), (1,2), np.log10(domains['r'] / au), np.rad2deg(domains['phi']), labels)
 
 # Plot phi-theta slice (flipping theta to match physics convention of spherical coords)
-interactive_2D(np.log10(rho[::-1,:,:]), (2,0), np.rad2deg(domains['phi']), np.rad2deg(domains['theta']), labels)
+# interactive_2D(np.log10(rho[::-1,:,:]), (2,0), np.rad2deg(domains['phi']), np.rad2deg(domains['theta']), labels)
 # interactive_2D(np.log10(vsph[::-1,:,:]), (2,0), np.rad2deg(domains['phi']), np.rad2deg(domains['theta']), labels)
 # irad=-1
 # print(np.shape(rho[:, :, 1]), np.shape(R[:, :, 1]/au), np.shape(THETA[:, :, 1]))
@@ -77,22 +77,22 @@ interactive_2D(np.log10(rho[::-1,:,:]), (2,0), np.rad2deg(domains['phi']), np.ra
 
 
 # Plot 3D contours up to a certain radial extent as defined by irad
-irad = np.where(domains["r"]/au < 50)[0][-1]
+irad = np.where(domains["r"]/au < 500)[0][-1]
 # irad = -1
 # fig = plt.figure(figsize=(10, 7))
 # contours_3D(X /au, Y /au, ZCYL /au, np.log10(rho), fig, xlabel="X [AU]", ylabel="Y [AU]", zlabel="Z [AU]", colorbarlabel=r"$\log \rho (g/cm^3)$", title="Density contour")
-contours_3D(X[:, :irad, :]/au, Y[:, :irad, :]/au, ZCYL[:, :irad, :]/au, np.log10(rho[:, :irad, :]), xlabel="X [AU]", ylabel="Y [AU]", zlabel="Z [AU]", colorbarlabel=r"$\log \rho (g/cm^3)$", title="Density contour", savefig=False, figfolder="")
+# contours_3D(X[:, :irad, :]/au, Y[:, :irad, :]/au, ZCYL[:, :irad, :]/au, np.log10(rho[:, :irad, :]), xlabel="X [AU]", ylabel="Y [AU]", zlabel="Z [AU]", colorbarlabel=r"$\log \rho (g/cm^3)$", title="Density contour", savefig=False, figfolder="")
 
-itheta = 12
+itheta = 53
 itheta_deg = np.round(np.rad2deg(domains["theta"][itheta]), 2)
 # iphi = 0
-# irad = -1
-# irad = np.where(domains["r"]/au < 500)[0][-1]
+irad = -1
+irad = np.where(domains["r"]/au < 50)[0][-1]
 # print(irad)
 
 # cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'Density R-Z Plane $\phi = $ {np.round(domains["phi"][iphi], 2)}', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=False, figfolder=folder / f"dens_cyl_phi{iphi}_rad{irad}.png")
 
-# XY_2D_plot(rho, X, ZCYL, irad, itheta, title=rf'Density X-Z Plane $\theta = $ {itheta_deg}', colorbarlabel=r"$\log(\rho)$", savefig=False, figfolder=folder / f"dens_xz_theta{itheta}_rad{irad}.png")
+XY_2D_plot(rho, X, Y, irad, itheta, title=rf'Density X-Z Plane $\theta = $ {itheta_deg}', colorbarlabel=r"$\log(\rho)$", savefig=False, figfolder=folder / f"dens_xz_theta{itheta}_rad{irad}.png")
 
 # quiver_plots(X, Y, vx, vy, itheta, irad, title=rf'Velocity X-Y Plane $\theta = $ {itheta_deg}', savefig=True, figfolder=f"../vel_xy_theta{itheta}_rad{irad}.png")
 
