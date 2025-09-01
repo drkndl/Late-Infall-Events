@@ -93,45 +93,39 @@ rho_r = dens_profile(sigma_r, h0, R0, RCYL, f, ZCYL, plot=False)
 #################################### Adding up mass from the simulation ######################################
 
 
-sim_folder = Path("../nocloud_nocomp_it10/")         # Folder with the output files
-fig_imgs = Path("nocloud_nocomp_it10/imgs/")         # Folder to save images
-it = 10                                                       # FARGO snapshot of interest
-sim_name = str(fig_imgs).split('/')[0]                         # Simulation name (for plot labels)
+disk_folder = Path("../nocloud_nocomp_it10/")         # Folder with the output files
+disk_fig_imgs = Path("nocloud_nocomp_it10/imgs/")         # Folder to save images
+disk_it = 10                                                       # FARGO snapshot of interest
 
-domains = get_domain_spherical(sim_folder)
-rho = get_data(sim_folder, "dens", it, domains)         # Load 3D array of density values            
-vphi = get_data(sim_folder, "vx", it, domains)          # Load 3D array of azimuthal velocities v_phi
-vrad = get_data(sim_folder, "vy", it, domains)          # Load 3D array of radial velocities v_rad
-vthe = get_data(sim_folder, "vz", it, domains)          # Load 3D array of colatitude velocities v_theta
 
-vsph = np.sqrt(vphi**2 + vrad**2 + vthe**2)         # Total velocities in spherical coordinates
-
+domains = get_domain_spherical(disk_folder)
+disk_rho = get_data(disk_folder, "dens", disk_it, domains)         # Load 3D array of density values            
 # THETA, R, PHI = np.meshgrid(domains["theta"], domains["r"], domains["phi"], indexing="ij")
 # X, Y, ZCYL, RCYL = sph_to_cart(THETA, R, PHI)       # Meshgrid of Cartesian coordinates
 
 cell_volume = calc_cell_volume(domains["theta"], domains["r"], domains["phi"])
-mass = calc_mass(rho, cell_volume)
-surf_dens = calc_surfdens(rho, domains["theta"], domains["r"], domains["phi"])
+disk_mass = calc_mass(disk_rho, cell_volume)
+disk_surf_dens = calc_surfdens(disk_rho, domains["theta"], domains["r"], domains["phi"])
 
 
 ################################################ Comparison plots ##############################################
 
 
 # Surface density plots
-plt.plot(np.log10(domains["r"]/au), np.log10(surf_dens), label="Simulation")
+plt.plot(np.log10(domains["r"]/au), np.log10(disk_surf_dens), label="Simulation")
 plt.plot(np.log10(RCYL[62]/au), np.log10(sigma_r[62]), label="Analytical")
 # plt.plot(np.log10(r / au), sigma_r, label="Analytical 2")
 plt.xlabel(r"$\log(r)$")
 plt.ylabel(r"$\log(\Sigma(r))$")
 plt.title("Disk surface density profile")
 plt.legend()
-plt.savefig(f'{fig_imgs}/checkmass_surfdens_it{it}.png')
+plt.savefig(f'{disk_fig_imgs}/checkmass_surfdens_it{it}.png')
 plt.show()
 
 # Mass density plots
-print(rho.shape, RCYL.shape)
+print(disk_rho.shape, RCYL.shape)
 # wednwe
-plt.plot(np.log10(domains["r"]/au), np.log10(rho[62, :, 0]), label="Simulation")
+plt.plot(np.log10(domains["r"]/au), np.log10(disk_rho[62, :, 0]), label="Simulation")
 plt.plot(np.log10(RCYL[62]/au), np.log10(rho_r[62]), label="Analytical")
 # plt.plot(np.log10(r/au), np.log10(rho_r), label)
 # plt.plot(np.log10(r / au), rho_r)
@@ -139,6 +133,38 @@ plt.xlabel(r"$\log(r)$")
 plt.ylabel(r"$\log(\rho(r))$")
 plt.title("Disk mass density profile")
 plt.legend()
-plt.savefig(f'{fig_imgs}/checkmass_massdens_it{it}.png')
+plt.savefig(f'{disk_fig_imgs}/checkmass_massdens_it{it}.png')
 plt.show()
+
+
+################################## Now calculating cloudlet mass from the simulation ###################################
+
+
+# We are using the iras04125_lowres_it450_nocomp simulation for mass estimation
+# Assumption: All of the cloudlet mass is accreted onto primary star at the end of the simulation
+
+# Disk parameters from corresponding iras04125_lowres_it450_nocomp.par file
+cloud_folder = Path("../iras04125_lowres_it450_nocomp/")                         # Folder with the output files
+cloud_fig_imgs = Path("iras04125_lowres_it450_nocomp/imgs/")                     # Folder to save images
+cloud_it = 10                                                                    # FARGO snapshot of interest
+cloud_sim_name = str(cloud_fig_imgs).split('/')[0]                               # Simulation name (for plot labels)
+cloud_sim_params = load_par_file(f"{cloud_sim_name}/{cloud_sim_name}.par")       # Loading simulation parameters from the .par file
+# print(cloud_sim_params)
+
+cloud_mass_theoretical = cloud_sim_params["CloudletMass"]
+
+cloud_domains = get_domain_spherical(cloud_folder)
+cloud_rho = get_data(cloud_folder, "dens", cloud_it, cloud_domains)         # Load 3D array of density values            
+# THETA, R, PHI = np.meshgrid(cloud_domains["theta"], cloud_domains["r"], cloud_domains["phi"], indexing="ij")
+# X, Y, ZCYL, RCYL = sph_to_cart(THETA, R, PHI)       # Meshgrid of Cartesian coordinates
+
+cell_volume = calc_cell_volume(cloud_domains["theta"], cloud_domains["r"], cloud_domains["phi"])
+cloud_mass = calc_mass(cloud_rho, cell_volume)
+cloud_mass_simulation = np.sum(cloud_mass)
+# cloud_surf_dens = calc_surfdens(cloud_rho, cloud_domains["theta"], cloud_domains["r"], cloud_domains["phi"])
+print(f"Theoretical cloud mass: {cloud_mass_theoretical:.2e}")
+print(f"Simulation cloud mass: {cloud_mass_simulation:.2e}")
+
+
+
 
