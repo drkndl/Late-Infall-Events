@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt 
 from pathlib import Path
 from read import get_domain_spherical, get_data, load_par_file
-from analysis import calc_cell_volume, calc_mass
+from analysis import calc_cell_volume, calc_mass, centering, sph_to_cart, vel_sph_to_cart, calc_simtime, calc_surfdens
 import astropy.constants as c
 import pandas as pd
 au = c.au.cgs.value
@@ -84,8 +84,61 @@ RCYL = R * np.sin(THETA)
 ZCYL = R * np.cos(THETA)
 
 # Calculating and plotting the surface density profile
-sigma_r = surf_dens_profile(sigma0, p, R0, RCYL, Rout)
+sigma_r = surf_dens_profile(sigma0, p, R0, RCYL, Rout, plot=False)
 
 # Calculating and plotting the density profile
-rho_r = dens_profile(sigma_r, h0, R0, RCYL, f, ZCYL)
+rho_r = dens_profile(sigma_r, h0, R0, RCYL, f, ZCYL, plot=False)
+
+
+#################################### Adding up mass from the simulation ######################################
+
+
+sim_folder = Path("../nocloud_nocomp_it10/")         # Folder with the output files
+fig_imgs = Path("nocloud_nocomp_it10/imgs/")         # Folder to save images
+it = 10                                                       # FARGO snapshot of interest
+sim_name = str(fig_imgs).split('/')[0]                         # Simulation name (for plot labels)
+
+domains = get_domain_spherical(sim_folder)
+rho = get_data(sim_folder, "dens", it, domains)         # Load 3D array of density values            
+vphi = get_data(sim_folder, "vx", it, domains)          # Load 3D array of azimuthal velocities v_phi
+vrad = get_data(sim_folder, "vy", it, domains)          # Load 3D array of radial velocities v_rad
+vthe = get_data(sim_folder, "vz", it, domains)          # Load 3D array of colatitude velocities v_theta
+
+vsph = np.sqrt(vphi**2 + vrad**2 + vthe**2)         # Total velocities in spherical coordinates
+
+# THETA, R, PHI = np.meshgrid(domains["theta"], domains["r"], domains["phi"], indexing="ij")
+# X, Y, ZCYL, RCYL = sph_to_cart(THETA, R, PHI)       # Meshgrid of Cartesian coordinates
+
+cell_volume = calc_cell_volume(domains["theta"], domains["r"], domains["phi"])
+mass = calc_mass(rho, cell_volume)
+surf_dens = calc_surfdens(rho, domains["theta"], domains["r"], domains["phi"])
+
+
+################################################ Comparison plots ##############################################
+
+
+# Surface density plots
+plt.plot(np.log10(domains["r"]/au), np.log10(surf_dens), label="Simulation")
+plt.plot(np.log10(RCYL[62]/au), np.log10(sigma_r[62]), label="Analytical")
+# plt.plot(np.log10(r / au), sigma_r, label="Analytical 2")
+plt.xlabel(r"$\log(r)$")
+plt.ylabel(r"$\log(\Sigma(r))$")
+plt.title("Disk surface density profile")
+plt.legend()
+plt.savefig(f'{fig_imgs}/checkmass_surfdens_it{it}.png')
+plt.show()
+
+# Mass density plots
+print(rho.shape, RCYL.shape)
+# wednwe
+plt.plot(np.log10(domains["r"]/au), np.log10(rho[62, :, 0]), label="Simulation")
+plt.plot(np.log10(RCYL[62]/au), np.log10(rho_r[62]), label="Analytical")
+# plt.plot(np.log10(r/au), np.log10(rho_r), label)
+# plt.plot(np.log10(r / au), rho_r)
+plt.xlabel(r"$\log(r)$")
+plt.ylabel(r"$\log(\rho(r))$")
+plt.title("Disk mass density profile")
+plt.legend()
+plt.savefig(f'{fig_imgs}/checkmass_massdens_it{it}.png')
+plt.show()
 
