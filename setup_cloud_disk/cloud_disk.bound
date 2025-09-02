@@ -1,0 +1,32 @@
+#Boundaries configuration file for p3diso.bound (originates from Lina's flyby setup)
+#----------------------------------------------
+
+Density:
+	Ymin: OUTFLOWDENS
+	Ymax: OUTFLOWDENS
+	Zmin: OUTFLOWDENS
+	Zmax: OUTFLOWDENS
+
+Vx:
+	Ymin:	SYMMETRIC
+	Ymax:   SYMMETRIC
+	Zmin:	SYMMETRIC
+	Zmax: 	SYMMETRIC
+
+Vy:
+	Ymin:	OUTFLOWINNER
+	Ymax:   OUTFLOWOUTER
+	Zmin:	SYMMETRIC
+	Zmax:	SYMMETRIC
+
+Vz:
+	Ymin:	SYMMETRIC
+	Ymax:	SYMMETRIC
+	Zmin:	OUTFLOWINNER
+	Zmax:	OUTFLOWOUTER
+
+Energy:
+  Ymin:	SYMMETRIC
+  Ymax:	SYMMETRIC
+  Zmin:	SYMMETRIC
+  Zmax:	SYMMETRIC
