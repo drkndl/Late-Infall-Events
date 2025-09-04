@@ -4,7 +4,7 @@ import numpy as np
 from pathlib import Path
 from read import get_domain_spherical, get_data, load_par_file
 import matplotlib.pyplot as plt
-from no_thoughts_just_plots import quiver_plot_3d, contours_3D, plot_surf_dens, plot_twist_arrows, plot_total_disks_bonanza
+from no_thoughts_just_plots import quiver_plot_3d, contours_3D, plot_surf_dens, plot_twist_arrows, plot_total_disks_bonanza, cyl_2D_plot, XY_2D_plot
 import astropy.constants as c
 import pandas as pd
 au = c.au.cgs.value
@@ -503,16 +503,16 @@ def calc_total_L(Lx_avg, Ly_avg, Lz_avg):
 
 def main():
 
-    folder = Path("../nocloud_nocomp_it10/")         # Folder with the output files
-    fig_imgs = Path("nocloud_nocomp_it10/imgs/")     # Folder to save images
-    it = 10                                                       # FARGO snapshot of interest
+    folder = Path("../cloud_disk_it450/")         # Folder with the output files
+    fig_imgs = Path("cloud_disk_it450/imgs/")     # Folder to save images
+    it = 450                                                       # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                         # Simulation name (for plot labels)
     sim_params = load_par_file(f"{sim_name}/{sim_name}.par")       # Loading simulation parameters from the .par file
     print(sim_params)
     
     # Save simulation parameters into dictionary for plotting purposes
     plot_args = {"Time": f"{int(calc_simtime(it))} kyr", "b": sim_params['ImpactParameter'] }
-    print(plot_args)
+    # print(plot_args)
     
 
     ###################### Load data (theta = 100, r = 250, phi = 225) ################################
@@ -563,7 +563,7 @@ def main():
     # Note 1: I am using centered densities to isolate the warp to match the indices corresponding to the warp with the angular momenta indices
     # Note 2: The warp_ids itself is a 3D Boolean array, but when applied to another array such as x[warp_ids], the latter array becomes 1D
     warp_thresh = -14.5   # log of density threshold for which we can see the warp in the primary
-    warp_buffer = 150   # Isolates a box of 2 * warp_buffer around the star (AU)
+    warp_buffer = 300   # Isolates a box of 2 * warp_buffer around the star (AU)
     rho_c_warp, vx_c_warp, vy_c_warp, vz_c_warp, Lx_c_warp, Ly_c_warp, Lz_c_warp, warp_ids = isolate_disk(X_c, Y_c, Z_c, Px * au, Py * au, Pz * au, warp_buffer * au, rho_c, vx_c, vy_c, vz_c, Lx, Ly, Lz, warp_thresh) 
 
     # Find the radial extent of the warp
@@ -575,26 +575,36 @@ def main():
     plot_args[r"$\rho_{\mathrm{prim}} \geq$"] = fr"$10^{{{warp_thresh}}} g/cm^3$"
     
 
-    #################################### Plotting warp properties #####################################
+    #################################### Plotting warp/disk properties #####################################
 
+    # irad = -1
+    irad = np.where(domains["r"]/au < 2000)[0][-1]
+    iphi = 0
+    itheta = int(len(domains["theta"])/2)
+    print(itheta)
+    itheta_deg = np.round(np.rad2deg(domains["theta"][itheta]), 2)
 
-    # Plotting the warp densities 
+    cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'Density R-Z Plane $\phi = $ {np.round(np.degrees(domains["phi"][iphi]), 2)}', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=folder / f"dens_cyl_phi{iphi}_rad{irad}.png")
+
+    XY_2D_plot(rho, X, Y, irad, itheta, title=rf'Density X-Z Plane $\theta = $ {itheta_deg}', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=folder / f"dens_xz_theta{itheta}_rad{irad}.png")
+
+    # Plotting the warp/disk densities 
     contours_3D(X_c/au, Y_c/au, Z_c/au, np.log10(rho_c_warp), r_select, plot_args, colorbarlabel=r'$\log(\rho) [g/cm^3]$', title=r'Primary disk: $\log(\rho)$', savefig=False, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=True)
     
-    # Another way to plot the warp densities
+    # Another way to plot the warp/disk densities
     # contours_3D(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, rho_c[warp_ids], fig, colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$')
 
-    # Plotting the Cartesian warp angular momenta
-    # quiver_plot_3d(X_c/au, Y_c/au, Z_c/au, Lx_c_warp, Ly_c_warp, Lz_c_warp, stagger=5, length=2, title="Warp angular momenta 2", colorbarlabel="logL", savefig=False, figfolder=f'../warp_L_thresh{warp_thresh}_it{it}.png', logmag=True, ignorecol=True)
+    # Plotting the Cartesian warp/disk angular momenta
+    # quiver_plot_3d(X_c/au, Y_c/au, Z_c/au, Lx_c_warp, Ly_c_warp, Lz_c_warp, stagger=10, length=2, title="Disk Angular Momenta", colorbarlabel="logL", savefig=False, figfolder=f'../warp_L_thresh{warp_thresh}_it{it}.png', logmag=True, ignorecol=True)
 
-    # Another way to plot the Cartesian warp angular momenta
-    # quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Lx[warp_ids], Ly[warp_ids], Lz[warp_ids], stagger=70, length=3, title="Warp angular momenta", colorbarlabel="logL", savefig=False, figfolder=f'../warp_L_thresh{warp_thresh}_it{it}.png', logmag=True)
+    # Another way to plot the Cartesian warp/disk angular momenta
+    quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Lx[warp_ids], Ly[warp_ids], Lz[warp_ids], stagger=100, length=3, title="Warp Angular Momenta", colorbarlabel="logL", savefig=False, figfolder=f'../warp_L_thresh{warp_thresh}_it{it}.png', logmag=True)
 
-    # Calculating the radial profile of warp inclination and precession according to Kimmig & Dullemond (2024)
+    # Calculating the radial profile of warp/disk inclination and precession according to Kimmig & Dullemond (2024)
     Lx_warp_avg, Ly_warp_avg, Lz_warp_avg = calc_L_average(Lx_c_warp, Ly_c_warp, Lz_c_warp)
     inc, twist = calc_inc_twist(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], savefig=False, plot=False)
 
-    # Calculating and plotting the radial profile of warp precession as a quiver plot
+    # Calculating and plotting the radial profile of warp/disk precession as a quiver plot
     plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, plot_args, title="Primary disk: Twist", savefig=False, figfolder=f'{fig_imgs}/warp_twist_arrows_it{it}.png', showfig=True)
 
     # Calculating and plotting the total angular momentum of the warped disk

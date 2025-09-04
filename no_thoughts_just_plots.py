@@ -37,7 +37,7 @@ def cyl_2D_plot(data, RCYL, ZCYL, irad, iphi, title, colorbarlabel, savefig, fig
     """
 
     plt.figure()
-    plt.pcolormesh(RCYL[..., :irad, iphi]/au, ZCYL[..., :irad, iphi]/RCYL[..., :irad, iphi], np.log10(data[...,:irad, iphi]), cmap="viridis", vmin=-19, vmax=-11, rasterized=True)
+    plt.pcolormesh(RCYL[..., :irad, iphi]/au, ZCYL[..., :irad, iphi]/RCYL[..., :irad, iphi], np.log10(data[...,:irad, iphi]), cmap="Spectral", vmin=-19, vmax=-11, rasterized=True)
     plt.xlabel("rcyl / AU")
     plt.ylabel("z / r")
     plt.xscale("log")
@@ -71,7 +71,7 @@ def XY_2D_plot(data, X, Y, irad, itheta, title, colorbarlabel, savefig, figfolde
     """
 
     plt.figure()
-    plt.pcolormesh(X[itheta, :irad, ...]/au, Y[itheta, :irad, ...]/au, np.log10(data[itheta, :irad, ...]), cmap="viridis", vmin=-19, vmax=-11, rasterized=True)
+    plt.pcolormesh(X[itheta, :irad, ...]/au, Y[itheta, :irad, ...]/au, np.log10(data[itheta, :irad, ...]), cmap="Spectral", vmin=-19, vmax=-11, rasterized=True)
     plt.gca().set_aspect("equal")
     plt.xlabel("x / AU")
     plt.ylabel("y / AU")
