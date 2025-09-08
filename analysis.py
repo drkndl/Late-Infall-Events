@@ -503,8 +503,8 @@ def calc_total_L(Lx_avg, Ly_avg, Lz_avg):
 
 def main():
 
-    folder = Path("../cloud_disk_it450/")         # Folder with the output files
-    fig_imgs = Path("cloud_disk_it450/imgs/")     # Folder to save images
+    folder = Path("../cloud_disk_it450_cmass01/")         # Folder with the output files
+    fig_imgs = Path("cloud_disk_it450_cmass01/imgs/")     # Folder to save images
     it = 450                                                       # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                         # Simulation name (for plot labels)
     sim_params = load_par_file(f"{sim_name}/{sim_name}.par")       # Loading simulation parameters from the .par file
@@ -577,6 +577,8 @@ def main():
 
     #################################### Plotting warp/disk properties #####################################
 
+
+    # 2D visualizations
     # irad = -1
     irad = np.where(domains["r"]/au < 2000)[0][-1]
     iphi = 0
@@ -584,12 +586,12 @@ def main():
     print(itheta)
     itheta_deg = np.round(np.rad2deg(domains["theta"][itheta]), 2)
 
-    cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'Density R-Z Plane $\phi = $ {np.round(np.degrees(domains["phi"][iphi]), 2)}', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=folder / f"dens_cyl_phi{iphi}_rad{irad}.png")
+    cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'Density R-Z Plane $\phi = $ {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_cyl_phi{iphi}_rad{irad}.png', showfig=True)
 
-    XY_2D_plot(rho, X, Y, irad, itheta, title=rf'Density X-Z Plane $\theta = $ {itheta_deg}', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=folder / f"dens_xz_theta{itheta}_rad{irad}.png")
+    XY_2D_plot(rho, X, Y, irad, itheta, title=rf'Density X-Y Plane $\theta = $ {itheta_deg}$^{{\circ}}$', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=f'{fig_imgs}/dens_xy_theta{itheta}_rad{irad}.png', showfig=True)
 
-    # Plotting the warp/disk densities 
-    contours_3D(X_c/au, Y_c/au, Z_c/au, np.log10(rho_c_warp), r_select, plot_args, colorbarlabel=r'$\log(\rho) [g/cm^3]$', title=r'Primary disk: $\log(\rho)$', savefig=False, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=True)
+    # Plotting the 3D warp/disk densities 
+    contours_3D(X_c/au, Y_c/au, Z_c/au, np.log10(rho_c_warp), r_select, plot_args, colorbarlabel=r'$\log(\rho) [g/cm^3]$', title=r'Primary disk: $\log(\rho)$', savefig=True, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=True)
     
     # Another way to plot the warp/disk densities
     # contours_3D(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, rho_c[warp_ids], fig, colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$')
@@ -598,17 +600,17 @@ def main():
     # quiver_plot_3d(X_c/au, Y_c/au, Z_c/au, Lx_c_warp, Ly_c_warp, Lz_c_warp, stagger=10, length=2, title="Disk Angular Momenta", colorbarlabel="logL", savefig=False, figfolder=f'../warp_L_thresh{warp_thresh}_it{it}.png', logmag=True, ignorecol=True)
 
     # Another way to plot the Cartesian warp/disk angular momenta
-    quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Lx[warp_ids], Ly[warp_ids], Lz[warp_ids], stagger=100, length=3, title="Warp Angular Momenta", colorbarlabel="logL", savefig=False, figfolder=f'../warp_L_thresh{warp_thresh}_it{it}.png', logmag=True)
+    quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Lx[warp_ids], Ly[warp_ids], Lz[warp_ids], stagger=100, length=3, title="Warp Angular Momenta", colorbarlabel="logL", savefig=True, figfolder=f'{fig_imgs}/warp_L_thresh{warp_thresh}_it{it}.png', logmag=True)
 
     # Calculating the radial profile of warp/disk inclination and precession according to Kimmig & Dullemond (2024)
     Lx_warp_avg, Ly_warp_avg, Lz_warp_avg = calc_L_average(Lx_c_warp, Ly_c_warp, Lz_c_warp)
     inc, twist = calc_inc_twist(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], savefig=False, plot=False)
 
     # Calculating and plotting the radial profile of warp/disk precession as a quiver plot
-    plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, plot_args, title="Primary disk: Twist", savefig=False, figfolder=f'{fig_imgs}/warp_twist_arrows_it{it}.png', showfig=True)
+    plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, plot_args, title="Primary disk: Twist", savefig=True, figfolder=f'{fig_imgs}/warp_twist_arrows_it{it}.png', showfig=True)
 
     # Calculating and plotting the total angular momentum of the warped disk
-    Lx_disk, Ly_disk, Lz_disk = calc_total_L(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg)
+    # Lx_disk, Ly_disk, Lz_disk = calc_total_L(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg)
     # quiver_plot_3d(np.array([Px]), np.array([Py]), np.array([Pz]), np.array([Lx_disk]), np.array([Ly_disk]), np.array([Lz_disk]), stagger=1, length=0.05, title=f"{sim_name} Total disk angular momentum", colorbarlabel="logL", savefig=False, figfolder=f'{fig_imgs}/{sim_name}_totalL.png', logmag=True)
 
     # Plotting warp surface density

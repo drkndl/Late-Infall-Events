@@ -11,12 +11,13 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.interpolate import RegularGridInterpolator
 import astropy.constants as c
 import imageio
+import re
 import os
 
 au = c.au.cgs.value
 
 
-def cyl_2D_plot(data, RCYL, ZCYL, irad, iphi, title, colorbarlabel, savefig, figfolder):
+def cyl_2D_plot(data, RCYL, ZCYL, irad, iphi, title, colorbarlabel, savefig, figfolder, showfig):
     """
     Plot 2D vertical projection of a physical quantity at a particular azimuth angle and range of radii
     
@@ -37,20 +38,26 @@ def cyl_2D_plot(data, RCYL, ZCYL, irad, iphi, title, colorbarlabel, savefig, fig
     """
 
     plt.figure()
-    plt.pcolormesh(RCYL[..., :irad, iphi]/au, ZCYL[..., :irad, iphi]/RCYL[..., :irad, iphi], np.log10(data[...,:irad, iphi]), cmap="Spectral", vmin=-19, vmax=-11, rasterized=True)
+    plt.pcolormesh(RCYL[..., :irad, iphi]/au, ZCYL[..., :irad, iphi]/RCYL[..., :irad, iphi], np.log10(data[...,:irad, iphi]), cmap="Spectral_r", vmin=-19, vmax=-11, rasterized=True)
     plt.xlabel("rcyl / AU")
     plt.ylabel("z / r")
     plt.xscale("log")
     plt.ylim(-1,1)
     plt.title(title)
     plt.colorbar(label = colorbarlabel)
+    # Save the figure?
     if savefig == True:
         plt.savefig(figfolder)
-    plt.show()
-    
+
+    # Display the figure?
+    if showfig:
+        plt.show()
+    else:
+        plt.close()
+
 
 # 2D X-Y plot along the midplane
-def XY_2D_plot(data, X, Y, irad, itheta, title, colorbarlabel, savefig, figfolder):
+def XY_2D_plot(data, X, Y, irad, itheta, title, colorbarlabel, savefig, figfolder, showfig):
     """
     Plot 2D colormesh of a physical quantity along the X-Y plane for given polar angle theta and range of radii
     
@@ -71,16 +78,23 @@ def XY_2D_plot(data, X, Y, irad, itheta, title, colorbarlabel, savefig, figfolde
     """
 
     plt.figure()
-    plt.pcolormesh(X[itheta, :irad, ...]/au, Y[itheta, :irad, ...]/au, np.log10(data[itheta, :irad, ...]), cmap="Spectral", vmin=-19, vmax=-11, rasterized=True)
+    plt.pcolormesh(X[itheta, :irad, ...]/au, Y[itheta, :irad, ...]/au, np.log10(data[itheta, :irad, ...]), cmap="Spectral_r", vmin=-19, vmax=-11, rasterized=True)
     plt.gca().set_aspect("equal")
     plt.xlabel("x / AU")
     plt.ylabel("y / AU")
     plt.title(title)
     plt.colorbar(label = colorbarlabel)
     plt.tight_layout()
+
+    # Save the figure?
     if savefig == True:
         plt.savefig(figfolder)
-    plt.show()
+
+    # Display the figure?
+    if showfig:
+        plt.show()
+    else:
+        plt.close()
 
 
 def interactive_2D(data, indices, x, y, idxnames):
@@ -486,6 +500,18 @@ def plot_total_disks_bonanza(X, Y, Z, p_dens, s_dens, LX, LY, LZ, Ldx, Ldy, Ldz,
 
 
 
+def extract_it_number(filename):
+    """
+    Sort the image files for GIF in order of iteration
+    """
+
+    match = re.search(r'_it(\d+)', filename)
+    if match:
+        return int(match.group(1))
+    else:
+        return -1  # or raise an error if this shouldn't happen
+    
+
 
 def make_evol_GIF(directory, fname, gif_name, delete_files=True):
     """
@@ -500,7 +526,8 @@ def make_evol_GIF(directory, fname, gif_name, delete_files=True):
     """
 
     # Get all the files required to make the GIF, sorted by iteration number
-    filenames = sorted([f for f in os.listdir(directory) if fname in f])
+    filenames = sorted([f for f in os.listdir(directory) if fname in f], key=extract_it_number)
+    # filenames = sorted([f for f in os.listdir(directory) if fname in f])
     print(filenames)
 
     # Create GIF
