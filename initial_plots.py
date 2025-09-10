@@ -8,7 +8,7 @@ import astropy.constants as c
 au = c.au.cgs.value
 
 
-folder = Path("../nocloud_nocomp_it10/")         # Folder with the output files
+folder = Path("../iras04125_lowres_it450_nocomp/")         # Folder with the output files
 it = 10                                                              # FARGO snapshot
 
 ############# theta = 100, r = 250, phi = 225 ###########
@@ -87,12 +87,12 @@ itheta = 62
 itheta_deg = np.round(np.rad2deg(domains["theta"][itheta]), 2)
 iphi = 0
 irad = -1
-irad = np.where(domains["r"]/au < 200)[0][-1]
+irad = np.where(domains["r"]/au < 2000)[0][-1]
 # print(irad)
 
-cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'Density R-Z Plane $\phi = $ {np.round(domains["phi"][iphi], 2)}', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=folder / f"dens_cyl_phi{iphi}_rad{irad}.png")
+cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'Density R-Z Plane $\phi = $ {np.round(domains["phi"][iphi], 2)}', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=folder / f"dens_cyl_phi{iphi}_rad{irad}.png", showfig=True)
 
-XY_2D_plot(rho, X, Y, irad, itheta, title=rf'Density X-Z Plane $\theta = $ {itheta_deg}', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=folder / f"dens_xz_theta{itheta}_rad{irad}.png")
+XY_2D_plot(rho, X, Y, irad, itheta, title=rf'Density X-Z Plane $\theta = $ {itheta_deg}', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=folder / f"dens_xz_theta{itheta}_rad{irad}.png", showfig=True)
 
 # quiver_plots(X, Y, vx, vy, itheta, irad, title=rf'Velocity X-Y Plane $\theta = $ {itheta_deg}', savefig=True, figfolder=f"../vel_xy_theta{itheta}_rad{irad}.png")
 

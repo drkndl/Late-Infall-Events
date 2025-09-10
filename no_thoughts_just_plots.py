@@ -448,7 +448,8 @@ def plot_total_disks_bonanza(X, Y, Z, p_dens, s_dens, LX, LY, LZ, Ldx, Ldy, Ldz,
     ax = plt.figure(figsize=(8,6)).add_subplot(projection='3d')
 
     # Colorbar formatting for the densities
-    all_values = np.concatenate([p_dens, s_dens])
+    # all_values = np.concatenate([p_dens, s_dens])
+    all_values = p_dens
     vmin = all_values.min()
     vmax = all_values.max()
     norm = Normalize(vmin=all_values.min(), vmax=all_values.max())
@@ -456,7 +457,7 @@ def plot_total_disks_bonanza(X, Y, Z, p_dens, s_dens, LX, LY, LZ, Ldx, Ldy, Ldz,
 
     # Plotting the densities
     ax.scatter(X.flatten(), Y.flatten(), Z.flatten(), c=p_dens.flatten(), cmap=cmap, s=7, edgecolor='none', alpha=0.3)
-    ax.scatter(X.flatten(), Y.flatten(), Z.flatten(), c=s_dens.flatten(), cmap=cmap, s=7, edgecolor='none', alpha=0.3)
+    # ax.scatter(X.flatten(), Y.flatten(), Z.flatten(), c=s_dens.flatten(), cmap=cmap, s=7, edgecolor='none', alpha=0.3)
 
     # Plotting the angular momenta
     ax.quiver(LX, LY, LZ, Ldx, Ldy, Ldz, length=length, pivot='tail', alpha=0.8, color="black", arrow_length_ratio = 0.5, normalize=True)
@@ -470,9 +471,9 @@ def plot_total_disks_bonanza(X, Y, Z, p_dens, s_dens, LX, LY, LZ, Ldx, Ldy, Ldz,
     plt.colorbar(sm, pad=0.08, label=colorbarlabel) #, shrink=0.85), fraction=0.046)
 
     # Adding a textbox to show simulation parameters
-    param_text = '\n'.join(f'{key}: {value}' for key, value in sim_params.items())
-    props = dict(boxstyle='round', facecolor='white', pad=0.6, alpha=0.3)   
-    ax.text2D(0.02, 0.98, param_text, transform=ax.transAxes, fontsize=9, horizontalalignment='center', verticalalignment='center', bbox=props)
+    # param_text = '\n'.join(f'{key}: {value}' for key, value in sim_params.items())
+    # props = dict(boxstyle='round', facecolor='white', pad=0.6, alpha=0.3)   
+    # ax.text2D(0.02, 0.98, param_text, transform=ax.transAxes, fontsize=9, horizontalalignment='center', verticalalignment='center', bbox=props)
 
     # Plot formatting
     ax.set_xlabel("X [AU]")
