@@ -66,20 +66,28 @@ def sph_cell_area_2D(r, theta):
     # Finding dr, dphi, dtheta and making them 3D arrays
     dr = np.diff(r)
     dtheta = np.diff(theta)
+    # dphi = np.diff(phi)
     dR = dr[None, :]
     dTheta = dtheta[:, None]
+    # dR = dr[None, :, None]
+    # dTheta = dtheta[:, None, None]
+    # dPhi = dphi[None, None, :]
 
     # We are finding the volume at the centre, so centering the cells
     r_c = 0.5 * (r[:-1] + r[1:])
     theta_c = 0.5 * (theta[:-1] + theta[1:])
+    # phi_c = 0.5 * (phi[:-1] + phi[1:])
 
     # Creating a meshgrid of the centered cells
     Theta_c, R_c = np.meshgrid(theta_c, r_c, indexing='ij')
+    # Theta_c, R_c, Phi_c = np.meshgrid(theta_c, r_c, phi_c, indexing='ij')
 
-    # Finding cell volumes
-    cell_area = 2 * np.pi * R_c * np.sin(Theta_c) * dR * dTheta 
+    # Finding cell surface elements
+    # cell_vol = (R_c**2) * np.sin(Theta_c) * dR * dTheta * dPhi
+    cell_area = 2 * np.pi * np.sin(Theta_c) * R_c * dR 
 
     return cell_area
+    # return cell_vol
 
 
 ###################################### Numerically integrating for the disk mass ##########################################
@@ -99,28 +107,38 @@ f = sim_params['FlaringIndex']        # Flaring index
 h0 = sim_params['AspectRatio']        # Aspect ratio 
 theta_min = 0.17453292519943          # Theta lower limit (corresponds to Zmin in mesh params, 10 deg)
 theta_max = 2.96705972839036          # Theta upper limit (corresponds to Zmax in mesh params, 170 deg)
+# phi_min = - np.pi                     # Phi lower limit (corresponds to Xmin in mesh params)
+# phi_max = np.pi                       # Phi lower limit (corresponds to Xmax in mesh params)
 
 theta = np.linspace(theta_min, theta_max, sim_params['Nz'])                           # Theta array
 r = np.logspace(np.log10(Rin / au), np.log10(Rout / au), sim_params['Ny']) * au       # Radius array
+# phi = np.linspace(phi_min, phi_max, sim_params['Nx'])
 
 # Centering the cells
 r_c = 0.5 * (r[:-1] + r[1:])
 theta_c = 0.5 * (theta[:-1] + theta[1:])
+# phi_c = 0.5 * (phi[:-1] + phi[1:])
 
 # Converting to cylindrical coordinates
 THETA, R = np.meshgrid(theta_c, r_c, indexing="ij")
 RCYL = R * np.sin(THETA)
 ZCYL = R * np.cos(THETA)
+# X = R * np.sin(THETA) * np.cos(PHI)
+# Y = R * np.sin(THETA) * np.sin(PHI)
+# RCYL = R * np.sin(THETA)
+# ZCYL = R * np.cos(THETA)
 
 # Calculating and plotting the surface density profile
-sigma_r = surf_dens_profile(sigma0, p, R0, RCYL, Rout, plot=False)
+sigma_r = surf_dens_profile(sigma0, p, R0, r_c, Rout, plot=False)
+print(sigma_r.shape)
 
 # Calculating and plotting the density profile
 rho_r = dens_profile(sigma_r, h0, R0, RCYL, f, ZCYL, plot=False)
 
 # Calculating total disk mass
-vol2D = sph_cell_area_2D(r, theta)
-disk_mass_theoretical = np.sum(sigma_r * vol2D)
+S = sph_cell_area_2D(r, theta)
+disk_mass_theoretical = np.sum(sigma_r * S)
+# disk_mass_theoretical = np.sum(rho_r * S)
 
 
 #################################### Adding up mass from the simulation ######################################
@@ -147,44 +165,44 @@ disk_mass_simulation = np.sum(disk_mass)
 # Surface density plots
 fig, ax = plt.subplots()
 ax.plot(np.log10(domains["r"]/au), np.log10(disk_surf_dens), label="Simulation")
-ax.plot(np.log10(RCYL[62]/au), np.log10(sigma_r[62]), label="Analytical")
+ax.plot(np.log10(RCYL[62]/au), np.log10(sigma_r), label="Analytical")
 # ax.plot(np.log10(r / au), sigma_r, label="Analytical 2")
 ax.set_xlabel(r"$\log(r)$")
 ax.set_ylabel(r"$\log(\Sigma(r))$")
 ax.set_title("Disk surface density profile")
-ax.legend()
 
 # Inset axis zooming in to the first 100 AU
 inset_ax = inset_axes(ax, width="45%", height="45%", loc='upper right')
 x1, x2 = np.min(np.log10(RCYL[62]/au)), np.log10(150)
 inset_ax.set_xlim(x1, x2)
 inset_ax.plot(np.log10(domains["r"]/au), np.log10(disk_surf_dens))
-inset_ax.plot(np.log10(RCYL[62]/au), np.log10(sigma_r[62]))
+inset_ax.plot(np.log10(RCYL[62]/au), np.log10(sigma_r))
 # mark_inset(ax, inset_ax, loc1=2, loc2=4, fc="none", ec="0.5")
+ax.legend()
 plt.savefig(f'{disk_fig_imgs}/checkmass_surfdens_it{it}.png')
 plt.show()
 
 
 # Mass density plots
-fig, ax = plt.subplots()
-ax.plot(np.log10(domains["r"]/au), np.log10(disk_rho[62, :, 0]), label="Simulation")
-ax.plot(np.log10(RCYL[62]/au), np.log10(rho_r[62]), label="Analytical")
-# ax.plot(np.log10(r/au), np.log10(rho_r), label)
-# ax.plot(np.log10(r / au), rho_r)
-ax.set_xlabel(r"$\log(r)$")
-ax.set_ylabel(r"$\log(\rho(r))$")
-ax.set_title("Disk mass density profile")
-ax.legend()
+# fig, ax = plt.subplots()
+# ax.plot(np.log10(domains["r"]/au), np.log10(disk_rho[62]), label="Simulation")
+# ax.plot(np.log10(RCYL[62]/au), np.log10(rho_r[62]), label="Analytical")
+# # ax.plot(np.log10(r/au), np.log10(rho_r), label)
+# # ax.plot(np.log10(r / au), rho_r)
+# ax.set_xlabel(r"$\log(r)$")
+# ax.set_ylabel(r"$\log(\rho(r))$")
+# ax.set_title("Disk mass density profile")
 
-# Inset axis zooming in to the first 100 AU
-inset_ax = inset_axes(ax, width="45%", height="45%", loc='upper right')
-x1, x2 = np.min(np.log10(RCYL[62]/au)), np.log10(150)
-inset_ax.set_xlim(x1, x2)
-inset_ax.plot(np.log10(domains["r"]/au), np.log10(disk_rho[62, :, 0]))
-inset_ax.plot(np.log10(RCYL[62]/au), np.log10(rho_r[62]))
-# mark_inset(ax, inset_ax, loc1=2, loc2=4, fc="none", ec="0.5")
-plt.savefig(f'{disk_fig_imgs}/checkmass_massdens_it{it}.png')
-plt.show()
+# # Inset axis zooming in to the first 100 AU
+# inset_ax = inset_axes(ax, width="45%", height="45%", loc='upper right')
+# x1, x2 = np.min(np.log10(RCYL[62]/au)), np.log10(150)
+# inset_ax.set_xlim(x1, x2)
+# inset_ax.plot(np.log10(domains["r"]/au), np.log10(disk_rho[62]))
+# inset_ax.plot(np.log10(RCYL[62]/au), np.log10(rho_r[62]))
+# # mark_inset(ax, inset_ax, loc1=2, loc2=4, fc="none", ec="0.5")
+# ax.legend()
+# plt.savefig(f'{disk_fig_imgs}/checkmass_massdens_it{it}.png')
+# plt.show()
 
 print(f"Theoretical disk mass: {disk_mass_theoretical:.2e} g or {(disk_mass_theoretical / Msun):.3f} Msun")
 print(f"Simulation disk mass: {disk_mass_simulation:.2e} g or {(disk_mass_simulation / Msun):.3f} Msun")
