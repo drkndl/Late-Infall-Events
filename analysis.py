@@ -605,6 +605,7 @@ def main():
     # Calculating the radial profile of warp/disk inclination and precession according to Kimmig & Dullemond (2024)
     Lx_warp_avg, Ly_warp_avg, Lz_warp_avg = calc_L_average(Lx_c_warp, Ly_c_warp, Lz_c_warp)
     inc, twist = calc_inc_twist(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], savefig=False, plot=False)
+    # print(np.min(twist), np.max(twist), np.mean(twist))
 
     # Calculating and plotting the radial profile of warp/disk precession as a quiver plot
     plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, plot_args, title="Disk Twist", savefig=True, figfolder=f'{fig_imgs}/warp_twist_arrows_it{it}.png', showfig=True)

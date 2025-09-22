@@ -97,7 +97,7 @@ def XY_2D_plot(data, X, Y, irad, itheta, title, colorbarlabel, savefig, figfolde
         plt.close()
 
 
-def interactive_2D(data, indices, x, y, idxnames):
+def interactive_2D(data, parnames, indices, x, y, idxnames, title, vmin=-19):
     """
     Plots a 2D interactive slice from a 3D array using the slicearr() func from viewarr.py
 
@@ -110,7 +110,7 @@ def interactive_2D(data, indices, x, y, idxnames):
     idxnames:     List of plot labels of each index of data
     """
 
-    slicearr(data,indices=indices,x=x,y=y,zmin=-19,zmax=None,idxnames=idxnames,idxvals=None,idxformat='')
+    slicearr(data,parnames=parnames,title=title,indices=indices,x=x,y=y,zmin=vmin,zmax=None,idxnames=idxnames,idxvals=None,idxformat='')
     plt.ioff()   # Added because interactive plot does not work properly otherwise
     plt.show()
 

@@ -2,22 +2,23 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pathlib import Path
 from read import get_domain_spherical, get_data
-from analysis import sph_to_cart, vel_sph_to_cart
+from analysis import sph_to_cart, vel_sph_to_cart, calc_cell_volume, calc_mass
 from no_thoughts_just_plots import interactive_2D, contours_3D, cyl_2D_plot, XY_2D_plot, quiver_plots, interactive_interp_3d
 import astropy.constants as c
 au = c.au.cgs.value
 
 
-folder = Path("../iras04125_lowres_it450_nocomp/")         # Folder with the output files
-it = 10                                                              # FARGO snapshot
+folder = Path("../cloud_disk_it450_rotX45/")         # Folder with the output files
+sim_name = str(folder).split('/')[1]                 # Simulation name (for plot labelling)
+it = 450                                             # FARGO snapshot
 
-############# theta = 100, r = 250, phi = 225 ###########
+############# theta = 175, r = 150, phi = 100 ###########
 domains = get_domain_spherical(folder)
 
 # 3D meshgrid of Cartesian and cylindrical coordinates from the given spherical coordinates
 THETA, R, PHI = np.meshgrid(domains["theta"], domains["r"], domains["phi"], indexing="ij")
 X, Y, ZCYL, RCYL = sph_to_cart(THETA, R, PHI)
-print(np.max(X /au), np.min(X/au))
+# print(np.max(X /au), np.min(X/au))
 
 rho = get_data(folder, "dens", it, domains)         # Load 3D array of density values 
 vphi = get_data(folder, "vx", it, domains)          # Load 3D array of azimuthal velocities v_phi
@@ -29,23 +30,63 @@ vsph = np.sqrt(vphi**2 + vrad**2 + vthe**2)         # Total velocities in spheri
 # Cartesian velocities
 vx, vy, vz = vel_sph_to_cart(vthe, vrad, vphi, THETA, PHI)
 
-############## Plotting ###################
+cell_volume = calc_cell_volume(domains["theta"], domains["r"], domains["phi"])
+mass = calc_mass(rho, cell_volume)
 
-# Plot r-theta slice (flipping theta to match physics convention of spherical coords)
+# Load density values at multiple iterations 
+rho_allit = []
+mass_allit = []
+
+for i in range(0, it+1, 10):     # loading density every 10 iterations
+    rho_i = get_data(folder, "dens", i, domains)
+    mass_i = calc_mass(rho_i, cell_volume)
+    rho_allit.append(rho_i)
+    mass_allit.append(mass_i)
+
+rho_allit = np.asarray(rho_allit)
+mass_allit = np.asarray(mass_allit)
+
+###################################################### Plotting #######################################################
+
+
 labels = [r'$\pi - \theta$ [deg]',r'$\log r$ [AU]',r'$\phi$ [deg]']
-# interactive_2D(np.log10(rho[::-1,:,:]), (1,0), np.log10(domains['r'] / au), np.rad2deg(domains['theta']), labels)
+labels_allit = [r"Time"] + labels
+
+################## Plot r-theta slice (flipping theta to match physics convention of spherical coords)
+
+# rho plot at 1 iteration
+interactive_2D(np.log10(rho[::-1,:,:]), [r'$\phi$ [deg]'], (1,0), np.log10(domains['r'] / au), np.rad2deg(domains['theta']), labels, title=rf"{sim_name}: $\rho$ $(r, \theta)$ it={it}")
+
+# mass plot at 1 iteration (mass shape is (ntheta-1, nr-1, nphi-1))
+interactive_2D(np.log10(mass[::-1,:,:]), [r'$\phi$ [deg]'], (1,0), np.log10(domains['r'] / au)[:-1], np.rad2deg(domains['theta'])[:-1], labels, vmin=20, title=rf"{sim_name}: $M$ $(r, \theta)$ it={it}")
+
+# rho plot at all iterations
+interactive_2D(np.log10(rho_allit[:,::-1,:,:]), [r"Time", r'$\phi$ [deg]'], (2,1), np.log10(domains['r'] / au), np.rad2deg(domains['theta']), labels_allit, title=rf"{sim_name}: $\rho$ $(r, \theta)$ Time Evolution")
+
+# mass plot at all iterations
+interactive_2D(np.log10(mass_allit[:,::-1,:,:]), [r"Time", r'$\phi$ [deg]'], (2,1), np.log10(domains['r'] / au)[:-1], np.rad2deg(domains['theta'])[:-1], labels_allit, vmin=20, title=rf"{sim_name}: $\rho$ $(r, \theta)$ Time Evolution")
+
+wehbwbwk
+# velocity plot at 1 iteration
 # interactive_2D(np.log10(vsph[::-1,:,:]), (1,0), np.log10(domains['r'] / au), np.rad2deg(domains['theta']), labels)
 
-# Plot r-phi slice (flipping theta to match physics convention of spherical coords)
-# interactive_2D(np.log10(rho[::-1,:,:]), (1,2), np.log10(domains['r'] / au), np.rad2deg(domains['phi']), labels)
+################### Plot r-phi slice (flipping theta to match physics convention of spherical coords)
+
+# rho plot at 1 iteration
+interactive_2D(np.log10(rho[::-1,:,:]), (1,2), np.log10(domains['r'] / au), np.rad2deg(domains['phi']), labels)
+
+# velocity plot at 1 iteration
 # interactive_2D(np.log10(vsph[::-1,:,:]), (1,2), np.log10(domains['r'] / au), np.rad2deg(domains['phi']), labels)
 
-# Plot phi-theta slice (flipping theta to match physics convention of spherical coords)
-# interactive_2D(np.log10(rho[::-1,:,:]), (2,0), np.rad2deg(domains['phi']), np.rad2deg(domains['theta']), labels)
-# interactive_2D(np.log10(vsph[::-1,:,:]), (2,0), np.rad2deg(domains['phi']), np.rad2deg(domains['theta']), labels)
-# irad=-1
-# print(np.shape(rho[:, :, 1]), np.shape(R[:, :, 1]/au), np.shape(THETA[:, :, 1]))
+#################### Plot phi-theta slice (flipping theta to match physics convention of spherical coords)
 
+# rho plot at 1 iteration
+interactive_2D(np.log10(rho[::-1,:,:]), (2,0), np.rad2deg(domains['phi']), np.rad2deg(domains['theta']), labels)
+
+# velocity plot at 1 iteration
+# interactive_2D(np.log10(vsph[::-1,:,:]), (2,0), np.rad2deg(domains['phi']), np.rad2deg(domains['theta']), labels)
+
+wekfjwkf
 # for iphi in range(255):
 
 #     iphi_deg = np.round(np.rad2deg(domains["phi"][iphi]), 2)

@@ -135,7 +135,7 @@ def viewarr(data,index=0,x=None,ymin=None,ymax=None,ylabel=None,idxnames=None,id
         axmodel = None
     interactive_plot(x, func, params, ymin=ymin, ymax=ymax, parnames=parnames, parunits=None, fig=fig, ax=ax, axmodel=axmodel, parstart=None, iparstart=None, plotbutton=False, fixedpar=None, returnipar=False, block=False, paramsalt=paramsalt, altformat=idxformat)
 
-def slicearr(data,indices=(0,1),x=None,y=None,zmin=None,zmax=None,idxnames=None,idxvals=None,idxformat=''):
+def slicearr(data,parnames,title,indices=(0,1),x=None,y=None,zmin=None,zmax=None,idxnames=None,idxvals=None,idxformat=''):
     """
     Interactive plot of a 2-D slice from an n-dimensional array.
 
@@ -197,6 +197,7 @@ def slicearr(data,indices=(0,1),x=None,y=None,zmin=None,zmax=None,idxnames=None,
     #### start: added labels to plot
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
+    ax.set_title(title)
     #### end: added labels to plot
     cbar=fig.colorbar(cm.ScalarMappable(norm=norm,cmap=cmap), ax=ax)
     #cbar.set_label(r'$T\;[\mathrm{K}]$')
@@ -205,4 +206,4 @@ def slicearr(data,indices=(0,1),x=None,y=None,zmin=None,zmax=None,idxnames=None,
         params.append(np.arange(parsiz[i])) # Choices of parameter values
     interactive_plot(None, None, params, fixedpar=fixedpar,       \
                      img_x=x,img_y=y,img_func=img_func,img_im=im, \
-                     fig=fig,ax=ax)
+                     fig=fig,ax=ax, parnames=parnames)
