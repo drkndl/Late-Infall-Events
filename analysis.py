@@ -503,8 +503,8 @@ def calc_total_L(Lx_avg, Ly_avg, Lz_avg):
 
 def main():
 
-    folder = Path("../cloud_disk_it450_rotXY45/")         # Folder with the output files
-    fig_imgs = Path("cloud_disk_it450_rotXY45/imgs/")     # Folder to save images
+    folder = Path("../cloud_disk_it450_rotXY30/")         # Folder with the output files
+    fig_imgs = Path("cloud_disk_it450_rotXY30/imgs/")     # Folder to save images
     it = 450                                                       # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                         # Simulation name (for plot labels)
     sim_params = load_par_file(f"{sim_name}/{sim_name}.par")       # Loading simulation parameters from the .par file
@@ -580,7 +580,7 @@ def main():
 
     # 2D visualizations
     # irad = -1
-    irad = np.where(domains["r"]/au < 2000)[0][-1]
+    irad = np.where(domains["r"]/au < 1000)[0][-1]
     iphi = 0
     itheta = int(len(domains["theta"])/2)
     print(itheta)
