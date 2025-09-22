@@ -73,7 +73,7 @@ wehbwbwk
 ################### Plot r-phi slice (flipping theta to match physics convention of spherical coords)
 
 # rho plot at 1 iteration
-interactive_2D(np.log10(rho[::-1,:,:]), (1,2), np.log10(domains['r'] / au), np.rad2deg(domains['phi']), labels)
+interactive_2D(np.log10(rho[::-1,:,:]), [r'$\pi - \theta$ [deg]'], (1,2), np.log10(domains['r'] / au), np.rad2deg(domains['phi']), labels, title=rf"{sim_name}: $\rho$ $(r, \phi)$ it={it}")
 
 # velocity plot at 1 iteration
 # interactive_2D(np.log10(vsph[::-1,:,:]), (1,2), np.log10(domains['r'] / au), np.rad2deg(domains['phi']), labels)
@@ -81,7 +81,7 @@ interactive_2D(np.log10(rho[::-1,:,:]), (1,2), np.log10(domains['r'] / au), np.r
 #################### Plot phi-theta slice (flipping theta to match physics convention of spherical coords)
 
 # rho plot at 1 iteration
-interactive_2D(np.log10(rho[::-1,:,:]), (2,0), np.rad2deg(domains['phi']), np.rad2deg(domains['theta']), labels)
+interactive_2D(np.log10(rho[::-1,:,:]), [r'$\log r$ [AU]'], (2,0), np.rad2deg(domains['phi']), np.rad2deg(domains['theta']), labels, title=rf"{sim_name}: $\rho$ $(\theta, \phi)$ it={it}")
 
 # velocity plot at 1 iteration
 # interactive_2D(np.log10(vsph[::-1,:,:]), (2,0), np.rad2deg(domains['phi']), np.rad2deg(domains['theta']), labels)
