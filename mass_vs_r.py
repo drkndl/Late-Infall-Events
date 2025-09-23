@@ -19,8 +19,9 @@ stoky = 3.156e7 * 1e3     # 1 kyr in sec
 
 def main():
 
-    folder = Path("../cloud_disk_it450_rotXY30/")         # Folder with the output files
-    fig_imgs = Path("cloud_disk_it450_rotXY30/imgs/")     # Folder to save images
+
+    folder = Path("../cloud_disk_it450_cmass01/")         # Folder with the output files
+    fig_imgs = Path("cloud_disk_it450_cmass01/imgs/")     # Folder to save images
     it = 450                                                       # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                         # Simulation name (for plot labels)
     
@@ -79,11 +80,9 @@ def main():
     ax.set_ylabel(r"$\log(M(r))$ [g]")
     ax.set_title(f"{sim_name}: logM(r) vs logr time evolution")
 
-    norm = mcolors.Normalize(vmin=min(dtkyrs), vmax=max(dtkyrs))
+    norm = mcolors.Normalize(vmin=min(dtkyrs), vmax=max(dtkyrs))     # Colorbar formatting
     sm = cm.ScalarMappable(cmap=cols, norm=norm)
-    sm.set_array([])  # Required for older matplotlib versions
-
-    # Add the colorbar
+    sm.set_array([])  
     cbar = plt.colorbar(sm, ax=ax, pad=0.02)
     cbar.set_label("Time [kyr]")
     plt.savefig(f'{fig_imgs}/logM_vs_logr_timeevol.png')
@@ -93,6 +92,68 @@ def main():
     ############################## log(dM/dr) in each spherical shell ######################################
 
 
+    # Mass in each spherical shell for a single iteration
+    shell_dM = np.diff(shell_mass)
+    dR = np.diff(domains["r"][:-1])
+
+    fig, ax = plt.subplots()
+    ax.plot(np.log10(domains["r"]/au)[:-2], np.log10(shell_dM/dR))
+    ax.set_xlabel(r"$\log(r)$ [AU]")
+    ax.set_ylabel(r"$\log(dM(r)/dr)$")
+    ax.set_title(f"{sim_name}: log(dM/dr) vs logr")
+    plt.savefig(f'{fig_imgs}/logdMdr_vs_logr_it{it}.png')
+    plt.show()
+
+    # Time evolution of mass in spherical shells
+    shell_mass_allit = np.sum(mass_allit, axis=(1,3))           # Shell mass in shape (evol_it, nr-1)
+    shell_dM_allit = np.diff(shell_mass_allit)
+    
+    fig, ax = plt.subplots()
+    for i in range(evol_it):
+        plt.plot(np.log10(domains["r"]/au)[:-2], np.log10(shell_dM_allit[i]), color=cols(i))
+    ax.set_xlabel(r"$\log(r)$ [AU]")
+    ax.set_ylabel(r"$\log(\mathrm{dM(r)/dr})$")
+    ax.set_title(f"{sim_name}: log(dM/dr) vs logr time evolution")
+
+    norm = mcolors.Normalize(vmin=min(dtkyrs), vmax=max(dtkyrs))     # Colorbar formatting
+    sm = cm.ScalarMappable(cmap=cols, norm=norm)
+    sm.set_array([])  
+    cbar = plt.colorbar(sm, ax=ax, pad=0.02)
+    cbar.set_label("Time [kyr]")
+    plt.savefig(f'{fig_imgs}/logdMdr_vs_logr_timeevol.png')
+    plt.show()
+
+
+    ############################################### Cumulative mass ###############################################
+
+
+    M_cumsum = np.cumsum(shell_mass)
+    
+    fig, ax = plt.subplots()
+    ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(M_cumsum))
+    ax.set_xlabel(r"$\log(r)$ [AU]")
+    ax.set_ylabel(r"$\log(\Sigma M(r))$")
+    ax.set_title(fr"{sim_name}: Cumulative log(M) vs logr")
+    plt.savefig(f'{fig_imgs}/cumlogM_vs_logr_it{it}.png')
+    plt.show()
+
+    M_cumsum_allit = np.cumsum(shell_mass_allit, axis=1)
+    print(M_cumsum_allit.shape)
+    
+    fig, ax = plt.subplots()
+    for i in range(evol_it):
+        plt.plot(np.log10(domains["r"]/au)[:-1], np.log10(M_cumsum_allit[i]), color=cols(i))
+    ax.set_xlabel(r"$\log(r)$ [AU]")
+    ax.set_ylabel(r"$\log(\Sigma M(r))$")
+    ax.set_title(f"{sim_name}: Cumulative log(M) vs logr time evol")
+
+    norm = mcolors.Normalize(vmin=min(dtkyrs), vmax=max(dtkyrs))     # Colorbar formatting
+    sm = cm.ScalarMappable(cmap=cols, norm=norm)
+    sm.set_array([])  
+    cbar = plt.colorbar(sm, ax=ax, pad=0.02)
+    cbar.set_label("Time [kyr]")
+    plt.savefig(f'{fig_imgs}/cumlogM_vs_logr_timeevol.png')
+    plt.show()
 
 
 if __name__ == "__main__":
