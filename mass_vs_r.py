@@ -32,9 +32,6 @@ def main():
     domains = get_domain_spherical(folder)
     rho = get_data(folder, "dens", it, domains)         # Load 3D array of density values            
 
-    THETA, R, PHI = np.meshgrid(domains["theta"], domains["r"], domains["phi"], indexing="ij")
-    X, Y, ZCYL, RCYL = sph_to_cart(THETA, R, PHI)       # Meshgrid of Cartesian coordinates
-
     cell_volume = calc_cell_volume(domains["theta"], domains["r"], domains["phi"])
     mass = calc_mass(rho, cell_volume)
 
@@ -138,7 +135,6 @@ def main():
     plt.show()
 
     M_cumsum_allit = np.cumsum(shell_mass_allit, axis=1)
-    print(M_cumsum_allit.shape)
     
     fig, ax = plt.subplots()
     for i in range(evol_it):
@@ -153,6 +149,37 @@ def main():
     cbar = plt.colorbar(sm, ax=ax, pad=0.02)
     cbar.set_label("Time [kyr]")
     plt.savefig(f'{fig_imgs}/cumlogM_vs_logr_timeevol.png')
+    plt.show()
+
+
+    ####################### Compare radial mass distributions for different inclinations ########################
+
+
+    inc_folders = [Path("../cloud_disk_it450_rotX45"), Path("../cloud_disk_it450_rotY45"), Path("../cloud_disk_it450_rotXY45"), Path("../cloud_disk_it450_rotXY30"), Path("../cloud_disk_it450_rotXY90")]
+
+    shell_mass_allincs = {}
+
+    for f in inc_folders:
+        
+        f_sim_name = str(f).split('/')[1]                       # Simulation name (for plot labels)
+        domains = get_domain_spherical(f)                       # Load coordinates
+        f_rho = get_data(f, "dens", it, domains)                # Load 3D array of density values            
+
+        cell_volume = calc_cell_volume(domains["theta"], domains["r"], domains["phi"])
+        f_mass = calc_mass(f_rho, cell_volume)
+
+        # Mass in each spherical shell for a single iteration
+        f_shell_mass = np.sum(f_mass, axis=(0,2))                       # Shell mass in shape (nr-1)
+        shell_mass_allincs[f_sim_name] = f_shell_mass
+
+    fig, ax = plt.subplots()
+    for key, value in shell_mass_allincs.items():
+        ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(value), label=key)
+    ax.set_xlabel(r"$\log(r)$ [AU]")
+    ax.set_ylabel(r"$\log(M(r))$ [g]")
+    ax.set_title(f"Cloudlet inclinations: logM(r) vs logr")
+    ax.legend()
+    plt.savefig('logM_vs_logr_all_incs.png')
     plt.show()
 
 
