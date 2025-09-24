@@ -20,8 +20,8 @@ stoky = 3.156e7 * 1e3     # 1 kyr in sec
 def main():
 
 
-    folder = Path("../cloud_disk_it450_rotY45/")         # Folder with the output files
-    fig_imgs = Path("cloud_disk_it450_rotY45/imgs/")     # Folder to save images
+    folder = Path("../cloud_disk_it450/")         # Folder with the output files
+    fig_imgs = Path("cloud_disk_it450/imgs/")     # Folder to save images
     it = 450                                                       # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                         # Simulation name (for plot labels)
     
@@ -155,7 +155,7 @@ def main():
     ####################### Compare radial mass distributions for different inclinations ########################
 
 
-    inc_folders = [Path("../cloud_disk_it450_rotX45"), Path("../cloud_disk_it450_rotY45"), Path("../cloud_disk_it450_rotXY45"), Path("../cloud_disk_it450_rotXY30"), Path("../cloud_disk_it450_rotXY90")]
+    inc_folders = [Path("../cloud_disk_it450"), Path("../cloud_disk_it450_rotX45"), Path("../cloud_disk_it450_rotXY45"), Path("../cloud_disk_it450_rotXY30"), Path("../cloud_disk_it450_rotXY90")]
 
     shell_mass_allincs = {}
     cum_mass_allincs = {}
@@ -203,6 +203,54 @@ def main():
     fig.tight_layout()
     ax.legend(loc="upper right")   # loc='upper left', 
     plt.savefig('cumlogM_vs_logr_all_incs.png')
+    plt.show()
+
+
+    ####################### Compare radial mass distributions for different cloudlet masses ########################
+
+
+    cmass_folders = [Path("../cloud_disk_it450"), Path("../cloud_disk_it450_cmass01"), Path("../cloud_disk_it450_cmass10")]
+    cmass_labels = {"cloud_disk_it450_cmass01": r"$M_{cloud} / M_{disk} = 0.045$", "cloud_disk_it450_cmass10": r"$M_{cloud} / M_{disk} = 4.5$", "cloud_disk_it450": r"$M_{cloud} / M_{disk} = 0.45$"}
+
+    shell_mass_allcmass = {}
+    cum_mass_allcmass = {}
+
+    for f in cmass_folders:
+        
+        f_sim_name = str(f).split('/')[1]                       # Simulation name (for plot labels)
+        domains = get_domain_spherical(f)                       # Load coordinates
+        f_rho = get_data(f, "dens", it, domains)                # Load 3D array of density values            
+
+        cell_volume = calc_cell_volume(domains["theta"], domains["r"], domains["phi"])
+        f_mass = calc_mass(f_rho, cell_volume)
+
+        # Mass in each spherical shell for a single iteration
+        f_shell_mass = np.sum(f_mass, axis=(0,2))                       # Shell mass in shape (nr-1)
+        shell_mass_allcmass[f_sim_name] = f_shell_mass
+
+        # Cumulative mass in each spherical shell for a single iteration
+        f_M_cumsum = np.cumsum(f_shell_mass)
+        cum_mass_allcmass[f_sim_name] = f_M_cumsum
+
+    fig, ax = plt.subplots()
+    for key, value in shell_mass_allcmass.items():
+        ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(value), label=cmass_labels[key])
+    ax.set_xlabel(r"$\log(r)$ [AU]")
+    ax.set_ylabel(r"$\log(M(r))$ [g]")
+    ax.set_title(f"Cloudlet masses: logM(r) vs logr (53kyr)")
+    ax.legend()
+    plt.savefig('logM_vs_logr_all_cmass.png')
+    plt.show()
+
+    fig, ax = plt.subplots()
+    for key, value in cum_mass_allcmass.items():
+        ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(value), label=key)
+    ax.set_xlabel(r"$\log(r)$ [AU]")
+    ax.set_ylabel(r"$\log(\Sigma M(r))$")
+    ax.set_title(fr"Cloudlet masses: $\Sigma$log(M(r)) vs logr (53kyr)")
+    fig.tight_layout()
+    ax.legend(loc="lower right")   # loc='upper left', 
+    plt.savefig('cumlogM_vs_logr_all_cmass.png')
     plt.show()
 
 
