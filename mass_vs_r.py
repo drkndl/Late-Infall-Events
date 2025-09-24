@@ -158,6 +158,7 @@ def main():
     inc_folders = [Path("../cloud_disk_it450_rotX45"), Path("../cloud_disk_it450_rotY45"), Path("../cloud_disk_it450_rotXY45"), Path("../cloud_disk_it450_rotXY30"), Path("../cloud_disk_it450_rotXY90")]
 
     shell_mass_allincs = {}
+    cum_mass_allincs = {}
 
     for f in inc_folders:
         
@@ -172,14 +173,36 @@ def main():
         f_shell_mass = np.sum(f_mass, axis=(0,2))                       # Shell mass in shape (nr-1)
         shell_mass_allincs[f_sim_name] = f_shell_mass
 
+        # Cumulative mass in each spherical shell for a single iteration
+        f_M_cumsum = np.cumsum(f_shell_mass)
+        cum_mass_allincs[f_sim_name] = f_M_cumsum
+
     fig, ax = plt.subplots()
     for key, value in shell_mass_allincs.items():
         ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(value), label=key)
     ax.set_xlabel(r"$\log(r)$ [AU]")
     ax.set_ylabel(r"$\log(M(r))$ [g]")
-    ax.set_title(f"Cloudlet inclinations: logM(r) vs logr")
+    ax.set_title(f"Cloudlet inclinations: logM(r) vs logr (53kyr)")
     ax.legend()
     plt.savefig('logM_vs_logr_all_incs.png')
+    plt.show()
+
+    fig, ax = plt.subplots()
+    inset_ax = inset_axes(ax, width="35%", height="35%", bbox_to_anchor=(0.6, 0.25, 0.95, 0.95), bbox_transform=fig.transFigure, loc="lower left")      
+    y1, y2 = 31.82, 31.9
+    x1, x2 = 1.5, 3.5
+    inset_ax.set_ylim(y1, y2)
+    inset_ax.set_xlim(x1, x2)
+    for key, value in cum_mass_allincs.items():
+        ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(value), label=key)
+        inset_ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(value))
+    ax.set_xlabel(r"$\log(r)$ [AU]")
+    ax.set_ylabel(r"$\log(\Sigma M(r))$")
+    inset_ax.tick_params(axis='both', labelsize=8)
+    ax.set_title(fr"Cloudlet inclinations: $\Sigma$log(M(r)) vs logr (53kyr)")
+    fig.tight_layout()
+    ax.legend(loc="upper right")   # loc='upper left', 
+    plt.savefig('cumlogM_vs_logr_all_incs.png')
     plt.show()
 
 
