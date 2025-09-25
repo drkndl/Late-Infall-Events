@@ -20,8 +20,8 @@ stoky = 3.156e7 * 1e3     # 1 kyr in sec
 def main():
 
 
-    folder = Path("../cloud_disk_it450/")         # Folder with the output files
-    fig_imgs = Path("cloud_disk_it450/imgs/")     # Folder to save images
+    folder = Path("../cloud_disk_it450_rotX45/")         # Folder with the output files
+    fig_imgs = Path("cloud_disk_it450_rotX45/imgs/")     # Folder to save images
     it = 450                                                       # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                         # Simulation name (for plot labels)
     
@@ -58,6 +58,8 @@ def main():
 
     fig, ax = plt.subplots()
     ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(shell_mass))
+    plt.axvline(2, linestyle=":", color="black")
+    plt.text(1.9, 27, "disk edge", rotation=90, verticalalignment='center')
     ax.set_xlabel(r"$\log(r)$ [AU]")
     ax.set_ylabel(r"$\log(M(r))$ [g]")
     ax.set_title(f"{sim_name}: logM(r) vs logr")
@@ -75,6 +77,8 @@ def main():
         plt.plot(np.log10(domains["r"]/au)[:-1], np.log10(shell_mass_allit[i]), color=cols(i))
     ax.set_xlabel(r"$\log(r)$ [AU]")
     ax.set_ylabel(r"$\log(M(r))$ [g]")
+    plt.axvline(2, linestyle=":", color="black")
+    plt.text(1.9, 24, "disk edge", rotation=90, verticalalignment='center')
     ax.set_title(f"{sim_name}: logM(r) vs logr time evolution")
 
     norm = mcolors.Normalize(vmin=min(dtkyrs), vmax=max(dtkyrs))     # Colorbar formatting
@@ -95,6 +99,8 @@ def main():
 
     fig, ax = plt.subplots()
     ax.plot(np.log10(domains["r"]/au)[:-2], np.log10(shell_dM/dR))
+    plt.axvline(2, linestyle=":", color="black")
+    plt.text(1.9, 14, "disk edge", rotation=90, verticalalignment='center')
     ax.set_xlabel(r"$\log(r)$ [AU]")
     ax.set_ylabel(r"$\log(dM(r)/dr)$")
     ax.set_title(f"{sim_name}: log(dM/dr) vs logr")
@@ -110,6 +116,8 @@ def main():
         plt.plot(np.log10(domains["r"]/au)[:-2], np.log10(shell_dM_allit[i]), color=cols(i))
     ax.set_xlabel(r"$\log(r)$ [AU]")
     ax.set_ylabel(r"$\log(\mathrm{dM(r)/dr})$")
+    plt.axvline(2, linestyle=":", color="black")
+    plt.text(1.9, 24, "disk edge", rotation=90, verticalalignment='center')
     ax.set_title(f"{sim_name}: log(dM/dr) vs logr time evolution")
 
     norm = mcolors.Normalize(vmin=min(dtkyrs), vmax=max(dtkyrs))     # Colorbar formatting
@@ -128,6 +136,8 @@ def main():
     
     fig, ax = plt.subplots()
     ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(M_cumsum))
+    plt.axvline(2, linestyle=":", color="black")
+    plt.text(1.9, 27, "disk edge", rotation=90, verticalalignment='center')
     ax.set_xlabel(r"$\log(r)$ [AU]")
     ax.set_ylabel(r"$\log(\Sigma M(r))$")
     ax.set_title(fr"{sim_name}: Cumulative log(M) vs logr")
@@ -141,6 +151,8 @@ def main():
         plt.plot(np.log10(domains["r"]/au)[:-1], np.log10(M_cumsum_allit[i]), color=cols(i))
     ax.set_xlabel(r"$\log(r)$ [AU]")
     ax.set_ylabel(r"$\log(\Sigma M(r))$")
+    plt.axvline(2, linestyle=":", color="black")
+    plt.text(1.9, 27, "disk edge", rotation=90, verticalalignment='center')
     ax.set_title(f"{sim_name}: Cumulative log(M) vs logr time evol")
 
     norm = mcolors.Normalize(vmin=min(dtkyrs), vmax=max(dtkyrs))     # Colorbar formatting
@@ -182,6 +194,8 @@ def main():
         ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(value), label=key)
     ax.set_xlabel(r"$\log(r)$ [AU]")
     ax.set_ylabel(r"$\log(M(r))$ [g]")
+    plt.axvline(2, linestyle=":", color="black")
+    plt.text(1.9, 27, "disk edge", rotation=90, verticalalignment='center')
     ax.set_title(f"Cloudlet inclinations: logM(r) vs logr (53kyr)")
     ax.legend()
     plt.savefig('logM_vs_logr_all_incs.png')
@@ -198,6 +212,9 @@ def main():
         inset_ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(value))
     ax.set_xlabel(r"$\log(r)$ [AU]")
     ax.set_ylabel(r"$\log(\Sigma M(r))$")
+    ax.axvline(2, linestyle=":", color="black")
+    ax.text(1.9, 27, "disk edge", rotation=90, verticalalignment='center')
+    inset_ax.axvline(2, linestyle=":", color="black")
     inset_ax.tick_params(axis='both', labelsize=8)
     ax.set_title(fr"Cloudlet inclinations: $\Sigma$log(M(r)) vs logr (53kyr)")
     fig.tight_layout()
@@ -210,7 +227,7 @@ def main():
 
 
     cmass_folders = [Path("../cloud_disk_it450"), Path("../cloud_disk_it450_cmass01"), Path("../cloud_disk_it450_cmass10")]
-    cmass_labels = {"cloud_disk_it450_cmass01": r"$M_{cloud} / M_{disk} = 0.045$", "cloud_disk_it450_cmass10": r"$M_{cloud} / M_{disk} = 4.5$", "cloud_disk_it450": r"$M_{cloud} / M_{disk} = 0.45$"}
+    cmass_labels = {"cloud_disk_it450_cmass01": r"$\mathrm{M_{cloud} / M_{disk}} = 0.045$", "cloud_disk_it450_cmass10": r"$\mathrm{M_{cloud} / M_{disk}} = 4.5$", "cloud_disk_it450": r"$\mathrm{M_{cloud} / M_{disk}} = 0.45$"}
 
     shell_mass_allcmass = {}
     cum_mass_allcmass = {}
@@ -237,6 +254,8 @@ def main():
         ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(value), label=cmass_labels[key])
     ax.set_xlabel(r"$\log(r)$ [AU]")
     ax.set_ylabel(r"$\log(M(r))$ [g]")
+    plt.axvline(2, linestyle=":", color="black")
+    plt.text(1.9, 27, "disk edge", rotation=90, verticalalignment='center')
     ax.set_title(f"Cloudlet masses: logM(r) vs logr (53kyr)")
     ax.legend()
     plt.savefig('logM_vs_logr_all_cmass.png')
@@ -244,9 +263,11 @@ def main():
 
     fig, ax = plt.subplots()
     for key, value in cum_mass_allcmass.items():
-        ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(value), label=key)
+        ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(value), label=cmass_labels[key])
     ax.set_xlabel(r"$\log(r)$ [AU]")
     ax.set_ylabel(r"$\log(\Sigma M(r))$")
+    plt.axvline(2, linestyle=":", color="black")
+    plt.text(1.9, 27, "disk edge", rotation=90, verticalalignment='center')
     ax.set_title(fr"Cloudlet masses: $\Sigma$log(M(r)) vs logr (53kyr)")
     fig.tight_layout()
     ax.legend(loc="lower right")   # loc='upper left', 
