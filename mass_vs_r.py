@@ -20,8 +20,8 @@ stoky = 3.156e7 * 1e3     # 1 kyr in sec
 def main():
 
 
-    folder = Path("../cloud_disk_it450_rotX45/")         # Folder with the output files
-    fig_imgs = Path("cloud_disk_it450_rotX45/imgs/")     # Folder to save images
+    folder = Path("../cloud_disk_it450_cmass10/")         # Folder with the output files
+    fig_imgs = Path("cloud_disk_it450_cmass10/imgs/")     # Folder to save images
     it = 450                                                       # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                         # Simulation name (for plot labels)
     
@@ -61,8 +61,8 @@ def main():
     plt.axvline(2, linestyle=":", color="black")
     plt.text(1.9, 29, "disk edge", rotation=90, verticalalignment='center')
     ax.set_xlabel(r"$\log(r)$ [AU]")
-    ax.set_ylabel(r"$\log(M(r))$ [g]")
-    ax.set_title(f"{sim_name}: logM(r) vs logr")
+    ax.set_ylabel(r"$\mathrm{\log(M_{shell}(r))}$ [g]")
+    ax.set_title(fr"{sim_name}: $\mathrm{{\log(M_{{shell}}(r))}}$ vs logr")
     plt.savefig(f'{fig_imgs}/logM_vs_logr_it{it}.png')
     plt.show()
 
@@ -76,10 +76,10 @@ def main():
     for i in range(evol_it):
         plt.plot(np.log10(domains["r"]/au)[:-1], np.log10(shell_mass_allit[i]), color=cols(i))
     ax.set_xlabel(r"$\log(r)$ [AU]")
-    ax.set_ylabel(r"$\log(M(r))$ [g]")
+    ax.set_ylabel(r"$\mathrm{\log(M_{shell}(r))}$ [g]")
     plt.axvline(2, linestyle=":", color="black")
     plt.text(1.9, 24, "disk edge", rotation=90, verticalalignment='center')
-    ax.set_title(f"{sim_name}: logM(r) vs logr time evolution")
+    ax.set_title(fr"{sim_name}: $\mathrm{{\log(M_{{shell}}(r))}}$ vs logr time evolution")
 
     norm = mcolors.Normalize(vmin=min(dtkyrs), vmax=max(dtkyrs))     # Colorbar formatting
     sm = cm.ScalarMappable(cmap=cols, norm=norm)
@@ -102,8 +102,8 @@ def main():
     plt.axvline(2, linestyle=":", color="black")
     plt.text(1.9, 14, "disk edge", rotation=90, verticalalignment='center')
     ax.set_xlabel(r"$\log(r)$ [AU]")
-    ax.set_ylabel(r"$\log(dM(r)/dr)$")
-    ax.set_title(f"{sim_name}: log(dM/dr) vs logr")
+    ax.set_ylabel(r"$\mathrm{\log(dM_{shell}(r)/dr)}$")
+    ax.set_title(rf"{sim_name}: $\mathrm{{\log(dM_{{shell}}(r)/dr)}}$ vs logr")
     plt.savefig(f'{fig_imgs}/logdMdr_vs_logr_it{it}.png')
     plt.show()
 
@@ -113,12 +113,12 @@ def main():
     
     fig, ax = plt.subplots()
     for i in range(evol_it):
-        plt.plot(np.log10(domains["r"]/au)[:-2], np.log10(shell_dM_allit[i]), color=cols(i))
+        plt.plot(np.log10(domains["r"]/au)[:-2], np.log10(shell_dM_allit[i]/dR), color=cols(i))
     ax.set_xlabel(r"$\log(r)$ [AU]")
-    ax.set_ylabel(r"$\log(\mathrm{dM(r)/dr})$")
+    ax.set_ylabel(r"$\mathrm{\log(dM_{shell}(r)/dr)}$")
     plt.axvline(2, linestyle=":", color="black")
-    plt.text(1.9, 24, "disk edge", rotation=90, verticalalignment='center')
-    ax.set_title(f"{sim_name}: log(dM/dr) vs logr time evolution")
+    plt.text(1.9, 10, "disk edge", rotation=90, verticalalignment='center')
+    ax.set_title(fr"{sim_name}: $\mathrm{{\log(dM_{{shell}}(r)/dr)}}$ vs logr time evolution")
 
     norm = mcolors.Normalize(vmin=min(dtkyrs), vmax=max(dtkyrs))     # Colorbar formatting
     sm = cm.ScalarMappable(cmap=cols, norm=norm)
@@ -139,8 +139,8 @@ def main():
     plt.axvline(2, linestyle=":", color="black")
     plt.text(1.9, 29, "disk edge", rotation=90, verticalalignment='center')
     ax.set_xlabel(r"$\log(r)$ [AU]")
-    ax.set_ylabel(r"$\log(\Sigma M(r))$")
-    ax.set_title(fr"{sim_name}: Cumulative log(M) vs logr")
+    ax.set_ylabel(r"$\mathrm{\log(M_{cum}(r))}$")
+    ax.set_title(fr"{sim_name}: $\mathrm{{\log(M_{{cum}}(r))}}$ vs logr")
     plt.savefig(f'{fig_imgs}/cumlogM_vs_logr_it{it}.png')
     plt.show()
 
@@ -150,10 +150,10 @@ def main():
     for i in range(evol_it):
         plt.plot(np.log10(domains["r"]/au)[:-1], np.log10(M_cumsum_allit[i]), color=cols(i))
     ax.set_xlabel(r"$\log(r)$ [AU]")
-    ax.set_ylabel(r"$\log(\Sigma M(r))$")
+    ax.set_ylabel(r'$\mathrm{{\log(M_{{cum}}(r))}}$')
     plt.axvline(2, linestyle=":", color="black")
     plt.text(1.9, 29, "disk edge", rotation=90, verticalalignment='center')
-    ax.set_title(f"{sim_name}: Cumulative log(M) vs logr time evol")
+    ax.set_title(fr"{sim_name}: $\mathrm{{\log(M_{{cum}}(r))}}$ vs logr time evol")
 
     norm = mcolors.Normalize(vmin=min(dtkyrs), vmax=max(dtkyrs))     # Colorbar formatting
     sm = cm.ScalarMappable(cmap=cols, norm=norm)
@@ -161,6 +161,91 @@ def main():
     cbar = plt.colorbar(sm, ax=ax, pad=0.02)
     cbar.set_label("Time [kyr]")
     plt.savefig(f'{fig_imgs}/cumlogM_vs_logr_timeevol.png')
+    plt.show()
+
+
+    ############################### log ((dM_cumsum) / dr) in each spherical shell ##############################
+
+
+    dM_cum = np.diff(M_cumsum)
+    
+    fig, ax = plt.subplots()
+    ax.plot(np.log10(domains["r"]/au)[:-2], np.log10(dM_cum/dR))
+    plt.axvline(2, linestyle=":", color="black")
+    plt.text(1.9, 15, "disk edge", rotation=90, verticalalignment='center')
+    ax.set_xlabel(r"$\log(r)$ [AU]")
+    ax.set_ylabel(r"$\log(\mathrm{dM_{cum}(r)/dr})$")
+    ax.set_title(fr"{sim_name}: log($\mathrm{{dM_{{cum}}(r)/dr}}$) vs logr")
+    plt.savefig(f'{fig_imgs}/logdMcumdr_vs_logr_it{it}.png')
+    plt.show()
+
+    dM_cum_allit = np.diff(M_cumsum_allit, axis=1)
+    
+    fig, ax = plt.subplots()
+    for i in range(evol_it):
+        plt.plot(np.log10(domains["r"]/au)[:-2], np.log10(dM_cum_allit[i]/dR), color=cols(i))
+    ax.set_xlabel(r"$\log(r)$ [AU]")
+    ax.set_ylabel(r"$\log(\mathrm{dM_{cum}(r)/dr})$")
+    plt.axvline(2, linestyle=":", color="black")
+    plt.text(1.9, 10, "disk edge", rotation=90, verticalalignment='center')
+    ax.set_title(fr"{sim_name}: log($\mathrm{{dM_{{cum}}(r)/dr}}$) vs logr time evol")
+
+    norm = mcolors.Normalize(vmin=min(dtkyrs), vmax=max(dtkyrs))     # Colorbar formatting
+    sm = cm.ScalarMappable(cmap=cols, norm=norm)
+    sm.set_array([])  
+    cbar = plt.colorbar(sm, ax=ax, pad=0.02)
+    cbar.set_label("Time [kyr]")
+    plt.savefig(f'{fig_imgs}/logdMcumdr_vs_logr_timeevol.png')
+    plt.show()
+
+
+    ############################### log((dM_cumsum) / dlog(r)) in each spherical shell ##############################
+
+
+    dlogR = np.diff(np.log10(domains["r"][:-1]))
+    
+    fig, ax = plt.subplots()
+    ax.plot(np.log10(domains["r"]/au)[:-2], np.log10(dM_cum/dlogR))
+    plt.axvline(2, linestyle=":", color="black")
+    plt.text(1.9, 30, "disk edge", rotation=90, verticalalignment='center')
+    ax.set_xlabel(r"$\log(r)$ [AU]")
+    ax.set_ylabel(r"$\mathrm{\log(dM_{cum}(r)/d\log(r))}$")
+    ax.set_title(fr"{sim_name}: $\mathrm{{\log(dM_{{cum}}(r)/d\log(r))}}$ vs logr")
+    plt.savefig(f'{fig_imgs}/dMcumdlogr_vs_logr_it{it}.png')
+    plt.show()
+    
+    fig, ax = plt.subplots()
+    for i in range(evol_it):
+        plt.plot(np.log10(domains["r"]/au)[:-2], np.log10(dM_cum_allit[i]/dlogR), color=cols(i))
+    ax.set_xlabel(r"$\log(r)$ [AU]")
+    ax.set_ylabel(r"$\mathrm{\log(dM_{cum}(r)/d\log(r))}$")
+    plt.axvline(2, linestyle=":", color="black")
+    plt.text(1.9, 26, "disk edge", rotation=90, verticalalignment='center')
+    ax.set_title(fr"{sim_name}: $\mathrm{{\log(dM_{{cum}}(r)/d\log(r))}}$ vs logr time evol")
+
+    norm = mcolors.Normalize(vmin=min(dtkyrs), vmax=max(dtkyrs))     # Colorbar formatting
+    sm = cm.ScalarMappable(cmap=cols, norm=norm)
+    sm.set_array([])  
+    cbar = plt.colorbar(sm, ax=ax, pad=0.02)
+    cbar.set_label("Time [kyr]")
+    plt.savefig(f'{fig_imgs}/dMcumdlogr_vs_logr_timeevol.png')
+    plt.show()
+
+
+    ##################################### Comparing different logM vs logr plots ################################
+
+
+    fig, ax = plt.subplots()
+    ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(shell_mass), label=r"$\mathrm{\log(M_{shell}(r))}$")
+    ax.plot(np.log10(domains["r"]/au)[:-2], np.log10(dM_cum/dR), label=r"$\log(\mathrm{dM_{cum}(r)/dr})$")
+    ax.plot(np.log10(domains["r"]/au)[:-2], np.log10(dM_cum/dlogR), label=r"$\mathrm{{\log(dM_{{cum}}(r)/d\log(r))}}$")
+    plt.axvline(2, linestyle=":", color="black")
+    plt.text(1.9, 23, "disk edge", rotation=90, verticalalignment='center')
+    ax.set_xlabel(r"$\log(r)$ [AU]")
+    # ax.set_ylabel(r"$\mathrm{\log(dM_{cum}(r)/d\log(r))}$")
+    ax.set_title(fr"{sim_name}: Different logM vs logr")
+    ax.legend()
+    plt.savefig(f'{fig_imgs}/compare_logM_vs_logr_it{it}.png')
     plt.show()
 
 

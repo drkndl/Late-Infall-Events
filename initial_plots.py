@@ -8,7 +8,7 @@ import astropy.constants as c
 au = c.au.cgs.value
 
 
-folder = Path("../cloud_disk_it450_rotX45/")         # Folder with the output files
+folder = Path("../cloud_disk_it450/")         # Folder with the output files
 sim_name = str(folder).split('/')[1]                 # Simulation name (for plot labelling)
 it = 450                                             # FARGO snapshot
 
@@ -52,28 +52,37 @@ mass_allit = np.asarray(mass_allit)
 labels = [r'$\pi - \theta$ [deg]',r'$\log r$ [AU]',r'$\phi$ [deg]']
 labels_allit = [r"Time"] + labels
 
+
 ################## Plot r-theta slice (flipping theta to match physics convention of spherical coords)
 
 # rho plot at 1 iteration
-interactive_2D(np.log10(rho[::-1,:,:]), [r'$\phi$ [deg]'], (1,0), np.log10(domains['r'] / au), np.rad2deg(domains['theta']), labels, title=rf"{sim_name}: $\rho$ $(r, \theta)$ it={it}")
+# interactive_2D(np.log10(rho[::-1,:,:]), [r'$\phi$ [deg]'], (1,0), np.log10(domains['r'] / au), np.rad2deg(domains['theta']), labels, title=rf"{sim_name}: $\rho$ $(r, \theta)$ it={it}")
 
 # mass plot at 1 iteration (mass shape is (ntheta-1, nr-1, nphi-1))
-interactive_2D(np.log10(mass[::-1,:,:]), [r'$\phi$ [deg]'], (1,0), np.log10(domains['r'] / au)[:-1], np.rad2deg(domains['theta'])[:-1], labels, vmin=20, title=rf"{sim_name}: $M$ $(r, \theta)$ it={it}")
+# interactive_2D(np.log10(mass[::-1,:,:]), [r'$\phi$ [deg]'], (1,0), np.log10(domains['r'] / au)[:-1], np.rad2deg(domains['theta'])[:-1], labels, vmin=20, title=rf"{sim_name}: $M$ $(r, \theta)$ it={it}")
 
 # rho plot at all iterations
 interactive_2D(np.log10(rho_allit[:,::-1,:,:]), [r"Time", r'$\phi$ [deg]'], (2,1), np.log10(domains['r'] / au), np.rad2deg(domains['theta']), labels_allit, title=rf"{sim_name}: $\rho$ $(r, \theta)$ Time Evolution")
 
 # mass plot at all iterations
-interactive_2D(np.log10(mass_allit[:,::-1,:,:]), [r"Time", r'$\phi$ [deg]'], (2,1), np.log10(domains['r'] / au)[:-1], np.rad2deg(domains['theta'])[:-1], labels_allit, vmin=20, title=rf"{sim_name}: $\rho$ $(r, \theta)$ Time Evolution")
+interactive_2D(np.log10(mass_allit[:,::-1,:,:]), [r"Time", r'$\phi$ [deg]'], (2,1), np.log10(domains['r'] / au)[:-1], np.rad2deg(domains['theta'])[:-1], labels_allit, vmin=20, title=rf"{sim_name}: $M$ $(r, \theta)$ Time Evolution")
 
-wehbwbwk
 # velocity plot at 1 iteration
 # interactive_2D(np.log10(vsph[::-1,:,:]), (1,0), np.log10(domains['r'] / au), np.rad2deg(domains['theta']), labels)
 
 ################### Plot r-phi slice (flipping theta to match physics convention of spherical coords)
 
 # rho plot at 1 iteration
-interactive_2D(np.log10(rho[::-1,:,:]), [r'$\pi - \theta$ [deg]'], (1,2), np.log10(domains['r'] / au), np.rad2deg(domains['phi']), labels, title=rf"{sim_name}: $\rho$ $(r, \phi)$ it={it}")
+# interactive_2D(np.log10(rho[::-1,:,:]), [r'$\pi - \theta$ [deg]'], (1,2), np.log10(domains['r'] / au), np.rad2deg(domains['phi']), labels, title=rf"{sim_name}: $\rho$ $(r, \phi)$ it={it}")
+
+# # mass plot at 1 iteration (mass shape is (ntheta-1, nr-1, nphi-1))
+# interactive_2D(np.log10(mass[::-1,:,:]), [r'$\pi - \theta$ [deg]'], (1,2), np.log10(domains['r'] / au)[:-1], np.rad2deg(domains['phi'])[:-1], labels, vmin=20, title=rf"{sim_name}: $M$ $(r, \phi)$ it={it}")
+
+# # rho plot at all iterations
+# interactive_2D(np.log10(rho_allit[:,::-1,:,:]), [r"Time", r'$\pi - \theta$ [deg]'], (2,3), np.log10(domains['r'] / au), np.rad2deg(domains['phi']), labels_allit, title=rf"{sim_name}: $\rho$ $(r, \phi)$ Time Evolution")
+
+# # mass plot at all iterations
+# interactive_2D(np.log10(mass_allit[:,::-1,:,:]), [r"Time", r'$\pi - \theta$ [deg]'], (2,3), np.log10(domains['r'] / au)[:-1], np.rad2deg(domains['phi'])[:-1], labels_allit, vmin=20, title=rf"{sim_name}: $\rho$ $(r, \phi)$ Time Evolution")
 
 # velocity plot at 1 iteration
 # interactive_2D(np.log10(vsph[::-1,:,:]), (1,2), np.log10(domains['r'] / au), np.rad2deg(domains['phi']), labels)
@@ -81,7 +90,16 @@ interactive_2D(np.log10(rho[::-1,:,:]), [r'$\pi - \theta$ [deg]'], (1,2), np.log
 #################### Plot phi-theta slice (flipping theta to match physics convention of spherical coords)
 
 # rho plot at 1 iteration
-interactive_2D(np.log10(rho[::-1,:,:]), [r'$\log r$ [AU]'], (2,0), np.rad2deg(domains['phi']), np.rad2deg(domains['theta']), labels, title=rf"{sim_name}: $\rho$ $(\theta, \phi)$ it={it}")
+# interactive_2D(np.log10(rho[::-1,:,:]), [r'$\log r$ [AU]'], (2,0), np.rad2deg(domains['phi']), np.rad2deg(domains['theta']), labels, title=rf"{sim_name}: $\rho$ $(\theta, \phi)$ it={it}")
+
+# mass plot at 1 iteration (mass shape is (ntheta-1, nr-1, nphi-1))
+# interactive_2D(np.log10(mass[::-1,:,:]), [r'$\log r$ [AU]'], (2,0), np.log10(domains['phi'])[:-1], np.rad2deg(domains['theta'])[:-1], labels, vmin=15, title=rf"{sim_name}: $M$ $(\theta, \phi)$ it={it}")
+
+# rho plot at all iterations
+# interactive_2D(np.log10(rho_allit[:,::-1,:,:]), [r"Time", r'$\log r$ [AU]'], (3,1), np.log10(domains['phi']), np.rad2deg(domains['theta']), labels_allit, title=rf"{sim_name}: $\rho$ $(\theta, \phi)$ Time Evolution")
+
+# mass plot at all iterations
+# interactive_2D(np.log10(mass_allit[:,::-1,:,:]), [r"Time", r'$\log r$ [AU]'], (3,1), np.log10(domains['phi'])[:-1], np.rad2deg(domains['theta'])[:-1], labels_allit, vmin=20, title=rf"{sim_name}: $\rho$ $(\theta, \phi)$ Time Evolution")
 
 # velocity plot at 1 iteration
 # interactive_2D(np.log10(vsph[::-1,:,:]), (2,0), np.rad2deg(domains['phi']), np.rad2deg(domains['theta']), labels)
