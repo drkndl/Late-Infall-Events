@@ -59,7 +59,7 @@ def main():
     fig, ax = plt.subplots()
     ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(shell_mass))
     plt.axvline(2, linestyle=":", color="black")
-    plt.text(1.9, 27, "disk edge", rotation=90, verticalalignment='center')
+    plt.text(1.9, 29, "disk edge", rotation=90, verticalalignment='center')
     ax.set_xlabel(r"$\log(r)$ [AU]")
     ax.set_ylabel(r"$\log(M(r))$ [g]")
     ax.set_title(f"{sim_name}: logM(r) vs logr")
@@ -137,7 +137,7 @@ def main():
     fig, ax = plt.subplots()
     ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(M_cumsum))
     plt.axvline(2, linestyle=":", color="black")
-    plt.text(1.9, 27, "disk edge", rotation=90, verticalalignment='center')
+    plt.text(1.9, 29, "disk edge", rotation=90, verticalalignment='center')
     ax.set_xlabel(r"$\log(r)$ [AU]")
     ax.set_ylabel(r"$\log(\Sigma M(r))$")
     ax.set_title(fr"{sim_name}: Cumulative log(M) vs logr")
@@ -152,7 +152,7 @@ def main():
     ax.set_xlabel(r"$\log(r)$ [AU]")
     ax.set_ylabel(r"$\log(\Sigma M(r))$")
     plt.axvline(2, linestyle=":", color="black")
-    plt.text(1.9, 27, "disk edge", rotation=90, verticalalignment='center')
+    plt.text(1.9, 29, "disk edge", rotation=90, verticalalignment='center')
     ax.set_title(f"{sim_name}: Cumulative log(M) vs logr time evol")
 
     norm = mcolors.Normalize(vmin=min(dtkyrs), vmax=max(dtkyrs))     # Colorbar formatting
@@ -166,7 +166,7 @@ def main():
 
     ####################### Compare radial mass distributions for different inclinations ########################
 
-
+    efkwfkfw
     inc_folders = [Path("../cloud_disk_it450"), Path("../cloud_disk_it450_rotX45"), Path("../cloud_disk_it450_rotXY45"), Path("../cloud_disk_it450_rotXY30"), Path("../cloud_disk_it450_rotXY90")]
 
     shell_mass_allincs = {}
@@ -195,7 +195,7 @@ def main():
     ax.set_xlabel(r"$\log(r)$ [AU]")
     ax.set_ylabel(r"$\log(M(r))$ [g]")
     plt.axvline(2, linestyle=":", color="black")
-    plt.text(1.9, 27, "disk edge", rotation=90, verticalalignment='center')
+    plt.text(1.9, 29, "disk edge", rotation=90, verticalalignment='center')
     ax.set_title(f"Cloudlet inclinations: logM(r) vs logr (53kyr)")
     ax.legend()
     plt.savefig('logM_vs_logr_all_incs.png')
@@ -213,7 +213,7 @@ def main():
     ax.set_xlabel(r"$\log(r)$ [AU]")
     ax.set_ylabel(r"$\log(\Sigma M(r))$")
     ax.axvline(2, linestyle=":", color="black")
-    ax.text(1.9, 27, "disk edge", rotation=90, verticalalignment='center')
+    ax.text(1.9, 29, "disk edge", rotation=90, verticalalignment='center')
     inset_ax.axvline(2, linestyle=":", color="black")
     inset_ax.tick_params(axis='both', labelsize=8)
     ax.set_title(fr"Cloudlet inclinations: $\Sigma$log(M(r)) vs logr (53kyr)")
@@ -255,7 +255,7 @@ def main():
     ax.set_xlabel(r"$\log(r)$ [AU]")
     ax.set_ylabel(r"$\log(M(r))$ [g]")
     plt.axvline(2, linestyle=":", color="black")
-    plt.text(1.9, 27, "disk edge", rotation=90, verticalalignment='center')
+    plt.text(1.9, 29, "disk edge", rotation=90, verticalalignment='center')
     ax.set_title(f"Cloudlet masses: logM(r) vs logr (53kyr)")
     ax.legend()
     plt.savefig('logM_vs_logr_all_cmass.png')
@@ -267,7 +267,7 @@ def main():
     ax.set_xlabel(r"$\log(r)$ [AU]")
     ax.set_ylabel(r"$\log(\Sigma M(r))$")
     plt.axvline(2, linestyle=":", color="black")
-    plt.text(1.9, 27, "disk edge", rotation=90, verticalalignment='center')
+    plt.text(1.9, 29, "disk edge", rotation=90, verticalalignment='center')
     ax.set_title(fr"Cloudlet masses: $\Sigma$log(M(r)) vs logr (53kyr)")
     fig.tight_layout()
     ax.legend(loc="lower right")   # loc='upper left', 
