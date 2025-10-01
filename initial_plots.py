@@ -52,6 +52,14 @@ mass_allit = np.asarray(mass_allit)
 labels = [r'$\pi - \theta$ [deg]',r'$\log r$ [AU]',r'$\phi$ [deg]']
 labels_allit = [r"Time"] + labels
 
+# iphi_deg9 = np.round(np.rad2deg(domains["phi"][9]), 2)
+# print(iphi_deg9)
+
+# iphi_deg12 = np.round(np.rad2deg(domains["phi"][12]), 2)
+# print(iphi_deg12)
+
+# rebfeknfek
+
 
 ################## Plot r-theta slice (flipping theta to match physics convention of spherical coords)
 

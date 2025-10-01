@@ -159,7 +159,7 @@ def contours_3D(X, Y, Z, data, Rwarp, sim_params, colorbarlabel, title, savefig,
     ax.set_zlabel("Z [AU]")
     ax.set_xlim(-Rwarp[-1]/au - 5, Rwarp[-1]/au + 5)
     ax.set_ylim(-Rwarp[-1]/au - 5, Rwarp[-1]/au + 5)
-    ax.set_zlim(-30, 30)
+    ax.set_zlim(-100, 100)
     ax.set_title(title, pad=30)
 
     # Initial camera position of the 3D plot (default: elev=-41, azim=-62 for best view of warp)
@@ -440,7 +440,7 @@ def plot_twist_arrows(Lx_avg, Ly_avg, Lz_avg, R, Rwarp, sim_params, title, savef
         plt.close()
 
 
-def plot_total_disks_bonanza(X, Y, Z, p_dens, s_dens, LX, LY, LZ, Ldx, Ldy, Ldz, sim_params, length, colorbarlabel, title, figfolder, azim=-62, elev=-41, savefig=False, showfig=True):
+def plot_total_disks_bonanza(X, Y, Z, p_dens, s_dens, LX, LY, LZ, Ldx, Ldy, Ldz, sim_params, length, Rwarp, colorbarlabel, title, figfolder, azim=-62, elev=-41, savefig=False, showfig=True):
     """
     A plot of primary + secondary densities and their total disk angular momenta
     """
@@ -479,8 +479,8 @@ def plot_total_disks_bonanza(X, Y, Z, p_dens, s_dens, LX, LY, LZ, Ldx, Ldy, Ldz,
     ax.set_xlabel("X [AU]")
     ax.set_ylabel("Y [AU]")
     ax.set_zlabel("Z [AU]")
-    ax.set_xlim(-200, 200)
-    ax.set_ylim(-200, 200)
+    ax.set_xlim(-Rwarp[-1]/au - 5, Rwarp[-1]/au + 5)
+    ax.set_ylim(-Rwarp[-1]/au - 5, Rwarp[-1]/au + 5)
     ax.set_zlim(-200, 200)
     ax.set_title(title, pad=30)
 

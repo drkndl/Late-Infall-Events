@@ -503,8 +503,8 @@ def calc_total_L(Lx_avg, Ly_avg, Lz_avg):
 
 def main():
 
-    folder = Path("../cloud_disk_it450_rotX45/")         # Folder with the output files
-    fig_imgs = Path("cloud_disk_it450_rotX45/imgs/")     # Folder to save images
+    folder = Path("../cloud_disk_it450_rotXY90/")         # Folder with the output files
+    fig_imgs = Path("cloud_disk_it450_rotXY90/imgs/")     # Folder to save images
     it = 450                                                       # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                         # Simulation name (for plot labels)
     sim_params = load_par_file(f"{sim_name}/{sim_name}.par")       # Loading simulation parameters from the .par file
@@ -562,7 +562,7 @@ def main():
 
     # Note 1: I am using centered densities to isolate the warp to match the indices corresponding to the warp with the angular momenta indices
     # Note 2: The warp_ids itself is a 3D Boolean array, but when applied to another array such as x[warp_ids], the latter array becomes 1D
-    warp_thresh = -16   # log of density threshold for which we can see the warp in the primary
+    warp_thresh = -18   # log of density threshold for which we can see the warp in the primary
     warp_buffer = 500   # Isolates a box of 2 * warp_buffer around the star (AU)
     rho_c_warp, vx_c_warp, vy_c_warp, vz_c_warp, Lx_c_warp, Ly_c_warp, Lz_c_warp, warp_ids = isolate_disk(X_c, Y_c, Z_c, Px * au, Py * au, Pz * au, warp_buffer * au, rho_c, vx_c, vy_c, vz_c, Lx, Ly, Lz, warp_thresh) 
 
@@ -591,9 +591,8 @@ def main():
     # XY_2D_plot(rho, X, Y, irad, itheta, title=rf'Density X-Y Plane $\theta = $ {itheta_deg}$^{{\circ}}$', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=f'{fig_imgs}/dens_xy_theta{itheta}_rad{irad}.png', showfig=True)
 
     # Plotting the 3D warp/disk densities 
-    contours_3D(X_c/au, Y_c/au, Z_c/au, np.log10(rho_c_warp), r_select, plot_args, colorbarlabel=r'$\log(\rho) [g/cm^3]$', title=r'Primary disk: $\log(\rho)$', savefig=False, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=True)
-
-    fhev
+    print(r_select/au)
+    contours_3D(X_c/au, Y_c/au, Z_c/au, np.log10(rho_c_warp), r_select, plot_args, colorbarlabel=r'$\log(\rho) [g/cm^3]$', title=r'Initial & Outer Disks: $\log(\rho)$', savefig=True, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=True)
     
     # Another way to plot the warp/disk densities
     # contours_3D(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, rho_c[warp_ids], fig, colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$')
@@ -610,13 +609,13 @@ def main():
     # print(np.min(twist), np.max(twist), np.mean(twist))
 
     # Calculating and plotting the radial profile of warp/disk precession as a quiver plot
-    plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, plot_args, title="Disk Twist", savefig=True, figfolder=f'{fig_imgs}/warp_twist_arrows_it{it}.png', showfig=True)
+    plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, plot_args, title="Disk Twist", savefig=True, figfolder=f'{fig_imgs}/warp_twist_arrows_it{it}_dens{warp_thresh}.png', showfig=True)
 
     # Calculating and plotting the total angular momentum of the warped disk
     Lx_disk, Ly_disk, Lz_disk = calc_total_L(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg)
     # quiver_plot_3d(np.array([Px]), np.array([Py]), np.array([Pz]), np.array([Lx_disk]), np.array([Ly_disk]), np.array([Lz_disk]), stagger=1, length=0.05, title=f"{sim_name} Total disk angular momentum", colorbarlabel="logL", savefig=False, figfolder=f'{fig_imgs}/{sim_name}_totalL.png', logmag=True)
 
-    plot_total_disks_bonanza(X_c/au, Y_c/au, Z_c/au, rho_c_warp, None, Px, Py, Pz, Lx_disk, Ly_disk, Lz_disk, sim_params, length=150, azim=-106, elev=36, colorbarlabel=r'$\rho_{norm}$', title=rf'{sim_name} Disk $\rho$ and L, t = {int(it * dt * ninterm / stoky)} kyr', savefig=True, figfolder=f'{fig_imgs}/total_bonanza_it{it}.png', showfig=True)
+    plot_total_disks_bonanza(X_c/au, Y_c/au, Z_c/au, rho_c_warp, None, Px, Py, Pz, Lx_disk, Ly_disk, Lz_disk, sim_params, length=150, Rwarp=r_select, azim=-106, elev=36, colorbarlabel=r'$\rho_{norm}$', title=rf'{sim_name} Disk $\rho$ and L, t = {int(it * dt * ninterm / stoky)} kyr', savefig=True, figfolder=f'{fig_imgs}/total_bonanza_it{it}_dens{warp_thresh}.png', showfig=True)
 
     # Plotting warp surface density
     # plot_surf_dens(X_c, Y_c, Z_c, surf_dens, warp_ids, domains["r"], savefig=False, figfolder=f'../warp_L_thresh{warp_thresh}_it{it}.png', showfig=True)
