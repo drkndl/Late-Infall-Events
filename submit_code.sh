@@ -7,7 +7,7 @@
 #SBATCH --partition=compute
 #SBATCH --output=%x.o%j
 #SBATCH --error=%x.e%j
-#SBATCH --mail-type=ALL
+#SBATCH --mail-type=NONE
 #SBATCH --mail-user=drishika.nadella@stud.uni-heidelberg.de
 #SBATCH -J submit_code
 
