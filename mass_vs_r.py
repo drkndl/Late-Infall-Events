@@ -282,19 +282,27 @@ def main():
     ax.set_xlabel(r"$\log(r)$ [AU]")
     ax.set_ylabel(r"$\mathrm{\log(M_{shell}(r))}$ [g]")
     plt.axvline(2, linestyle=":", color="black")
-    plt.text(1.9, 29, "disk edge", rotation=90, verticalalignment='center')
+    plt.text(1.9, 26, "disk edge", rotation=90, verticalalignment='center')
     ax.set_title(f"Cloudlet impact parameters: $\mathrm{{\log(M_{{shell}}(r))}}$ vs logr (53kyr)")
     ax.legend()
     plt.savefig('logM_vs_logr_all_b.png')
     plt.show()
 
     fig, ax = plt.subplots()
+    inset_ax = inset_axes(ax, width="35%", height="35%", bbox_to_anchor=(0.6, 0.25, 0.95, 0.95), bbox_transform=fig.transFigure, loc="lower left")      
+    y1, y2 = 31.7, 31.9
+    x1, x2 = 1.5, 3.5
+    inset_ax.set_ylim(y1, y2)
+    inset_ax.set_xlim(x1, x2)
     for key, value in cum_mass_allb.items():
         ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(value), label=b_labels[key])
+        inset_ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(value))
     ax.set_xlabel(r"$\log(r)$ [AU]")
     ax.set_ylabel(r"$\mathrm{\log(M_{cum}(r))}$")
     ax.axvline(2, linestyle=":", color="black")
     ax.text(1.9, 29, "disk edge", rotation=90, verticalalignment='center')
+    inset_ax.axvline(2, linestyle=":", color="black")
+    inset_ax.tick_params(axis='both', labelsize=8)
     ax.set_title(fr"Cloudlet impact parameters: $\mathrm{{\log(M_{{cum}}(r))}}$ vs logr (53kyr)")
     fig.tight_layout()
     ax.legend(loc="upper right")   # loc='upper left', 
