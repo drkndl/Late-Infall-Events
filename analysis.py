@@ -503,8 +503,8 @@ def calc_total_L(Lx_avg, Ly_avg, Lz_avg):
 
 def main():
 
-    folder = Path("../cloud_disk_it450_rotXY90/")         # Folder with the output files
-    fig_imgs = Path("cloud_disk_it450_rotXY90/imgs/")     # Folder to save images
+    folder = Path("../cloud_disk_it450_retro_rotX45/")         # Folder with the output files
+    fig_imgs = Path("cloud_disk_it450_retro_rotX45/imgs/")     # Folder to save images
     it = 450                                                       # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                         # Simulation name (for plot labels)
     sim_params = load_par_file(f"{sim_name}/{sim_name}.par")       # Loading simulation parameters from the .par file
@@ -560,7 +560,7 @@ def main():
 
     # Note 1: I am using centered densities to isolate the warp to match the indices corresponding to the warp with the angular momenta indices
     # Note 2: The warp_ids itself is a 3D Boolean array, but when applied to another array such as x[warp_ids], the latter array becomes 1D
-    warp_thresh = -18   # log of density threshold for which we can see the warp in the primary
+    warp_thresh = -17   # log of density threshold for which we can see the warp in the primary
     warp_buffer = 500   # Isolates a box of 2 * warp_buffer around the star (AU)
     rho_c_warp, vx_c_warp, vy_c_warp, vz_c_warp, Lx_c_warp, Ly_c_warp, Lz_c_warp, warp_ids = isolate_disk(X_c, Y_c, Z_c, Px * au, Py * au, Pz * au, warp_buffer * au, rho_c, vx_c, vy_c, vz_c, Lx, Ly, Lz, warp_thresh) 
 
