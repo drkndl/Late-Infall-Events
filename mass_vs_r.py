@@ -20,9 +20,9 @@ stoky = 3.156e7 * 1e3     # 1 kyr in sec
 def main():
 
 
-    # folder = Path("../cloud_disk_it450_cmass10/")         # Folder with the output files
-    folder = Path("../fargo3d/outputs/cloud_disk_it450_b075_rotXY45")         # Folder with the output files (BinAC2)
-    fig_imgs = Path("cloud_disk_it450_b075_rotXY45/imgs/")     # Folder to save images
+    # folder = Path("../cloud_disk_it450_cmass10/")                        # Folder with the output files
+    folder = Path("../fargo3d/outputs/cloud_nodisk_it450_rotXY45")         # Folder with the output files (BinAC2)
+    fig_imgs = Path("cloud_nodisk_it450_rotXY45/imgs/")                    # Folder to save images
     it = 450                                                       # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                         # Simulation name (for plot labels)
     
@@ -253,6 +253,66 @@ def main():
     ####################### Compare radial mass distributions for different impact parameters ########################
 
 
+    inc_nodisk_folders = [Path("../fargo3d/outputs/iras04125_lowres_it450_nocomp"), Path("../fargo3d/outputs/cloud_nodisk_it450_rotX45"), Path("../fargo3d/outputs/cloud_nodisk_it450_rotXY45"), Path("../fargo3d/outputs/cloud_nodisk_it450_rotXY30"), Path("../fargo3d/outputs/cloud_nodisk_it450_rotXY90")]
+    inc_nodisk_labels = {"iras04125_lowres_it450_nocomp": r"$\mathrm{i = 0\degree}$", "cloud_nodisk_it450_rotX45": r"$\mathrm{i_X = 45\degree}$", "cloud_nodisk_it450_rotXY45": r"$\mathrm{i_{XY} = 45\degree}$", "cloud_nodisk_it450_rotXY30": r"$\mathrm{i_{XY} = 30\degree}$", "cloud_nodisk_it450_rotXY90": r"$\mathrm{i_{XY} = 90\degree}$"}
+
+    shell_mass_allincs_nodisk = {}
+    cum_mass_allincs_nodisk = {}
+
+    for f in inc_nodisk_folders:
+        
+        f_sim_name = str(f).split('/')[3]                       # Simulation name (for plot labels)
+        domains = get_domain_spherical(f)                       # Load coordinates
+        f_rho = get_data(f, "dens", it, domains)                # Load 3D array of density values            
+
+        cell_volume = calc_cell_volume(domains["theta"], domains["r"], domains["phi"])
+        f_mass = calc_mass(f_rho, cell_volume)
+
+        # Mass in each spherical shell for a single iteration
+        f_shell_mass = np.sum(f_mass, axis=(0,2))                       # Shell mass in shape (nr-1)
+        shell_mass_allincs_nodisk[f_sim_name] = f_shell_mass
+
+        # Cumulative mass in each spherical shell for a single iteration
+        f_M_cumsum = np.cumsum(f_shell_mass)
+        cum_mass_allincs_nodisk[f_sim_name] = f_M_cumsum
+
+    fig, ax = plt.subplots()
+    for key, value in shell_mass_allincs_nodisk.items():
+        ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(value), label=inc_nodisk_labels[key])
+    ax.set_xlabel(r"$\log(r)$ [AU]")
+    ax.set_ylabel(r"$\mathrm{\log(M_{shell}(r))}$ [g]")
+    plt.axvline(2, linestyle=":", color="black")
+    plt.text(1.9, 26, "disk edge", rotation=90, verticalalignment='center')
+    ax.set_title(f"Cloudlet inclinations (no disks): $\mathrm{{\log(M_{{shell}}(r))}}$ vs logr (53kyr)")
+    ax.legend()
+    plt.savefig('logM_vs_logr_all_incs_nodisk.png')
+    plt.show()
+
+    fig, ax = plt.subplots()
+    # inset_ax = inset_axes(ax, width="35%", height="35%", bbox_to_anchor=(0.6, 0.25, 0.95, 0.95), bbox_transform=fig.transFigure, loc="lower left")      
+    # y1, y2 = 31.7, 31.9
+    # x1, x2 = 1.5, 3.5
+    # inset_ax.set_ylim(y1, y2)
+    # inset_ax.set_xlim(x1, x2)
+    for key, value in cum_mass_allb.items():
+        ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(value), label=inc_nodisk_labels[key])
+        inset_ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(value))
+    ax.set_xlabel(r"$\log(r)$ [AU]")
+    ax.set_ylabel(r"$\mathrm{\log(M_{cum}(r))}$")
+    ax.axvline(2, linestyle=":", color="black")
+    ax.text(1.9, 29, "disk edge", rotation=90, verticalalignment='center')
+    # inset_ax.axvline(2, linestyle=":", color="black")
+    # inset_ax.tick_params(axis='both', labelsize=8)
+    ax.set_title(fr"Cloudlet inclinations (no disks): $\mathrm{{\log(M_{{cum}}(r))}}$ vs logr (53kyr)")
+    fig.tight_layout()
+    ax.legend(loc="upper right")   # loc='upper left', 
+    plt.savefig('cumlogM_vs_logr_all_incs_nodisk.png')
+    plt.show()
+
+    wefhbjwfbwjrf
+    ####################### Compare radial mass distributions for different impact parameters ########################
+
+
     b_folders = [Path("../fargo3d/outputs/cloud_disk_it450_rotXY45"), Path("../fargo3d/outputs/cloud_disk_it450_b025_rotXY45"), Path("../fargo3d/outputs/cloud_disk_it450_b075_rotXY45")]
     b_labels = {"cloud_disk_it450_rotXY45": r"$\mathrm{b / b_{crit} = 0.5}$", "cloud_disk_it450_b025_rotXY45": r"$\mathrm{b / b_{crit} = 0.25}$", "cloud_disk_it450_b075_rotXY45": r"$\mathrm{b / b_{crit} = 0.75}$"}
 
@@ -312,7 +372,7 @@ def main():
 
     ####################### Compare radial mass distributions for different inclinations ########################
 
-    efvrkvn
+
     inc_folders = [Path("../cloud_disk_it450"), Path("../cloud_disk_it450_rotX45"), Path("../cloud_disk_it450_rotXY45"), Path("../cloud_disk_it450_rotXY30"), Path("../cloud_disk_it450_rotXY90")]
 
     shell_mass_allincs = {}
