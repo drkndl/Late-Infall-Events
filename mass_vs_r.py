@@ -253,8 +253,8 @@ def main():
     ####################### Compare radial mass distributions for different impact parameters ########################
 
 
-    inc_nodisk_folders = [Path("../fargo3d/outputs/iras04125_lowres_it450_nocomp"), Path("../fargo3d/outputs/cloud_nodisk_it450_rotX45"), Path("../fargo3d/outputs/cloud_nodisk_it450_rotXY45"), Path("../fargo3d/outputs/cloud_nodisk_it450_rotXY30"), Path("../fargo3d/outputs/cloud_nodisk_it450_rotXY90")]
-    inc_nodisk_labels = {"iras04125_lowres_it450_nocomp": r"$\mathrm{i = 0\degree}$", "cloud_nodisk_it450_rotX45": r"$\mathrm{i_X = 45\degree}$", "cloud_nodisk_it450_rotXY45": r"$\mathrm{i_{XY} = 45\degree}$", "cloud_nodisk_it450_rotXY30": r"$\mathrm{i_{XY} = 30\degree}$", "cloud_nodisk_it450_rotXY90": r"$\mathrm{i_{XY} = 90\degree}$"}
+    inc_nodisk_folders = [Path("../fargo3d/outputs/cloud_nodisk_it450_rotX45"), Path("../fargo3d/outputs/cloud_nodisk_it450_rotXY45"), Path("../fargo3d/outputs/cloud_nodisk_it450_rotXY30"), Path("../fargo3d/outputs/cloud_nodisk_it450_rotXY90")]
+    inc_nodisk_labels = {"cloud_nodisk_it450_rotX45": r"$\mathrm{i_X = 45\degree}$", "cloud_nodisk_it450_rotXY45": r"$\mathrm{i_{XY} = 45\degree}$", "cloud_nodisk_it450_rotXY30": r"$\mathrm{i_{XY} = 30\degree}$", "cloud_nodisk_it450_rotXY90": r"$\mathrm{i_{XY} = 90\degree}$"}
 
     shell_mass_allincs_nodisk = {}
     cum_mass_allincs_nodisk = {}
@@ -294,9 +294,9 @@ def main():
     # x1, x2 = 1.5, 3.5
     # inset_ax.set_ylim(y1, y2)
     # inset_ax.set_xlim(x1, x2)
-    for key, value in cum_mass_allb.items():
+    for key, value in cum_mass_allincs_nodisk.items():
         ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(value), label=inc_nodisk_labels[key])
-        inset_ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(value))
+        # inset_ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(value))
     ax.set_xlabel(r"$\log(r)$ [AU]")
     ax.set_ylabel(r"$\mathrm{\log(M_{cum}(r))}$")
     ax.axvline(2, linestyle=":", color="black")
