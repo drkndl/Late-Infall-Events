@@ -8,7 +8,7 @@ import astropy.constants as c
 au = c.au.cgs.value
 
 
-folder = Path("../cloud_nodisk_it450_rotX45/")         # Folder with the output files
+folder = Path("../cloud_nodisk_it450_rotXY90/")         # Folder with the output files
 sim_name = str(folder).split('/')[1]                 # Simulation name (for plot labelling)
 it = 450                                             # FARGO snapshot
 
@@ -21,14 +21,14 @@ X, Y, ZCYL, RCYL = sph_to_cart(THETA, R, PHI)
 # print(np.max(X /au), np.min(X/au))
 
 rho = get_data(folder, "dens", it, domains)         # Load 3D array of density values 
-vphi = get_data(folder, "vx", it, domains)          # Load 3D array of azimuthal velocities v_phi
-vrad = get_data(folder, "vy", it, domains)          # Load 3D array of radial velocities v_rad
-vthe = get_data(folder, "vz", it, domains)          # Load 3D array of colatitude velocities v_theta
+# vphi = get_data(folder, "vx", it, domains)          # Load 3D array of azimuthal velocities v_phi
+# vrad = get_data(folder, "vy", it, domains)          # Load 3D array of radial velocities v_rad
+# vthe = get_data(folder, "vz", it, domains)          # Load 3D array of colatitude velocities v_theta
 
-vsph = np.sqrt(vphi**2 + vrad**2 + vthe**2)         # Total velocities in spherical coordinates
+# vsph = np.sqrt(vphi**2 + vrad**2 + vthe**2)         # Total velocities in spherical coordinates
 
 # Cartesian velocities
-vx, vy, vz = vel_sph_to_cart(vthe, vrad, vphi, THETA, PHI)
+# vx, vy, vz = vel_sph_to_cart(vthe, vrad, vphi, THETA, PHI)
 
 cell_volume = calc_cell_volume(domains["theta"], domains["r"], domains["phi"])
 mass = calc_mass(rho, cell_volume)
@@ -52,11 +52,11 @@ mass_allit = np.asarray(mass_allit)
 labels = [r'$\pi - \theta$ [deg]',r'$\log r$ [AU]',r'$\phi$ [deg]']
 labels_allit = [r"Time"] + labels
 
-iphi_deg9 = np.round(np.rad2deg(domains["phi"][9]), 2)
-print(iphi_deg9)
+# iphi_deg9 = np.round(np.rad2deg(domains["phi"][9]), 2)
+# print(iphi_deg9)
 
-iphi_deg22 = np.round(np.rad2deg(domains["phi"][22]), 2)
-print(iphi_deg22)
+# iphi_deg22 = np.round(np.rad2deg(domains["phi"][22]), 2)
+# print(iphi_deg22)
 
 # rebfeknfek
 
