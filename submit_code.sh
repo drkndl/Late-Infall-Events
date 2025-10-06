@@ -17,4 +17,4 @@ module purge
 module load devel/miniforge
 conda activate thesis
 
-python mass_vs_r.py
+python analysis.py

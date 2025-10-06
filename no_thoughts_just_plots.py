@@ -143,8 +143,8 @@ def contours_3D(X, Y, Z, data, Rwarp, sim_params, colorbarlabel, title, savefig,
     # ax = fig.add_subplot(111, figsize=(8,6), projection='3d')
     ax = plt.figure(figsize=(8,6)).add_subplot(projection='3d')
 
-    # p = ax.scatter(X.flatten(), Y.flatten(), Z.flatten(), c=data.flatten(), cmap='plasma', s=7, edgecolor='none', alpha=0.5)
-    p = ax.scatter(X.flatten(), Y.flatten(), Z.flatten(), c=data.flatten(), cmap='plasma', s=7, edgecolor='none', alpha=0.5, vmin=-17, vmax=-16)  # For better color contrast bewteen the inner and outer disks
+    p = ax.scatter(X.flatten(), Y.flatten(), Z.flatten(), c=data.flatten(), cmap='plasma', s=7, edgecolor='none', alpha=0.5)
+    # p = ax.scatter(X.flatten(), Y.flatten(), Z.flatten(), c=data.flatten(), cmap='plasma', s=7, edgecolor='none', alpha=0.5, vmin=-17, vmax=-16)  # For better color contrast bewteen the inner and outer disks
 
     # Colorbar formatting
     plt.colorbar(p, pad=0.08, label=colorbarlabel) #, shrink=0.85), fraction=0.046)
