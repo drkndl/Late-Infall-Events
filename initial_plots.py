@@ -8,7 +8,7 @@ import astropy.constants as c
 au = c.au.cgs.value
 
 
-folder = Path("../cloud_disk_it450_retro_rotX45/")         # Folder with the output files
+folder = Path("../cloud_nodisk_it450_rotX45/")         # Folder with the output files
 sim_name = str(folder).split('/')[1]                 # Simulation name (for plot labelling)
 it = 450                                             # FARGO snapshot
 
@@ -52,11 +52,11 @@ mass_allit = np.asarray(mass_allit)
 labels = [r'$\pi - \theta$ [deg]',r'$\log r$ [AU]',r'$\phi$ [deg]']
 labels_allit = [r"Time"] + labels
 
-# iphi_deg9 = np.round(np.rad2deg(domains["phi"][9]), 2)
-# print(iphi_deg9)
+iphi_deg9 = np.round(np.rad2deg(domains["phi"][9]), 2)
+print(iphi_deg9)
 
-# iphi_deg12 = np.round(np.rad2deg(domains["phi"][12]), 2)
-# print(iphi_deg12)
+iphi_deg22 = np.round(np.rad2deg(domains["phi"][22]), 2)
+print(iphi_deg22)
 
 # rebfeknfek
 
