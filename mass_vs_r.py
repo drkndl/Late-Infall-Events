@@ -86,8 +86,8 @@ def check_accretion(rho, vr, theta, r, phi, Hc, max_height):
 def main():
 
 
-    folder = Path("../cloud_nodisk_it450_rotXY90/")                        # Folder with the output files
-    # folder = Path("../fargo3d/outputs/cloud_nodisk_it450_rotXY45")     # Folder with the output files (BinAC2)
+    # folder = Path("../cloud_nodisk_it450_rotXY90/")                        # Folder with the output files
+    folder = Path("../fargo3d/outputs/cloud_nodisk_it450_rotXY90")     # Folder with the output files (BinAC2)
     fig_imgs = Path("cloud_nodisk_it450_rotXY90/imgs/")                  # Folder to save images
     it = 450                                                             # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                               # Simulation name (for plot labels)
