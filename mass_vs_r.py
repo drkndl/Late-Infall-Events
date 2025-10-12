@@ -769,7 +769,7 @@ def main():
 
     for f in cmass_folders:
         
-        f_sim_name = str(f).split('/')[1]                       # Simulation name (for plot labels)
+        f_sim_name = str(f).split('/')[3]                       # Simulation name (for plot labels)
         domains = get_domain_spherical(f)                       # Load coordinates
         f_rho = get_data(f, "dens", it, domains)                # Load 3D array of density values            
 
