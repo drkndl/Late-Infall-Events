@@ -17,24 +17,103 @@ ninterm = 200             # Total number of timesteps between outputs in FARGO s
 stoky = 3.156e7 * 1e3     # 1 kyr in sec
 
 
+def scale_height(r0, h0, R0, f):
+    """
+    Calculates the scale height of the disk at a given radius r0
+
+    Inputs:
+    ------
+    h0:           Aspect ratio (float)
+    R0:           Radius at which aspect ratio is defined (FARGO3D standard) [cm] (float)
+    f:            Disk flaring index (float)
+
+    Outputs:
+    -------
+    Hc:           Scale height at given radius r0 [cm]
+    """
+
+    Hc = h0 * r0 * np.power(r0 / R0, f)             
+    return Hc
+
+
+def check_accretion(rho, vr, theta, r, phi, Hc, max_height):
+    """
+    Function to check if cloudlet mass is accreted onto the star
+
+    Inputs:
+    ------
+    rho:          3D array of densities [g/cm^3] (shape: ntheta, nr, nphi)
+    vr:           3D array of radial velocities [cm/s] (shape: ntheta, nr, nphi)
+    theta:        1D array of polar angles [radians] (shape: ntheta)
+    r:            1D array of radius [cm] (shape: nr)
+    phi:          1D array of azimuthal angles (shape: nphi)
+    Hc:           Scale height at given radius r0 [cm]
+    max_height:   Maximum height within which we calculate accretion [cm]
+
+    Outputs:
+    -------
+    dotM_total:   Total mass flux in and out of shell [g/s]
+    dotM_in:      Inward accretion [g/s]
+    dotM_out:     Outward flux [g/s]
+    """
+
+    r0 = r[0]                                       # Taking the innermost radius to check accretion onto star
+    z = r0 * np.cos(theta)                          # Disk heights at inner radius
+
+    # Boolean mask selecting only polar angles within max_height
+    theta_mask = np.abs(z) <= max_height
+    theta_sel = theta[theta_mask]
+    # print(np.round(np.degrees(theta_sel), 1))
+    
+    dtheta_sel = np.gradient(theta_sel)
+    dphi = np.gradient(phi)
+    rho0_thetamask = rho[:, 0, :][theta_mask, :]              # shape (ntheta_mask, nphi)
+    vr0_thetamask  = vr[:, 0, :][theta_mask, :]               # shape (ntheta_mask, nphi)
+
+    theta2d, phi2d = np.meshgrid(theta_sel, phi, indexing='ij')
+    dtheta2d, dphi2d = np.meshgrid(dtheta_sel, dphi, indexing='ij')
+    dA = r0**2 * np.sin(theta2d) * dtheta2d * dphi2d
+
+    mass_flux = rho0_thetamask * vr0_thetamask * dA        # (g/s) 
+
+    dotM_total = np.sum(mass_flux)
+    dotM_out = np.sum(mass_flux[vr0_thetamask > 0])
+    dotM_in  = np.sum(mass_flux[vr0_thetamask < 0])
+
+    return dotM_total, dotM_in, dotM_out
+
+
 def main():
 
 
-    # folder = Path("../cloud_disk_it450_cmass10/")                        # Folder with the output files
-    folder = Path("../fargo3d/outputs/cloud_nodisk_it450_rotXY45")         # Folder with the output files (BinAC2)
-    fig_imgs = Path("cloud_nodisk_it450_rotXY45/imgs/")                    # Folder to save images
-    it = 450                                                       # FARGO snapshot of interest
-    sim_name = str(fig_imgs).split('/')[0]                         # Simulation name (for plot labels)
-    
+    folder = Path("../cloud_nodisk_it450_rotXY90/")                        # Folder with the output files
+    # folder = Path("../fargo3d/outputs/cloud_nodisk_it450_rotXY45")     # Folder with the output files (BinAC2)
+    fig_imgs = Path("cloud_nodisk_it450_rotXY90/imgs/")                  # Folder to save images
+    it = 450                                                             # FARGO snapshot of interest
+    sim_name = str(fig_imgs).split('/')[0]                               # Simulation name (for plot labels)
+    sim_params = load_par_file(f"{sim_name}/{sim_name}.par")             # Loading simulation parameters from the .par file
+
+    R0 = 5.2 * au                         # As defined in FARGO3D [cm]
+    # f = sim_params['FlaringIndex']      # Flaring index
+    # h0 = sim_params['AspectRatio']      # Aspect ratio
+    f = 0.25                              # Flaring index (from setups/cloud_disk.par)
+    h0 = 0.03799                          # Aspect ratio (from setups/cloud_disk.par)
+
 
     ############# Load data for single snapshot (theta = 175, r = 150, phi = 100) ######################
 
 
     domains = get_domain_spherical(folder)
-    rho = get_data(folder, "dens", it, domains)         # Load 3D array of density values            
-
+    rho = get_data(folder, "dens", it, domains)         # Load 3D array of density values   
+    vrad = get_data(folder, "vy", it, domains)          # Load 3D array of radial velocities v_rad
     cell_volume = calc_cell_volume(domains["theta"], domains["r"], domains["phi"])
     mass = calc_mass(rho, cell_volume)
+
+    Hc = scale_height(domains["r"][0], h0, R0, f)
+    zmax = 4 * Hc
+    dotM_tot, dotM_in, dotM_out = check_accretion(rho, vrad, domains["theta"], domains["r"], domains["phi"], Hc, zmax)
+    print(f"Total flux across inner shell: {dotM_tot:.3e} g/s")
+    print(f"Outflow: {dotM_out:.3e} g/s, Inflow: {dotM_in:.3e} g/s")
 
 
     ############################## Load data for multiple snapshots ####################################
@@ -42,14 +121,53 @@ def main():
 
     # Load mass values at multiple iterations 
     mass_allit = []
+    rho_allit = []
+    vrad_allit = [] 
 
-    for i in range(0, it+1, 10):     # loading density every 10 iterations
+    for i in range(0, it+1, 10):     # loading density and vrad every 10 iterations
         rho_i = get_data(folder, "dens", i, domains)
+        vrad_i = get_data(folder, "vy", it, domains)          
         mass_i = calc_mass(rho_i, cell_volume)
+        rho_allit.append(rho_i)
+        vrad_allit.append(vrad_i)
         mass_allit.append(mass_i)
 
     mass_allit = np.asarray(mass_allit)
+    vrad_allit = np.asarray(vrad_allit)
+    rho_allit = np.asarray(rho_allit)
+    allit_years = calc_simtime(np.asarray(range(0, it+1, 10)))       # Convert iterations to kyrs
+    print(allit_years)
+    print(mass_allit.shape, vrad_allit.shape, rho_allit.shape, allit_years.shape)
 
+
+    #################################### Accretion onto star ##########################################
+
+
+    dotM_tot_allit = []
+    dotM_in_allit = []
+    dotM_out_allit = []
+    for i in range(len(allit_years)):
+        dotM_tot_i, dotM_in_i, dotM_out_i = check_accretion(rho_allit[i], vrad_allit[i], domains["theta"], domains["r"], domains["phi"], Hc, zmax)
+        dotM_tot_allit.append(dotM_tot_i)
+        dotM_in_allit.append(dotM_in_i)
+        dotM_out_allit.append(dotM_out_i)
+
+    dotM_tot_allit = np.asarray(dotM_tot_allit)
+    dotM_in_allit = np.asarray(dotM_in_allit)
+    dotM_out_allit = np.asarray(dotM_out_allit)
+
+    # Plotting the mass fluxes 
+    fig, ax = plt.subplots()
+    # plt.plot(allit_years, np.abs(dotM_tot_allit), label="Total flux")
+    plt.plot(allit_years, np.log10(-dotM_in_allit), label="Inward flux")
+    plt.plot(allit_years, dotM_out_allit, label="Outward flux")
+    ax.set_xlabel(r"Time [kyr]")
+    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [g/s]")
+    ax.set_title(fr"{sim_name}: $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
+    plt.legend()
+    plt.savefig(f'{fig_imgs}/Mdot_vs_t_it{it}.png')
+    plt.show()
+    rebekcvke
 
     ############################# Mass in each spherical shell ########################################
 
@@ -309,7 +427,7 @@ def main():
     plt.savefig('cumlogM_vs_logr_all_incs_nodisk.png')
     plt.show()
 
-    wefhbjwfbwjrf
+   
     ####################### Compare radial mass distributions for different impact parameters ########################
 
 

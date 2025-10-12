@@ -514,7 +514,7 @@ def main():
     plot_args = {"Time": f"{int(calc_simtime(it))} kyr", "b": sim_params['ImpactParameter'] }
     
 
-    ###################### Load data (theta = 100, r = 250, phi = 225) ################################
+    ###################### Load data (theta = 175, r = 150, phi = 100) ################################
 
 
     domains = get_domain_spherical(folder)
