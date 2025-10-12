@@ -119,14 +119,14 @@ def main():
     ############################## Load data for multiple snapshots ####################################
 
 
-    # Load mass values at multiple iterations 
+    # Load density and radial velocity values at multiple iterations 
     mass_allit = []
     rho_allit = []
     vrad_allit = [] 
 
     for i in range(0, it+1, 10):     # loading density and vrad every 10 iterations
         rho_i = get_data(folder, "dens", i, domains)
-        vrad_i = get_data(folder, "vy", it, domains)          
+        vrad_i = get_data(folder, "vy", i, domains)          
         mass_i = calc_mass(rho_i, cell_volume)
         rho_allit.append(rho_i)
         vrad_allit.append(vrad_i)
@@ -165,9 +165,20 @@ def main():
     ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [g/s]")
     ax.set_title(fr"{sim_name}: $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
     plt.legend()
+    plt.savefig(f'{fig_imgs}/logMdot_vs_t_it{it}.png')
+    plt.show()
+
+    fig, ax = plt.subplots()
+    # plt.plot(allit_years, np.abs(dotM_tot_allit), label="Total flux")
+    plt.plot(allit_years, dotM_in_allit, label="Inward flux")
+    plt.plot(allit_years, dotM_out_allit, label="Outward flux")
+    ax.set_xlabel(r"Time [kyr]")
+    ax.set_ylabel(r"$\mathrm{\dot{M}}$ [g/s]")
+    ax.set_title(fr"{sim_name}: $\mathrm{{\dot{{M}}}}$ vs t (R = 10 AU)")
+    plt.legend()
     plt.savefig(f'{fig_imgs}/Mdot_vs_t_it{it}.png')
     plt.show()
-    rebekcvke
+
 
     ############################# Mass in each spherical shell ########################################
 
@@ -368,11 +379,13 @@ def main():
     plt.show()
 
 
-    ####################### Compare radial mass distributions for different impact parameters ########################
+    ####################### Compare radial mass dist., Mdot for different no disk inclinations ########################
 
 
     inc_nodisk_folders = [Path("../fargo3d/outputs/cloud_nodisk_it450_rotX45"), Path("../fargo3d/outputs/cloud_nodisk_it450_rotXY45"), Path("../fargo3d/outputs/cloud_nodisk_it450_rotXY30"), Path("../fargo3d/outputs/cloud_nodisk_it450_rotXY90")]
     inc_nodisk_labels = {"cloud_nodisk_it450_rotX45": r"$\mathrm{i_X = 45\degree}$", "cloud_nodisk_it450_rotXY45": r"$\mathrm{i_{XY} = 45\degree}$", "cloud_nodisk_it450_rotXY30": r"$\mathrm{i_{XY} = 30\degree}$", "cloud_nodisk_it450_rotXY90": r"$\mathrm{i_{XY} = 90\degree}$"}
+
+    ########## Mass distribution calculations
 
     shell_mass_allincs_nodisk = {}
     cum_mass_allincs_nodisk = {}
@@ -427,12 +440,78 @@ def main():
     plt.savefig('cumlogM_vs_logr_all_incs_nodisk.png')
     plt.show()
 
+    ###### Mass accretion calculations
+
+    Mdot_in_allincs_nodisk = {}
+    # Mdot_out_allincs_nodisk = {}
+
+    for f in inc_nodisk_folders:
+        
+        f_sim_name = str(f).split('/')[3]                       # Simulation name (for plot labels)
+        domains = get_domain_spherical(f)                       # Load coordinates         
+        
+        # Load density and radial velocity values at multiple iterations 
+        rho_allit = []
+        vrad_allit = [] 
+
+        for i in range(0, it+1, 10):     # loading density and vrad every 10 iterations
+            rho_i = get_data(f, "dens", i, domains)
+            vrad_i = get_data(f, "vy", i, domains)          
+            rho_allit.append(rho_i)
+            vrad_allit.append(vrad_i)
+
+        vrad_allit = np.asarray(vrad_allit)
+        rho_allit = np.asarray(rho_allit)
+        allit_years = calc_simtime(np.asarray(range(0, it+1, 10)))       # Convert iterations to kyrs
+
+        dotM_in_allit = []
+        # dotM_out_allit = []
+
+        for i in range(len(allit_years)):
+            _, dotM_in_i, dotM_out_i = check_accretion(rho_allit[i], vrad_allit[i], domains["theta"], domains["r"], domains["phi"], Hc, zmax)
+            dotM_in_allit.append(dotM_in_i)
+            # dotM_out_allit.append(dotM_out_i)
+
+        dotM_in_allit = np.asarray(dotM_in_allit)
+        # dotM_out_allit = np.asarray(dotM_out_allit)
+
+        Mdot_in_allincs_nodisk[f_sim_name] = dotM_in_allit
+        # Mdot_out_allincs_nodisk[f_sim_name] = dotM_out_allit
+
+    # Plotting the mass fluxes 
+    fig, ax = plt.subplots()
+    for key, value in Mdot_in_allincs_nodisk.items():
+        ax.plot(allit_years, np.log10(-value), label=inc_nodisk_labels[key])
+        # ax.plot(allit_years, dotM_out_allit, label="Outward flux")
+    ax.set_xlabel(r"Time [kyr]")
+    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [g/s]")
+    ax.set_title(fr"Cloudlet inclinations (no disk): Inward $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
+    fig.tight_layout()
+    ax.legend(loc="upper right")   # loc='upper left', 
+    plt.savefig('logMdot_vs_t_all_incs_nodisk.png')
+    plt.show()
+
+    fig, ax = plt.subplots()
+    for key, value in Mdot_in_allincs_nodisk.items():
+        ax.plot(allit_years, value, label=inc_nodisk_labels[key])
+        # ax.plot(allit_years, dotM_out_allit, label="Outward flux")
+    ax.set_xlabel(r"Time [kyr]")
+    ax.set_ylabel(r"$\mathrm{\dot{M}}$ [g/s]")
+    ax.set_title(fr"Cloudlet inclinations (no disk): Inward $\mathrm{{\dot{{M}}}}$ vs t (R = 10 AU)")
+    fig.tight_layout()
+    ax.legend(loc="upper right")   # loc='upper left', 
+    plt.savefig('Mdot_vs_t_all_incs_nodisk.png')
+    plt.show()
+        
+
    
-    ####################### Compare radial mass distributions for different impact parameters ########################
+    ####################### Compare radial mass dist., Mdot for different impact parameters ########################
 
 
     b_folders = [Path("../fargo3d/outputs/cloud_disk_it450_rotXY45"), Path("../fargo3d/outputs/cloud_disk_it450_b025_rotXY45"), Path("../fargo3d/outputs/cloud_disk_it450_b075_rotXY45")]
     b_labels = {"cloud_disk_it450_rotXY45": r"$\mathrm{b / b_{crit} = 0.5}$", "cloud_disk_it450_b025_rotXY45": r"$\mathrm{b / b_{crit} = 0.25}$", "cloud_disk_it450_b075_rotXY45": r"$\mathrm{b / b_{crit} = 0.75}$"}
+
+    ####### Mass distribution calculations
 
     shell_mass_allb = {}
     cum_mass_allb = {}
@@ -488,10 +567,76 @@ def main():
     plt.show()
 
 
-    ####################### Compare radial mass distributions for different inclinations ########################
+    ###### Mass accretion calculations
+
+    Mdot_in_allb = {}
+    # Mdot_out_allb = {}
+
+    for f in b_folders:
+        
+        f_sim_name = str(f).split('/')[3]                       # Simulation name (for plot labels)
+        domains = get_domain_spherical(f)                       # Load coordinates         
+        
+        # Load density and radial velocity values at multiple iterations 
+        rho_allit = []
+        vrad_allit = [] 
+
+        for i in range(0, it+1, 10):     # loading density and vrad every 10 iterations
+            rho_i = get_data(f, "dens", i, domains)
+            vrad_i = get_data(f, "vy", i, domains)          
+            rho_allit.append(rho_i)
+            vrad_allit.append(vrad_i)
+
+        vrad_allit = np.asarray(vrad_allit)
+        rho_allit = np.asarray(rho_allit)
+        allit_years = calc_simtime(np.asarray(range(0, it+1, 10)))       # Convert iterations to kyrs
+
+        dotM_in_allit = []
+        # dotM_out_allit = []
+
+        for i in range(len(allit_years)):
+            _, dotM_in_i, dotM_out_i = check_accretion(rho_allit[i], vrad_allit[i], domains["theta"], domains["r"], domains["phi"], Hc, zmax)
+            dotM_in_allit.append(dotM_in_i)
+            # dotM_out_allit.append(dotM_out_i)
+
+        dotM_in_allit = np.asarray(dotM_in_allit)
+        # dotM_out_allit = np.asarray(dotM_out_allit)
+
+        Mdot_in_allb[f_sim_name] = dotM_in_allit
+        # Mdot_out_allb[f_sim_name] = dotM_out_allit
+
+    # Plotting the mass fluxes 
+    fig, ax = plt.subplots()
+    for key, value in Mdot_in_allb.items():
+        ax.plot(allit_years, np.log10(-value), label=b_labels[key])
+        # ax.plot(allit_years, dotM_out_allit, label="Outward flux")
+    ax.set_xlabel(r"Time [kyr]")
+    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [g/s]")
+    ax.set_title(fr"Cloudlet impact parameters: Inward $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
+    fig.tight_layout()
+    ax.legend(loc="upper right")   # loc='upper left', 
+    plt.savefig('logMdot_vs_t_all_b.png')
+    plt.show()
+
+    fig, ax = plt.subplots()
+    for key, value in Mdot_in_allb.items():
+        ax.plot(allit_years, value, label=b_labels[key])
+        # ax.plot(allit_years, dotM_out_allit, label="Outward flux")
+    ax.set_xlabel(r"Time [kyr]")
+    ax.set_ylabel(r"$\mathrm{\dot{M}}$ [g/s]")
+    ax.set_title(fr"Cloudlet impact parameters: Inward $\mathrm{{\dot{{M}}}}$ vs t (R = 10 AU)")
+    fig.tight_layout()
+    ax.legend(loc="upper right")   # loc='upper left', 
+    plt.savefig('Mdot_vs_t_all_b.png')
+    plt.show()
 
 
-    inc_folders = [Path("../cloud_disk_it450"), Path("../cloud_disk_it450_rotX45"), Path("../cloud_disk_it450_rotXY45"), Path("../cloud_disk_it450_rotXY30"), Path("../cloud_disk_it450_rotXY90")]
+    ####################### Compare radial mass dist., Mdot for different inclinations ########################
+
+
+    inc_folders = [Path("../fargo3d/outputs/cloud_disk_it450"), Path("../fargo3d/outputs/cloud_disk_it450_rotX45"), Path("../fargo3d/outputs/cloud_disk_it450_rotXY45"), Path("../fargo3d/outputs/cloud_disk_it450_rotXY30"), Path("../fargo3d/outputs/cloud_disk_it450_rotXY90")]
+
+    ###### Mass distribution calculations
 
     shell_mass_allincs = {}
     cum_mass_allincs = {}
@@ -547,11 +692,77 @@ def main():
     plt.show()
 
 
+    ###### Mass accretion calculations
+
+    Mdot_in_allincs = {}
+    # Mdot_out_allincs = {}
+
+    for f in inc_folders:
+        
+        f_sim_name = str(f).split('/')[3]                       # Simulation name (for plot labels)
+        domains = get_domain_spherical(f)                       # Load coordinates         
+        
+        # Load density and radial velocity values at multiple iterations 
+        rho_allit = []
+        vrad_allit = [] 
+
+        for i in range(0, it+1, 10):     # loading density and vrad every 10 iterations
+            rho_i = get_data(f, "dens", i, domains)
+            vrad_i = get_data(f, "vy", i, domains)          
+            rho_allit.append(rho_i)
+            vrad_allit.append(vrad_i)
+
+        vrad_allit = np.asarray(vrad_allit)
+        rho_allit = np.asarray(rho_allit)
+        allit_years = calc_simtime(np.asarray(range(0, it+1, 10)))       # Convert iterations to kyrs
+
+        dotM_in_allit = []
+        # dotM_out_allit = []
+
+        for i in range(len(allit_years)):
+            _, dotM_in_i, dotM_out_i = check_accretion(rho_allit[i], vrad_allit[i], domains["theta"], domains["r"], domains["phi"], Hc, zmax)
+            dotM_in_allit.append(dotM_in_i)
+            # dotM_out_allit.append(dotM_out_i)
+
+        dotM_in_allit = np.asarray(dotM_in_allit)
+        # dotM_out_allit = np.asarray(dotM_out_allit)
+
+        Mdot_in_allincs[f_sim_name] = dotM_in_allit
+        # Mdot_out_allincs[f_sim_name] = dotM_out_allit
+
+    # Plotting the mass fluxes 
+    fig, ax = plt.subplots()
+    for key, value in Mdot_in_allincs.items():
+        ax.plot(allit_years, np.log10(-value), label=key)
+        # ax.plot(allit_years, dotM_out_allit, label="Outward flux")
+    ax.set_xlabel(r"Time [kyr]")
+    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [g/s]")
+    ax.set_title(fr"Cloudlet inclinations: Inward $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
+    fig.tight_layout()
+    ax.legend(loc="upper right")   # loc='upper left', 
+    plt.savefig('logMdot_vs_t_all_incs.png')
+    plt.show()
+
+    fig, ax = plt.subplots()
+    for key, value in Mdot_in_allincs.items():
+        ax.plot(allit_years, value, label=key)
+        # ax.plot(allit_years, dotM_out_allit, label="Outward flux")
+    ax.set_xlabel(r"Time [kyr]")
+    ax.set_ylabel(r"$\mathrm{\dot{M}}$ [g/s]")
+    ax.set_title(fr"Cloudlet inclinations: Inward $\mathrm{{\dot{{M}}}}$ vs t (R = 10 AU)")
+    fig.tight_layout()
+    ax.legend(loc="upper right")   # loc='upper left', 
+    plt.savefig('Mdot_vs_t_all_incs.png')
+    plt.show()
+
+
     ####################### Compare radial mass distributions for different cloudlet masses ########################
 
 
-    cmass_folders = [Path("../cloud_disk_it450"), Path("../cloud_disk_it450_cmass01"), Path("../cloud_disk_it450_cmass10")]
+    cmass_folders = [Path("../fargo3d/outputs/cloud_disk_it450"), Path("../fargo3d/outputs/cloud_disk_it450_cmass01"), Path("../fargo3d/outputs/cloud_disk_it450_cmass10")]
     cmass_labels = {"cloud_disk_it450_cmass01": r"$\mathrm{M_{cloud} / M_{disk}} = 0.045$", "cloud_disk_it450_cmass10": r"$\mathrm{M_{cloud} / M_{disk}} = 4.5$", "cloud_disk_it450": r"$\mathrm{M_{cloud} / M_{disk}} = 0.45$"}
+
+    ###### mass distribution calculations
 
     shell_mass_allcmass = {}
     cum_mass_allcmass = {}
@@ -596,6 +807,70 @@ def main():
     fig.tight_layout()
     ax.legend(loc="lower right")   # loc='upper left', 
     plt.savefig('cumlogM_vs_logr_all_cmass.png')
+    plt.show()
+
+
+    ###### Mass accretion calculations
+
+    Mdot_in_allcmass = {}
+    # Mdot_out_allcmass = {}
+
+    for f in cmass_folders:
+        
+        f_sim_name = str(f).split('/')[3]                       # Simulation name (for plot labels)
+        domains = get_domain_spherical(f)                       # Load coordinates         
+        
+        # Load density and radial velocity values at multiple iterations 
+        rho_allit = []
+        vrad_allit = [] 
+
+        for i in range(0, it+1, 10):     # loading density and vrad every 10 iterations
+            rho_i = get_data(f, "dens", i, domains)
+            vrad_i = get_data(f, "vy", i, domains)          
+            rho_allit.append(rho_i)
+            vrad_allit.append(vrad_i)
+
+        vrad_allit = np.asarray(vrad_allit)
+        rho_allit = np.asarray(rho_allit)
+        allit_years = calc_simtime(np.asarray(range(0, it+1, 10)))       # Convert iterations to kyrs
+
+        dotM_in_allit = []
+        # dotM_out_allit = []
+
+        for i in range(len(allit_years)):
+            _, dotM_in_i, dotM_out_i = check_accretion(rho_allit[i], vrad_allit[i], domains["theta"], domains["r"], domains["phi"], Hc, zmax)
+            dotM_in_allit.append(dotM_in_i)
+            # dotM_out_allit.append(dotM_out_i)
+
+        dotM_in_allit = np.asarray(dotM_in_allit)
+        # dotM_out_allit = np.asarray(dotM_out_allit)
+
+        Mdot_in_allcmass[f_sim_name] = dotM_in_allit
+        # Mdot_out_allcmass[f_sim_name] = dotM_out_allit
+
+    # Plotting the mass fluxes 
+    fig, ax = plt.subplots()
+    for key, value in Mdot_in_allcmass.items():
+        ax.plot(allit_years, np.log10(-value), label=cmass_labels[key])
+        # ax.plot(allit_years, dotM_out_allit, label="Outward flux")
+    ax.set_xlabel(r"Time [kyr]")
+    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [g/s]")
+    ax.set_title(fr"Cloudlet masses: Inward $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
+    fig.tight_layout()
+    ax.legend(loc="upper right")   # loc='upper left', 
+    plt.savefig('logMdot_vs_t_all_cmass.png')
+    plt.show()
+
+    fig, ax = plt.subplots()
+    for key, value in Mdot_in_allcmass.items():
+        ax.plot(allit_years, value, label=cmass_labels[key])
+        # ax.plot(allit_years, dotM_out_allit, label="Outward flux")
+    ax.set_xlabel(r"Time [kyr]")
+    ax.set_ylabel(r"$\mathrm{\dot{M}}$ [g/s]")
+    ax.set_title(fr"Cloudlet masses: Inward $\mathrm{{\dot{{M}}}}$ vs t (R = 10 AU)")
+    fig.tight_layout()
+    ax.legend(loc="upper right")   # loc='upper left', 
+    plt.savefig('Mdot_vs_t_all_cmass.png')
     plt.show()
 
 
