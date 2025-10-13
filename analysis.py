@@ -401,9 +401,9 @@ def isolate_disk(X, Y, Z, cenX, cenY, cenZ, buffer, dens, vx, vy, vz, Lx, Ly, Lz
     return disk_dens, disk_vx, disk_vy, disk_vz, disk_Lx, disk_Ly, disk_Lz, ids
 
 
-def calc_L_average(Lx, Ly, Lz):
+def calc_L_average(Lx, Ly, Lz, mass):
     """
-    Calculates the angular momentum averaged across the theta and phi directions to find the radial Ls
+    Calculates the mass-averaged angular momentum averaged across the theta and phi directions to find the radial Ls
 
     Inputs:
     ------
@@ -419,7 +419,9 @@ def calc_L_average(Lx, Ly, Lz):
     """
 
     # Angular momentum vectors for each shell L(r)
-    Lx_avg = np.nansum(Lx, axis=(0,2))
+    print(Lx.shape, Ly.shape, mass.shape)
+    ejfnervnke
+    Lx_avg = np.nansum(Lx * mass, axis=(0,2))
     Ly_avg = np.nansum(Ly, axis=(0,2))
     Lz_avg = np.nansum(Lz, axis=(0,2))
 
@@ -450,10 +452,10 @@ def calc_inc_twist(Lx_avg, Ly_avg, Lz_avg, R, savefig, plot=True):
     Rc = 0.5 * (R[1:] + R[:-1])
 
     Lavg_mag = np.sqrt(Lx_avg**2 + Ly_avg**2 + Lz_avg**2)
-    Lxy_proj = np.sqrt(Lx_avg**2 + Ly_avg**2)
 
     # Calculating warp twist
-    twist_rad = np.arccos(Lx_avg / Lxy_proj)
+    # twist_rad = np.arccos(Lx_avg / Lxy_proj)
+    twist_rad = np.arctan2(Ly_avg / Lx_avg)
     twist_deg = np.degrees(twist_rad)
 
     # Calculating warp inclination (Kimmig & Dullemond 2024)
@@ -503,9 +505,9 @@ def calc_total_L(Lx_avg, Ly_avg, Lz_avg):
 
 def main():
 
-    # folder = Path("../cloud_nodisk_it450_rotXY90/")                        # Folder with the output files
-    folder = Path("../fargo3d/outputs/cloud_nodisk_it450_rotXY45")         # Folder with the output files (BinAC2)
-    fig_imgs = Path("cloud_nodisk_it450_rotXY90/imgs/")                    # Folder to save images
+    folder = Path("../cloud_nodisk_it450_rotXY90/")                        # Folder with the output files
+    # folder = Path("../fargo3d/outputs/cloud_nodisk_it450_rotX45")         # Folder with the output files (BinAC2)
+    fig_imgs = Path("cloud_nodisk_it450_rotX45/imgs/")                    # Folder to save images
     it = 450                                                       # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                         # Simulation name (for plot labels)
     sim_params = load_par_file(f"{sim_name}/{sim_name}.par")       # Loading simulation parameters from the .par file
@@ -590,7 +592,7 @@ def main():
     # XY_2D_plot(rho, X, Y, irad, itheta, title=rf'Density X-Y Plane $\theta = $ {itheta_deg}$^{{\circ}}$', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=f'{fig_imgs}/dens_xy_theta{itheta}_rad{irad}.png', showfig=True)
 
     # Plotting the 3D warp/disk densities 
-    contours_3D(X_c/au, Y_c/au, Z_c/au, np.log10(rho_c_warp), r_select, plot_args, colorbarlabel=r'$\log(\rho) [g/cm^3]$', title=rf'{sim_name}: Initial & Outer Disks: $\log(\rho)$', savefig=True, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=True)
+    # contours_3D(X_c/au, Y_c/au, Z_c/au, np.log10(rho_c_warp), r_select, plot_args, colorbarlabel=r'$\log(\rho) [g/cm^3]$', title=rf'{sim_name}: Initial & Outer Disks: $\log(\rho)$', savefig=True, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=True)
     
     # Another way to plot the warp/disk densities
     # contours_3D(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, rho_c[warp_ids], fig, colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$')

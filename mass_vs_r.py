@@ -60,7 +60,7 @@ def check_accretion(rho, vr, theta, r, phi, Hc, max_height):
     r0 = r[0]                                       # Taking the innermost radius to check accretion onto star
     z = r0 * np.cos(theta)                          # Disk heights at inner radius
 
-    # Boolean mask selecting only polar angles within max_height
+    # Boolean mask selecting only polar angles within max_height so that we ignore cloudlet
     theta_mask = np.abs(z) <= max_height
     theta_sel = theta[theta_mask]
     # print(np.round(np.degrees(theta_sel), 1))
