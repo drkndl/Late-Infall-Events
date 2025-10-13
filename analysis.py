@@ -410,6 +410,7 @@ def calc_L_average(Lx, Ly, Lz, mass):
     Lx:       Angular momentum array in x-direction with size (theta, r, phi)
     Ly:       Angular momentum array in y-direction with size (theta, r, phi)
     Lz:       Angular momentum array in z-direction with size (theta, r, phi)
+    mass:     3D mass array (theta, r, phi)
 
     Outputs:
     -------
@@ -418,12 +419,10 @@ def calc_L_average(Lx, Ly, Lz, mass):
     Lz_avg:      1D array of radially averaged Lz
     """
 
-    # Angular momentum vectors for each shell L(r)
-    print(Lx.shape, Ly.shape, mass.shape)
-    ejfnervnke
-    Lx_avg = np.nansum(Lx * mass, axis=(0,2))
-    Ly_avg = np.nansum(Ly, axis=(0,2))
-    Lz_avg = np.nansum(Lz, axis=(0,2))
+    # Mass averaged angular momentum vectors for each shell L(r)
+    Lx_avg = np.nansum(Lx * mass, axis=(0,2)) / np.sum(mass, axis=(0,2))
+    Ly_avg = np.nansum(Ly * mass, axis=(0,2)) / np.sum(mass, axis=(0,2))
+    Lz_avg = np.nansum(Lz * mass, axis=(0,2)) / np.sum(mass, axis=(0,2))
 
     return Lx_avg, Ly_avg, Lz_avg
 
@@ -455,7 +454,7 @@ def calc_inc_twist(Lx_avg, Ly_avg, Lz_avg, R, savefig, plot=True):
 
     # Calculating warp twist
     # twist_rad = np.arccos(Lx_avg / Lxy_proj)
-    twist_rad = np.arctan2(Ly_avg / Lx_avg)
+    twist_rad = np.arctan2(Ly_avg, Lx_avg)
     twist_deg = np.degrees(twist_rad)
 
     # Calculating warp inclination (Kimmig & Dullemond 2024)
@@ -505,9 +504,9 @@ def calc_total_L(Lx_avg, Ly_avg, Lz_avg):
 
 def main():
 
-    folder = Path("../cloud_nodisk_it450_rotXY90/")                        # Folder with the output files
+    folder = Path("../cloud_disk_it450_rotX45/")                        # Folder with the output files
     # folder = Path("../fargo3d/outputs/cloud_nodisk_it450_rotX45")         # Folder with the output files (BinAC2)
-    fig_imgs = Path("cloud_nodisk_it450_rotX45/imgs/")                    # Folder to save images
+    fig_imgs = Path("cloud_disk_it450_rotX45/imgs/")                    # Folder to save images
     it = 450                                                       # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                         # Simulation name (for plot labels)
     sim_params = load_par_file(f"{sim_name}/{sim_name}.par")       # Loading simulation parameters from the .par file
@@ -604,9 +603,9 @@ def main():
     # quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Lx[warp_ids], Ly[warp_ids], Lz[warp_ids], stagger=100, length=3, title="Warp Angular Momenta", colorbarlabel="logL", savefig=True, figfolder=f'{fig_imgs}/warp_L_thresh{warp_thresh}_it{it}.png', logmag=True)
 
     # Calculating the radial profile of warp/disk inclination and precession according to Kimmig & Dullemond (2024)
-    Lx_warp_avg, Ly_warp_avg, Lz_warp_avg = calc_L_average(Lx_c_warp, Ly_c_warp, Lz_c_warp)
+    Lx_warp_avg, Ly_warp_avg, Lz_warp_avg = calc_L_average(Lx_c_warp, Ly_c_warp, Lz_c_warp, mass)
     inc, twist = calc_inc_twist(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], savefig=False, plot=False)
-    # print(np.min(twist), np.max(twist), np.mean(twist))
+    print(np.min(twist), np.max(twist), np.mean(twist))
 
     # Calculating and plotting the radial profile of warp/disk precession as a quiver plot
     plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, plot_args, title=f"{sim_name}: Disk Twist", savefig=True, figfolder=f'{fig_imgs}/warp_twist_arrows_it{it}_dens{warp_thresh}.png', showfig=True)
