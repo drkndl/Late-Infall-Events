@@ -36,7 +36,7 @@ def scale_height(r0, h0, R0, f):
     return Hc
 
 
-def check_accretion(rho, vr, theta, r, phi, Hc, max_height):
+def check_accretion(rho, vr, theta, r, phi, Hc, max_height, Msun):
     """
     Function to check if cloudlet mass is accreted onto the star
 
@@ -49,6 +49,7 @@ def check_accretion(rho, vr, theta, r, phi, Hc, max_height):
     phi:          1D array of azimuthal angles (shape: nphi)
     Hc:           Scale height at given radius r0 [cm]
     max_height:   Maximum height within which we calculate accretion [cm]
+    Msun:         Mass of the Sun [g]
 
     Outputs:
     -------
@@ -77,8 +78,13 @@ def check_accretion(rho, vr, theta, r, phi, Hc, max_height):
     mass_flux = rho0_thetamask * vr0_thetamask * dA        # (g/s) 
 
     dotM_total = np.sum(mass_flux)
-    dotM_out = np.sum(mass_flux[vr0_thetamask > 0])
-    dotM_in  = np.sum(mass_flux[vr0_thetamask < 0])
+    dotM_out = np.sum(mass_flux[vr0_thetamask > 0])         # Assuming vr > 0 is outward
+    dotM_in  = np.sum(mass_flux[vr0_thetamask < 0])         # Assuming vr < 0 is inward
+
+    # Converting it from g/s to Msun/s
+    dotM_total = dotM_total / Msun
+    dotM_in = dotM_in / Msun
+    dotM_out = dotM_out / Msun
 
     return dotM_total, dotM_in, dotM_out
 
@@ -111,9 +117,9 @@ def main():
 
     Hc = scale_height(domains["r"][0], h0, R0, f)
     zmax = 4 * Hc
-    dotM_tot, dotM_in, dotM_out = check_accretion(rho, vrad, domains["theta"], domains["r"], domains["phi"], Hc, zmax)
-    print(f"Total flux across inner shell: {dotM_tot:.3e} g/s")
-    print(f"Outflow: {dotM_out:.3e} g/s, Inflow: {dotM_in:.3e} g/s")
+    dotM_tot, dotM_in, dotM_out = check_accretion(rho, vrad, domains["theta"], domains["r"], domains["phi"], Hc, zmax, Msun)
+    print(f"Total flux across inner shell: {dotM_tot:.3e} Msun/s")
+    print(f"Outflow: {dotM_out:.3e} Msun/s, Inflow: {dotM_in:.3e} Msun/s")
 
 
     ############################## Load data for multiple snapshots ####################################
@@ -136,8 +142,6 @@ def main():
     vrad_allit = np.asarray(vrad_allit)
     rho_allit = np.asarray(rho_allit)
     allit_years = calc_simtime(np.asarray(range(0, it+1, 10)))       # Convert iterations to kyrs
-    print(allit_years)
-    print(mass_allit.shape, vrad_allit.shape, rho_allit.shape, allit_years.shape)
 
 
     #################################### Accretion onto star ##########################################
@@ -147,7 +151,7 @@ def main():
     dotM_in_allit = []
     dotM_out_allit = []
     for i in range(len(allit_years)):
-        dotM_tot_i, dotM_in_i, dotM_out_i = check_accretion(rho_allit[i], vrad_allit[i], domains["theta"], domains["r"], domains["phi"], Hc, zmax)
+        dotM_tot_i, dotM_in_i, dotM_out_i = check_accretion(rho_allit[i], vrad_allit[i], domains["theta"], domains["r"], domains["phi"], Hc, zmax, Msun)
         dotM_tot_allit.append(dotM_tot_i)
         dotM_in_allit.append(dotM_in_i)
         dotM_out_allit.append(dotM_out_i)
@@ -159,10 +163,10 @@ def main():
     # Plotting the mass fluxes 
     fig, ax = plt.subplots()
     # plt.plot(allit_years, np.abs(dotM_tot_allit), label="Total flux")
-    plt.plot(allit_years, np.log10(-dotM_in_allit), label="Inward flux")
+    plt.plot(allit_years, np.log10(-dotM_in_allit), label="Log Inward flux")
     plt.plot(allit_years, dotM_out_allit, label="Outward flux")
     ax.set_xlabel(r"Time [kyr]")
-    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [g/s]")
+    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/s]")
     ax.set_title(fr"{sim_name}: $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
     plt.legend()
     plt.savefig(f'{fig_imgs}/logMdot_vs_t_it{it}.png')
@@ -173,7 +177,7 @@ def main():
     plt.plot(allit_years, dotM_in_allit, label="Inward flux")
     plt.plot(allit_years, dotM_out_allit, label="Outward flux")
     ax.set_xlabel(r"Time [kyr]")
-    ax.set_ylabel(r"$\mathrm{\dot{M}}$ [g/s]")
+    ax.set_ylabel(r"$\mathrm{\dot{M}}$ [$M_{sun}$/s]")
     ax.set_title(fr"{sim_name}: $\mathrm{{\dot{{M}}}}$ vs t (R = 10 AU)")
     plt.legend()
     plt.savefig(f'{fig_imgs}/Mdot_vs_t_it{it}.png')
@@ -468,7 +472,7 @@ def main():
         # dotM_out_allit = []
 
         for i in range(len(allit_years)):
-            _, dotM_in_i, dotM_out_i = check_accretion(rho_allit[i], vrad_allit[i], domains["theta"], domains["r"], domains["phi"], Hc, zmax)
+            _, dotM_in_i, dotM_out_i = check_accretion(rho_allit[i], vrad_allit[i], domains["theta"], domains["r"], domains["phi"], Hc, zmax, Msun)
             dotM_in_allit.append(dotM_in_i)
             # dotM_out_allit.append(dotM_out_i)
 
@@ -484,7 +488,7 @@ def main():
         ax.plot(allit_years, np.log10(-value), label=inc_nodisk_labels[key])
         # ax.plot(allit_years, dotM_out_allit, label="Outward flux")
     ax.set_xlabel(r"Time [kyr]")
-    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [g/s]")
+    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/s]")
     ax.set_title(fr"Cloudlet inclinations (no disk): Inward $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
     fig.tight_layout()
     ax.legend(loc="upper right")   # loc='upper left', 
@@ -496,7 +500,7 @@ def main():
         ax.plot(allit_years, value, label=inc_nodisk_labels[key])
         # ax.plot(allit_years, dotM_out_allit, label="Outward flux")
     ax.set_xlabel(r"Time [kyr]")
-    ax.set_ylabel(r"$\mathrm{\dot{M}}$ [g/s]")
+    ax.set_ylabel(r"$\mathrm{\dot{M}}$ [$M_{sun}$/s]")
     ax.set_title(fr"Cloudlet inclinations (no disk): Inward $\mathrm{{\dot{{M}}}}$ vs t (R = 10 AU)")
     fig.tight_layout()
     ax.legend(loc="upper right")   # loc='upper left', 
@@ -595,7 +599,7 @@ def main():
         # dotM_out_allit = []
 
         for i in range(len(allit_years)):
-            _, dotM_in_i, dotM_out_i = check_accretion(rho_allit[i], vrad_allit[i], domains["theta"], domains["r"], domains["phi"], Hc, zmax)
+            _, dotM_in_i, dotM_out_i = check_accretion(rho_allit[i], vrad_allit[i], domains["theta"], domains["r"], domains["phi"], Hc, zmax, Msun)
             dotM_in_allit.append(dotM_in_i)
             # dotM_out_allit.append(dotM_out_i)
 
@@ -611,7 +615,7 @@ def main():
         ax.plot(allit_years, np.log10(-value), label=b_labels[key])
         # ax.plot(allit_years, dotM_out_allit, label="Outward flux")
     ax.set_xlabel(r"Time [kyr]")
-    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [g/s]")
+    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/s]")
     ax.set_title(fr"Cloudlet impact parameters: Inward $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
     fig.tight_layout()
     ax.legend(loc="upper right")   # loc='upper left', 
@@ -623,7 +627,7 @@ def main():
         ax.plot(allit_years, value, label=b_labels[key])
         # ax.plot(allit_years, dotM_out_allit, label="Outward flux")
     ax.set_xlabel(r"Time [kyr]")
-    ax.set_ylabel(r"$\mathrm{\dot{M}}$ [g/s]")
+    ax.set_ylabel(r"$\mathrm{\dot{M}}$ [$M_{sun}$/s]")
     ax.set_title(fr"Cloudlet impact parameters: Inward $\mathrm{{\dot{{M}}}}$ vs t (R = 10 AU)")
     fig.tight_layout()
     ax.legend(loc="upper right")   # loc='upper left', 
@@ -720,7 +724,7 @@ def main():
         # dotM_out_allit = []
 
         for i in range(len(allit_years)):
-            _, dotM_in_i, dotM_out_i = check_accretion(rho_allit[i], vrad_allit[i], domains["theta"], domains["r"], domains["phi"], Hc, zmax)
+            _, dotM_in_i, dotM_out_i = check_accretion(rho_allit[i], vrad_allit[i], domains["theta"], domains["r"], domains["phi"], Hc, zmax, Msun)
             dotM_in_allit.append(dotM_in_i)
             # dotM_out_allit.append(dotM_out_i)
 
@@ -736,7 +740,7 @@ def main():
         ax.plot(allit_years, np.log10(-value), label=key)
         # ax.plot(allit_years, dotM_out_allit, label="Outward flux")
     ax.set_xlabel(r"Time [kyr]")
-    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [g/s]")
+    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/s]")
     ax.set_title(fr"Cloudlet inclinations: Inward $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
     fig.tight_layout()
     ax.legend(loc="upper right")   # loc='upper left', 
@@ -748,7 +752,7 @@ def main():
         ax.plot(allit_years, value, label=key)
         # ax.plot(allit_years, dotM_out_allit, label="Outward flux")
     ax.set_xlabel(r"Time [kyr]")
-    ax.set_ylabel(r"$\mathrm{\dot{M}}$ [g/s]")
+    ax.set_ylabel(r"$\mathrm{\dot{M}}$ [$M_{sun}$/s]")
     ax.set_title(fr"Cloudlet inclinations: Inward $\mathrm{{\dot{{M}}}}$ vs t (R = 10 AU)")
     fig.tight_layout()
     ax.legend(loc="upper right")   # loc='upper left', 
@@ -838,7 +842,7 @@ def main():
         # dotM_out_allit = []
 
         for i in range(len(allit_years)):
-            _, dotM_in_i, dotM_out_i = check_accretion(rho_allit[i], vrad_allit[i], domains["theta"], domains["r"], domains["phi"], Hc, zmax)
+            _, dotM_in_i, dotM_out_i = check_accretion(rho_allit[i], vrad_allit[i], domains["theta"], domains["r"], domains["phi"], Hc, zmax, Msun)
             dotM_in_allit.append(dotM_in_i)
             # dotM_out_allit.append(dotM_out_i)
 
@@ -854,7 +858,7 @@ def main():
         ax.plot(allit_years, np.log10(-value), label=cmass_labels[key])
         # ax.plot(allit_years, dotM_out_allit, label="Outward flux")
     ax.set_xlabel(r"Time [kyr]")
-    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [g/s]")
+    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/s]")
     ax.set_title(fr"Cloudlet masses: Inward $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
     fig.tight_layout()
     ax.legend(loc="upper right")   # loc='upper left', 
@@ -866,7 +870,7 @@ def main():
         ax.plot(allit_years, value, label=cmass_labels[key])
         # ax.plot(allit_years, dotM_out_allit, label="Outward flux")
     ax.set_xlabel(r"Time [kyr]")
-    ax.set_ylabel(r"$\mathrm{\dot{M}}$ [g/s]")
+    ax.set_ylabel(r"$\mathrm{\dot{M}}$ [$M_{sun}$/s]")
     ax.set_title(fr"Cloudlet masses: Inward $\mathrm{{\dot{{M}}}}$ vs t (R = 10 AU)")
     fig.tight_layout()
     ax.legend(loc="upper right")   # loc='upper left', 
