@@ -9,7 +9,7 @@
 #SBATCH --error=%x.e%j
 #SBATCH --mail-type=NONE
 #SBATCH --mail-user=drishika.nadella@stud.uni-heidelberg.de
-#SBATCH -J submit_code
+#SBATCH -J sub_analysis
 
 cd $SLURM_SUBMIT_DIR
 
@@ -17,4 +17,4 @@ module purge
 module load devel/miniforge
 conda activate thesis
 
-python mass_vs_r.py
+python analysis.py
