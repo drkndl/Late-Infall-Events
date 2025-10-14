@@ -24,12 +24,12 @@ stoky = 3.156e7 * 1e3     # 1 kyr in sec
 def main():
 
 
-    # folder = Path("../cloud_disk_it450_retro_rotX45/")                        # Folder with the FARGO output files
-    folder = Path("../fargo3d/outputs/iras04125_it450/")          # Folder with the FARGO output files (Binac2)
-    fig_imgs = Path("iras04125_it450/imgs/")                      # Folder to save images    
+    # folder = Path("../iras04125_it450_cmass01_b01/")                        # Folder with the FARGO output files
+    folder = Path("../fargo3d/outputs/iras04125_it450_cmass01_b01/")          # Folder with the FARGO output files (Binac2)
+    fig_imgs = Path("iras04125_it450_cmass01_b01/imgs/")                      # Folder to save images    
     iter_total = 450                                     # FARGO snapshot
 
-    first_it = 150
+    first_it = 200
     iter_check = np.arange(first_it, iter_total+1, 50)                       # Some iterations to plot
     sim_name = str(fig_imgs).split('/')[0]                                     # Simulation name (for plot labels)
     dt_years = calc_simtime(np.asarray(range(first_it, iter_total+1)))       # Convert iterations to kyrs
@@ -95,7 +95,7 @@ def main():
 
         # Note 1: I am using centered densities to isolate the warp to match the indices corresponding to the warp with the angular momenta indices
         # Note 2: The warp_ids itself is a 3D Boolean array, but when applied to another array such as x[warp_ids], the latter array becomes 1D
-        warp_thresh = -14.5   # log of density threshold for which we can see the warp in the primary
+        warp_thresh = -15   # log of density threshold for which we can see the warp in the primary
         warp_buffer = 500     # Isolates a box of 2 * warp_buffer around the star (AU)
         rho_c_warp, vx_c_warp, vy_c_warp, vz_c_warp, Lx_c_warp, Ly_c_warp, Lz_c_warp, warp_ids = isolate_disk(X_c, Y_c, Z_c, Px * au, Py * au, Pz * au, warp_buffer * au, rho_c, vx_c, vy_c, vz_c, Lx, Ly, Lz, warp_thresh) 
 
@@ -293,6 +293,8 @@ def main():
 
 
     # Plot time evolution of surface densities
+    fig = plt.figure(figsize=(8, 6))
+    ax = fig.add_subplot(111, projection='3d')
     for i in range(len(surf_dens_iter)):
         plt.plot(r_surf_dens_iter[i]/au, surf_dens_iter[i], color=cols(i), label=f"{int(dtkyrs_check[i])} kyr")
     plt.xlabel("R [AU]")
