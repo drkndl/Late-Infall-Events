@@ -119,8 +119,8 @@ def main():
     Hc = scale_height(domains["r"][0], h0, R0, f)
     zmax = 4 * Hc
     dotM_tot, dotM_in, dotM_out = check_accretion(rho, vrad, domains["theta"], domains["r"], domains["phi"], Hc, zmax, Msun)
-    print(f"Total flux across inner shell: {dotM_tot:.3e} Msun/s")
-    print(f"Outflow: {dotM_out:.3e} Msun/s, Inflow: {dotM_in:.3e} Msun/s")
+    print(f"Total flux across inner shell: {dotM_tot:.3e} Msun/yr")
+    print(f"Outflow: {dotM_out:.3e} Msun/yr, Inflow: {dotM_in:.3e} Msun/yr")
 
 
     ############################## Load data for multiple snapshots ####################################
@@ -167,7 +167,7 @@ def main():
     plt.plot(allit_years, np.log10(-dotM_in_allit), label="Log Inward flux")
     plt.plot(allit_years, dotM_out_allit, label="Outward flux")
     ax.set_xlabel(r"Time [kyr]")
-    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/s]")
+    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
     ax.set_title(fr"{sim_name}: $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
     plt.legend()
     plt.savefig(f'{fig_imgs}/logMdot_vs_t_it{it}.png')
@@ -178,7 +178,7 @@ def main():
     plt.plot(allit_years, dotM_in_allit, label="Inward flux")
     plt.plot(allit_years, dotM_out_allit, label="Outward flux")
     ax.set_xlabel(r"Time [kyr]")
-    ax.set_ylabel(r"$\mathrm{\dot{M}}$ [$M_{sun}$/s]")
+    ax.set_ylabel(r"$\mathrm{\dot{M}}$ [$M_{sun}$/yr]")
     ax.set_title(fr"{sim_name}: $\mathrm{{\dot{{M}}}}$ vs t (R = 10 AU)")
     plt.legend()
     plt.savefig(f'{fig_imgs}/Mdot_vs_t_it{it}.png')
@@ -493,7 +493,7 @@ def main():
         ax.plot(allit_years, np.log10(-value), label=inc_nodisk_labels[key])
         # ax.plot(allit_years, dotM_out_allit, label="Outward flux")
     ax.set_xlabel(r"Time [kyr]")
-    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/s]")
+    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
     ax.set_title(fr"Cloudlet inclinations (no disk): Inward $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
     fig.tight_layout()
     ax.legend(loc="upper right")   # loc='upper left', 
@@ -505,7 +505,7 @@ def main():
         ax.plot(allit_years, value, label=inc_nodisk_labels[key])
         # ax.plot(allit_years, dotM_out_allit, label="Outward flux")
     ax.set_xlabel(r"Time [kyr]")
-    ax.set_ylabel(r"$\mathrm{\dot{M}}$ [$M_{sun}$/s]")
+    ax.set_ylabel(r"$\mathrm{\dot{M}}$ [$M_{sun}$/yr]")
     ax.set_title(fr"Cloudlet inclinations (no disk): Inward $\mathrm{{\dot{{M}}}}$ vs t (R = 10 AU)")
     fig.tight_layout()
     ax.legend(loc="upper right")   # loc='upper left', 
@@ -620,7 +620,7 @@ def main():
         ax.plot(allit_years, np.log10(-value), label=b_labels[key])
         # ax.plot(allit_years, dotM_out_allit, label="Outward flux")
     ax.set_xlabel(r"Time [kyr]")
-    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/s]")
+    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
     ax.set_title(fr"Cloudlet impact parameters: Inward $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
     fig.tight_layout()
     ax.legend(loc="upper right")   # loc='upper left', 
@@ -632,7 +632,7 @@ def main():
         ax.plot(allit_years, value, label=b_labels[key])
         # ax.plot(allit_years, dotM_out_allit, label="Outward flux")
     ax.set_xlabel(r"Time [kyr]")
-    ax.set_ylabel(r"$\mathrm{\dot{M}}$ [$M_{sun}$/s]")
+    ax.set_ylabel(r"$\mathrm{\dot{M}}$ [$M_{sun}$/yr]")
     ax.set_title(fr"Cloudlet impact parameters: Inward $\mathrm{{\dot{{M}}}}$ vs t (R = 10 AU)")
     fig.tight_layout()
     ax.legend(loc="upper right")   # loc='upper left', 
@@ -745,7 +745,7 @@ def main():
         ax.plot(allit_years, np.log10(-value), label=key)
         # ax.plot(allit_years, dotM_out_allit, label="Outward flux")
     ax.set_xlabel(r"Time [kyr]")
-    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/s]")
+    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
     ax.set_title(fr"Cloudlet inclinations: Inward $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
     fig.tight_layout()
     ax.legend(loc="upper right")   # loc='upper left', 
@@ -757,7 +757,7 @@ def main():
         ax.plot(allit_years, value, label=key)
         # ax.plot(allit_years, dotM_out_allit, label="Outward flux")
     ax.set_xlabel(r"Time [kyr]")
-    ax.set_ylabel(r"$\mathrm{\dot{M}}$ [$M_{sun}$/s]")
+    ax.set_ylabel(r"$\mathrm{\dot{M}}$ [$M_{sun}$/yr]")
     ax.set_title(fr"Cloudlet inclinations: Inward $\mathrm{{\dot{{M}}}}$ vs t (R = 10 AU)")
     fig.tight_layout()
     ax.legend(loc="upper right")   # loc='upper left', 
@@ -863,7 +863,7 @@ def main():
         ax.plot(allit_years, np.log10(-value), label=cmass_labels[key])
         # ax.plot(allit_years, dotM_out_allit, label="Outward flux")
     ax.set_xlabel(r"Time [kyr]")
-    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/s]")
+    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
     ax.set_title(fr"Cloudlet masses: Inward $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
     fig.tight_layout()
     ax.legend(loc="upper right")   # loc='upper left', 
@@ -875,7 +875,7 @@ def main():
         ax.plot(allit_years, value, label=cmass_labels[key])
         # ax.plot(allit_years, dotM_out_allit, label="Outward flux")
     ax.set_xlabel(r"Time [kyr]")
-    ax.set_ylabel(r"$\mathrm{\dot{M}}$ [$M_{sun}$/s]")
+    ax.set_ylabel(r"$\mathrm{\dot{M}}$ [$M_{sun}$/yr]")
     ax.set_title(fr"Cloudlet masses: Inward $\mathrm{{\dot{{M}}}}$ vs t (R = 10 AU)")
     fig.tight_layout()
     ax.legend(loc="upper right")   # loc='upper left', 
