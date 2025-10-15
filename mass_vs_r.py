@@ -81,10 +81,11 @@ def check_accretion(rho, vr, theta, r, phi, Hc, max_height, Msun):
     dotM_out = np.sum(mass_flux[vr0_thetamask > 0])         # Assuming vr > 0 is outward
     dotM_in  = np.sum(mass_flux[vr0_thetamask < 0])         # Assuming vr < 0 is inward
 
-    # Converting it from g/s to Msun/s
-    dotM_total = dotM_total / Msun
-    dotM_in = dotM_in / Msun
-    dotM_out = dotM_out / Msun
+    # Converting it from g/s -> Msun/kyr -> Msun/yr
+    print(stoky)
+    dotM_total = dotM_total / Msun * stoky / 1e3       
+    dotM_in = dotM_in / Msun * stoky / 1e3
+    dotM_out = dotM_out / Msun * stoky / 1e3
 
     return dotM_total, dotM_in, dotM_out
 
@@ -130,7 +131,7 @@ def main():
     rho_allit = []
     vrad_allit = [] 
 
-    for i in range(0, it+1, 10):     # loading density and vrad every 10 iterations
+    for i in range(0, it+1, 5):     # loading density and vrad every 10 iterations
         rho_i = get_data(folder, "dens", i, domains)
         vrad_i = get_data(folder, "vy", i, domains)          
         mass_i = calc_mass(rho_i, cell_volume)
@@ -386,19 +387,23 @@ def main():
     ####################### Compare radial mass dist., Mdot for different no disk inclinations ########################
 
 
-    inc_nodisk_folders = [Path("../fargo3d/outputs/cloud_nodisk_it450_rotX45"), Path("../fargo3d/outputs/cloud_nodisk_it450_rotXY45"), Path("../fargo3d/outputs/cloud_nodisk_it450_rotXY30"), Path("../fargo3d/outputs/cloud_nodisk_it450_rotXY90")]
-    inc_nodisk_labels = {"cloud_nodisk_it450_rotX45": r"$\mathrm{i_X = 45\degree}$", "cloud_nodisk_it450_rotXY45": r"$\mathrm{i_{XY} = 45\degree}$", "cloud_nodisk_it450_rotXY30": r"$\mathrm{i_{XY} = 30\degree}$", "cloud_nodisk_it450_rotXY90": r"$\mathrm{i_{XY} = 90\degree}$"}
+    inc_nodisk_folders = [Path("../fargo3d/outputs/cloud_nodisk_it450_rotX45"), Path("../fargo3d/outputs/cloud_nodisk_it450_rotXY45"), Path("../fargo3d/outputs/cloud_nodisk_it450_rotXY30"), Path("../fargo3d/outputs/cloud_nodisk_it450_rotXY90"), Path("../fargo3d/outputs/iras04125_lowres_it450_nocomp")]
+    inc_nodisk_labels = {"iras04125_lowres_it450_nocomp": r"$\mathrm{i = 0\degree}$", "cloud_nodisk_it450_rotX45": r"$\mathrm{i_X = 45\degree}$", "cloud_nodisk_it450_rotXY45": r"$\mathrm{i_{XY} = 45\degree}$", "cloud_nodisk_it450_rotXY30": r"$\mathrm{i_{XY} = 30\degree}$", "cloud_nodisk_it450_rotXY90": r"$\mathrm{i_{XY} = 90\degree}$"}
 
     ########## Mass distribution calculations
 
     shell_mass_allincs_nodisk = {}
     cum_mass_allincs_nodisk = {}
+    r_nodisks = {}                    # Saving the R values because the n_radii for iras04125_nocomp is different from cloud_nodisk
 
     for f in inc_nodisk_folders:
         
         f_sim_name = str(f).split('/')[3]                       # Simulation name (for plot labels)
         domains = get_domain_spherical(f)                       # Load coordinates
-        f_rho = get_data(f, "dens", it, domains)                # Load 3D array of density values            
+        f_rho = get_data(f, "dens", it, domains)                # Load 3D array of density values   
+
+        # Save radii values
+        r_nodisks[f_sim_name] = domains["r"]         
 
         cell_volume = calc_cell_volume(domains["theta"], domains["r"], domains["phi"])
         f_mass = calc_mass(f_rho, cell_volume)
@@ -413,7 +418,7 @@ def main():
 
     fig, ax = plt.subplots()
     for key, value in shell_mass_allincs_nodisk.items():
-        ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(value), label=inc_nodisk_labels[key])
+        ax.plot(np.log10(r_nodisks[key]/au)[:-1], np.log10(value), label=inc_nodisk_labels[key])
     ax.set_xlabel(r"$\log(r)$ [AU]")
     ax.set_ylabel(r"$\mathrm{\log(M_{shell}(r))}$ [g]")
     plt.axvline(2, linestyle=":", color="black")
@@ -430,7 +435,7 @@ def main():
     # inset_ax.set_ylim(y1, y2)
     # inset_ax.set_xlim(x1, x2)
     for key, value in cum_mass_allincs_nodisk.items():
-        ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(value), label=inc_nodisk_labels[key])
+        ax.plot(np.log10(r_nodisks[key]/au)[:-1], np.log10(value), label=inc_nodisk_labels[key])
         # inset_ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(value))
     ax.set_xlabel(r"$\log(r)$ [AU]")
     ax.set_ylabel(r"$\mathrm{\log(M_{cum}(r))}$")
