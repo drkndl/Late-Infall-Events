@@ -192,12 +192,14 @@ def main():
     zmax_labels = {Hc: "Hc", 2 * Hc: "2Hc", 3 * Hc: "3Hc", 4 * Hc: "4Hc", 5 * Hc: "5Hc"}
     Mdot_in_allzmax = {}
     Mdot_out_allzmax = {}
-    dotM_in_allit = []
-    dotM_out_allit = []
 
     for z in zmax_array:
+
         print(z)
+        dotM_in_allit = []
+        dotM_out_allit = []
         for i in range(len(allit_years)):
+            
             _, dotM_in_z, dotM_out_z = check_accretion(rho_allit[i], vrad_allit[i], domains["theta"], domains["r"], domains["phi"], Hc, z, Msun)
             dotM_in_allit.append(dotM_in_z)
             dotM_out_allit.append(dotM_out_z)
