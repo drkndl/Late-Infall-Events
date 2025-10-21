@@ -517,8 +517,8 @@ def main():
     ####################### Compare radial mass dist., Mdot for different impact parameters ########################
 
 
-    b_folders = [Path("../fargo3d/outputs/cloud_disk_it450_rotXY45"), Path("../fargo3d/outputs/cloud_disk_it450_b025_rotXY45"), Path("../fargo3d/outputs/cloud_disk_it450_b075_rotXY45")]
-    b_labels = {"cloud_disk_it450_rotXY45": r"$\mathrm{b / b_{crit} = 0.5}$", "cloud_disk_it450_b025_rotXY45": r"$\mathrm{b / b_{crit} = 0.25}$", "cloud_disk_it450_b075_rotXY45": r"$\mathrm{b / b_{crit} = 0.75}$"}
+    b_folders = [Path("../fargo3d/outputs/cloud_disk_it450_b01_rotXY45"), Path("../fargo3d/outputs/cloud_disk_it450_rotXY45"), Path("../fargo3d/outputs/cloud_disk_it450_b025_rotXY45"), Path("../fargo3d/outputs/cloud_disk_it450_b075_rotXY45")]
+    b_labels = {"cloud_disk_it450_b01_rotXY45": r"$\mathrm{b / b_{crit} = 0.1}$", "cloud_disk_it450_rotXY45": r"$\mathrm{b / b_{crit} = 0.5}$", "cloud_disk_it450_b025_rotXY45": r"$\mathrm{b / b_{crit} = 0.25}$", "cloud_disk_it450_b075_rotXY45": r"$\mathrm{b / b_{crit} = 0.75}$"}
 
     ####### Mass distribution calculations
 
