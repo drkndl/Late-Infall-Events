@@ -93,9 +93,9 @@ def check_accretion(rho, vr, theta, r, phi, Hc, max_height, Msun):
 def main():
 
 
-    # folder = Path("../cloud_disk_it450_b01_rotXY45/")                        # Folder with the output files
-    folder = Path("../fargo3d/outputs/cloud_disk_it450_b01_rotXY45")     # Folder with the output files (BinAC2)
-    fig_imgs = Path("cloud_disk_it450_b01_rotXY45/imgs/")                  # Folder to save images
+    # folder = Path("../cloud_disk_it450_rotXY45/")                        # Folder with the output files
+    folder = Path("../fargo3d/outputs/cloud_disk_it450_rotXY45")     # Folder with the output files (BinAC2)
+    fig_imgs = Path("cloud_disk_it450_rotXY45/imgs/")                  # Folder to save images
     it = 450                                                             # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                               # Simulation name (for plot labels)
     sim_params = load_par_file(f"{sim_name}/{sim_name}.par")             # Loading simulation parameters from the .par file
@@ -161,7 +161,7 @@ def main():
     dotM_in_allit = np.asarray(dotM_in_allit)
     dotM_out_allit = np.asarray(dotM_out_allit)
 
-    # Plotting the mass fluxes 
+    # Plotting the logarithmic mass fluxes 
     fig, ax = plt.subplots()
     # plt.plot(allit_years, np.abs(dotM_tot_allit), label="Total flux")
     plt.plot(allit_years, np.log10(-dotM_in_allit), label="Log Inward flux")
@@ -183,6 +183,56 @@ def main():
     # plt.legend()
     # plt.savefig(f'{fig_imgs}/Mdot_vs_t_it{it}.png')
     # plt.show()
+
+
+    ########################### Check accretion for different max heights #############################
+
+
+    zmax_array = [Hc, 2 * Hc, 3 * Hc, 4 * Hc, 5 * Hc]
+    zmax_labels = {Hc: "Hc", 2 * Hc: "2Hc", 3 * Hc: "3Hc", 4 * Hc: "4Hc", 5 * Hc: "5Hc"}
+    Mdot_in_allzmax = {}
+    Mdot_out_allzmax = {}
+    dotM_in_allit = []
+    dotM_out_allit = []
+
+    for z in zmax_array:
+        print(z)
+        for i in range(len(allit_years)):
+            _, dotM_in_z, dotM_out_z = check_accretion(rho_allit[i], vrad_allit[i], domains["theta"], domains["r"], domains["phi"], Hc, z, Msun)
+            dotM_in_allit.append(dotM_in_z)
+            dotM_out_allit.append(dotM_out_z)
+
+        dotM_in_allit = np.asarray(dotM_in_allit)
+        dotM_out_allit = np.asarray(dotM_out_allit)
+
+        # Adding time evolution of accretion rates to corresponding max height value in the dictionary
+        Mdot_in_allzmax[z] = dotM_in_allit
+        Mdot_out_allzmax[z] = dotM_out_allit
+
+    # Plotting the inward mass fluxes for all max heights
+    fig, ax = plt.subplots()
+    for key, value in Mdot_in_allzmax.items():
+        ax.plot(allit_years, np.log10(-value), label=zmax_labels[key])
+    ax.set_xlabel(r"Time [kyr]")
+    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
+    ax.set_title(fr"{sim_name}: Inward $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
+    fig.tight_layout()
+    ax.legend(loc="lower right")   # loc='upper left', 
+    plt.savefig(f'logMdot_vs_t_all_zmax_{sim_name}.png')
+    plt.show()
+
+    # Plotting the outward mass fluxes for all max heights as a sanity check (SHOULD BE ZERO!)
+    fig, ax = plt.subplots()
+    for key, value in Mdot_in_allzmax.items():
+        ax.plot(allit_years, value, label=zmax_labels[key])
+    ax.set_xlabel(r"Time [kyr]")
+    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
+    ax.set_title(fr"{sim_name}: Outward $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
+    fig.tight_layout()
+    ax.legend(loc="lower right")   # loc='upper left', 
+    plt.savefig(f'logMoutdot_vs_t_all_zmax_{sim_name}.png')
+    plt.show()
+    erjkncvek
 
 
     ############################# Mass in each spherical shell ########################################
@@ -487,7 +537,7 @@ def main():
         Mdot_in_allincs_nodisk[f_sim_name] = dotM_in_allit
         # Mdot_out_allincs_nodisk[f_sim_name] = dotM_out_allit
 
-    # Plotting the mass fluxes 
+    # Plotting the logarithmic mass fluxes 
     fig, ax = plt.subplots()
     for key, value in Mdot_in_allincs_nodisk.items():
         ax.plot(allit_years, np.log10(-value), label=inc_nodisk_labels[key])
@@ -500,6 +550,7 @@ def main():
     plt.savefig('logMdot_vs_t_all_incs_nodisk.png')
     plt.show()
 
+    # Plotting non-log mass fluxes
     # fig, ax = plt.subplots()
     # for key, value in Mdot_in_allincs_nodisk.items():
     #     ax.plot(allit_years, value, label=inc_nodisk_labels[key])
@@ -614,7 +665,7 @@ def main():
         Mdot_in_allb[f_sim_name] = dotM_in_allit
         # Mdot_out_allb[f_sim_name] = dotM_out_allit
 
-    # Plotting the mass fluxes 
+    # Plotting the logarithmic mass fluxes 
     fig, ax = plt.subplots()
     for key, value in Mdot_in_allb.items():
         ax.plot(allit_years, np.log10(-value), label=b_labels[key])
@@ -627,6 +678,7 @@ def main():
     plt.savefig('logMdot_vs_t_all_b.png')
     plt.show()
 
+    # Plotting non-log mass fluxes
     # fig, ax = plt.subplots()
     # for key, value in Mdot_in_allb.items():
     #     ax.plot(allit_years, value, label=b_labels[key])
@@ -739,7 +791,7 @@ def main():
         Mdot_in_allincs[f_sim_name] = dotM_in_allit
         # Mdot_out_allincs[f_sim_name] = dotM_out_allit
 
-    # Plotting the mass fluxes 
+    # Plotting the logarithmic mass fluxes 
     fig, ax = plt.subplots()
     for key, value in Mdot_in_allincs.items():
         ax.plot(allit_years, np.log10(-value), label=key)
@@ -752,6 +804,7 @@ def main():
     plt.savefig('logMdot_vs_t_all_incs.png')
     plt.show()
 
+    # Plotting non-log mass fluxes
     # fig, ax = plt.subplots()
     # for key, value in Mdot_in_allincs.items():
     #     ax.plot(allit_years, value, label=key)
@@ -857,7 +910,7 @@ def main():
         Mdot_in_allcmass[f_sim_name] = dotM_in_allit
         # Mdot_out_allcmass[f_sim_name] = dotM_out_allit
 
-    # Plotting the mass fluxes 
+    # Plotting the logarithmic mass fluxes 
     fig, ax = plt.subplots()
     for key, value in Mdot_in_allcmass.items():
         ax.plot(allit_years, np.log10(-value), label=cmass_labels[key])
@@ -870,6 +923,7 @@ def main():
     plt.savefig('logMdot_vs_t_all_cmass.png')
     plt.show()
 
+    # Plotting non-log mass fluxes
     # fig, ax = plt.subplots()
     # for key, value in Mdot_in_allcmass.items():
     #     ax.plot(allit_years, value, label=cmass_labels[key])
