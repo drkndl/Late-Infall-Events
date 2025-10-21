@@ -504,9 +504,9 @@ def calc_total_L(Lx_avg, Ly_avg, Lz_avg):
 
 def main():
 
-    # folder = Path("../iras04125_it450_cmass01_b01/")                        # Folder with the output files
-    folder = Path("../fargo3d/outputs/iras04125_it450_cmass01_b01")         # Folder with the output files (BinAC2)
-    fig_imgs = Path("iras04125_it450_cmass01_b01/imgs/")                    # Folder to save images
+    # folder = Path("../cloud_disk_it450_b01_rotXY45/")                        # Folder with the output files
+    folder = Path("../fargo3d/outputs/cloud_disk_it450_b01_rotXY45")         # Folder with the output files (BinAC2)
+    fig_imgs = Path("cloud_disk_it450_b01_rotXY45/imgs/")                    # Folder to save images
     it = 450                                                       # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                         # Simulation name (for plot labels)
     sim_params = load_par_file(f"{sim_name}/{sim_name}.par")       # Loading simulation parameters from the .par file

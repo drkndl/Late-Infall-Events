@@ -24,12 +24,12 @@ stoky = 3.156e7 * 1e3     # 1 kyr in sec
 def main():
 
 
-    # folder = Path("../iras04125_it450_cmass01_b01/")                        # Folder with the FARGO output files
-    folder = Path("../fargo3d/outputs/iras04125_it450_cmass01_b01/")          # Folder with the FARGO output files (Binac2)
-    fig_imgs = Path("iras04125_it450_cmass01_b01/imgs/")                      # Folder to save images    
+    # folder = Path("../cloud_disk_it450_b01_rotXY45/")                        # Folder with the FARGO output files
+    folder = Path("../fargo3d/outputs/cloud_disk_it450_b01_rotXY45/")          # Folder with the FARGO output files (Binac2)
+    fig_imgs = Path("cloud_disk_it450_b01_rotXY45/imgs/")                      # Folder to save images    
     iter_total = 450                                     # FARGO snapshot
 
-    first_it = 200
+    first_it = 1
     iter_check = np.arange(first_it, iter_total+1, 50)                       # Some iterations to plot
     sim_name = str(fig_imgs).split('/')[0]                                     # Simulation name (for plot labels)
     dt_years = calc_simtime(np.asarray(range(first_it, iter_total+1)))       # Convert iterations to kyrs
@@ -226,6 +226,7 @@ def main():
 
     
     # Plot time evolution of warp inclination in 2D for some specific iters in iter_check
+    fig = plt.figure(figsize=(8, 6))
     cols = cm.get_cmap('viridis', len(iter_check))
     for i in range(len(iter_check)):
         plt.plot(rc/au, inc_itercheck[i], color=cols(i), label=f"{int(dtkyrs_check[i])} kyr")
@@ -260,6 +261,7 @@ def main():
 
 
     # Plot time evolution of warp precession in 2D for some specific iters in iter_check
+    fig = plt.figure(figsize=(8, 6))
     for i in range(len(iter_check)):
         plt.plot(rc/au, prec_itercheck[i], color=cols(i), label=f"{int(dtkyrs_check[i])} kyr")
     plt.xlabel("R [AU]")
