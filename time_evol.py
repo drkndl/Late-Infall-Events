@@ -123,12 +123,12 @@ def main():
         rho_phiavg = np.mean(rho, axis=2)
 
         # Azimuthally averaged density RZ plot
-        cyl_2D_plot(rho_phiavg, RCYL, ZCYL, irad, iphi, title=rf'$\phi$ Averaged Density R-Z Plane t = {int(it * dt * ninterm / stoky)} kyr', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=False, data_phiavg=True)
+        cyl_2D_plot(rho_phiavg, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: $\phi$ Averaged Density R-Z Plane t = {int(it * dt * ninterm / stoky)} kyr', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_phiavg_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=False, data_phiavg=True)
 
         # Density RZ plot
-        # cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'Density R-Z Plane $\phi = $ {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$, t = {int(it * dt * ninterm / stoky)} kyr', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=False)
+        # cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Density R-Z Plane $\phi = $ {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$, t = {int(it * dt * ninterm / stoky)} kyr', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=False, data_phiavg=False)
 
-        XY_2D_plot(rho, X, Y, irad, itheta, title=rf'Density X-Y Plane $\theta = $ {itheta_deg}$^{{\circ}}$, t = {int(it * dt * ninterm / stoky)} kyr', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=f'{fig_imgs}/dens_xy_theta{itheta}_rad{irad}_it{it}.png', showfig=False)
+        XY_2D_plot(rho, X, Y, irad, itheta, title=rf'{sim_name}: Density X-Y Plane $\theta = $ {itheta_deg}$^{{\circ}}$, t = {int(it * dt * ninterm / stoky)} kyr', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=f'{fig_imgs}/dens_xy_theta{itheta}_rad{irad}_it{it}.png', showfig=False)
 
         # Plotting the warp densities 
         contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_warp, r_select, plot_args, colorbarlabel=r'$\rho [g/cm^3]$', title=rf'{sim_name} $\log(\rho)$ above $\rho = 10^{{{warp_thresh}}} g/cm^3$, t = {int(it * dt * ninterm / stoky)} kyr', savefig=True, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=False)
@@ -327,7 +327,8 @@ def main():
     # Make a time evolution GIF out of the 3D surface density and twist plots
     make_evol_GIF(fig_imgs, "warp_dens_thresh", "warp_dens_movie")
     make_evol_GIF(fig_imgs, "warp_twist_arrows", "warp_twist_movie")
-    make_evol_GIF(fig_imgs, "dens_cyl_phi", "dens_cyl_movie")
+    make_evol_GIF(fig_imgs, "dens_phiavg_cyl_phi", "dens_phiavg_cyl_movie")
+    # make_evol_GIF(fig_imgs, "dens_cyl_phi", "dens_cyl_movie")
     make_evol_GIF(fig_imgs, "dens_xy_theta", "dens_xy_movie")
     # make_evol_GIF(fig_imgs, "total_bonanza", "total_bonanza_movie")
 

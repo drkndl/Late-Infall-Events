@@ -588,9 +588,13 @@ def main():
 
     rho_phiavg = np.mean(rho, axis=2)
 
-    cyl_2D_plot(rho_phiavg, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: $\phi$ Averaged Density R-Z Plane', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_cyl_phi{iphi}_rad{irad}.png', showfig=True, data_phiavg=True)
+    # Azimuthally averaged density RZ plot
+    cyl_2D_plot(rho_phiavg, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: $\phi$ Averaged Density R-Z Plane', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_phiavg_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, data_phiavg=True)
 
-    XY_2D_plot(rho, X, Y, irad, itheta, title=rf'{sim_name}: Density X-Y Plane $\theta = $ {itheta_deg}$^{{\circ}}$', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=f'{fig_imgs}/dens_xy_theta{itheta}_rad{irad}.png', showfig=True)
+    # Density RZ plot
+    cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Density R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, data_phiavg=False)
+
+    XY_2D_plot(rho, X, Y, irad, itheta, title=rf'{sim_name}: Density X-Y Plane $\theta = $ {itheta_deg}$^{{\circ}}$', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=f'{fig_imgs}/dens_xy_theta{itheta}_rad{irad}_it{it}.png', showfig=True)
 
     # Plotting the 3D warp/disk densities 
     contours_3D(X_c/au, Y_c/au, Z_c/au, np.log10(rho_c_warp), r_select, plot_args, colorbarlabel=r'$\log(\rho) [g/cm^3]$', title=rf'{sim_name}: Initial & Outer Disks: $\log(\rho)$', savefig=True, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=True)
