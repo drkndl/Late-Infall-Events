@@ -91,9 +91,9 @@ def calc_accretion(rho, vr, theta, r0, r0_id, phi, max_height, Msun):
 def main():
 
 
-    # folder = Path("../cloud_disk_it450_rotX45/")                    # Folder with the output files
-    folder = Path("../fargo3d/outputs/cloud_disk_it450_rotX45")       # Folder with the output files (BinAC2)
-    fig_imgs = Path("cloud_disk_it450_rotX45/imgs/")                  # Folder to save images
+    # folder = Path("../cloud_disk_it450_rotY45/")                    # Folder with the output files
+    folder = Path("../fargo3d/outputs/cloud_disk_it450_rotY45")       # Folder with the output files (BinAC2)
+    fig_imgs = Path("cloud_disk_it450_rotY45/imgs/")                  # Folder to save images
     it = 450                                                             # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                               # Simulation name (for plot labels)
     sim_params = load_par_file(f"{sim_name}/{sim_name}.par")             # Loading simulation parameters from the .par file
@@ -143,81 +143,81 @@ def main():
     #################################### Accretion onto star ##########################################
 
 
-    # dotM_tot_allit = []
-    # dotM_in_allit = []
-    # dotM_out_allit = []
-    # for i in range(len(allit_years)):
-    #     dotM_tot_i, dotM_in_i, dotM_out_i = calc_accretion(rho_allit[i], vrad_allit[i], domains["theta"], r0, 0, domains["phi"], zmax, Msun)
-    #     dotM_tot_allit.append(dotM_tot_i)
-    #     dotM_in_allit.append(dotM_in_i)
-    #     dotM_out_allit.append(dotM_out_i)
+    dotM_tot_allit = []
+    dotM_in_allit = []
+    dotM_out_allit = []
+    for i in range(len(allit_years)):
+        dotM_tot_i, dotM_in_i, dotM_out_i = calc_accretion(rho_allit[i], vrad_allit[i], domains["theta"], r0, 0, domains["phi"], zmax, Msun)
+        dotM_tot_allit.append(dotM_tot_i)
+        dotM_in_allit.append(dotM_in_i)
+        dotM_out_allit.append(dotM_out_i)
 
-    # dotM_tot_allit = np.asarray(dotM_tot_allit)
-    # dotM_in_allit = np.asarray(dotM_in_allit)
-    # dotM_out_allit = np.asarray(dotM_out_allit)
+    dotM_tot_allit = np.asarray(dotM_tot_allit)
+    dotM_in_allit = np.asarray(dotM_in_allit)
+    dotM_out_allit = np.asarray(dotM_out_allit)
 
-    # # Plotting the logarithmic mass fluxes 
-    # fig, ax = plt.subplots()
-    # # plt.plot(allit_years, np.abs(dotM_tot_allit), label="Total flux")
-    # plt.plot(allit_years, np.log10(-dotM_in_allit), label="Log Inward flux")
-    # plt.plot(allit_years, dotM_out_allit, label="Outward flux")
-    # ax.set_xlabel(r"Time [kyr]")
-    # ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
-    # ax.set_title(fr"{sim_name}: $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
-    # plt.legend(loc="lower right")
-    # plt.savefig(f'{fig_imgs}/logMdot_vs_t_it{it}.png')
-    # plt.show()
+    # Plotting the logarithmic mass fluxes 
+    fig, ax = plt.subplots()
+    # plt.plot(allit_years, np.abs(dotM_tot_allit), label="Total flux")
+    plt.plot(allit_years, np.log10(-dotM_in_allit), label="Log Inward flux")
+    plt.plot(allit_years, dotM_out_allit, label="Outward flux")
+    ax.set_xlabel(r"Time [kyr]")
+    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
+    ax.set_title(fr"{sim_name}: $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
+    plt.legend(loc="lower right")
+    plt.savefig(f'{fig_imgs}/logMdot_vs_t_it{it}.png')
+    plt.show()
 
 
     ########################### Check accretion for different max heights #############################
 
 
-    # zmax_array = [Hc, 2 * Hc, 3 * Hc, 4 * Hc, 5 * Hc, 10 * Hc]
-    # zmax_labels = {Hc: "Hc", 2 * Hc: "2Hc", 3 * Hc: "3Hc", 4 * Hc: "4Hc", 5 * Hc: "5Hc", 10 * Hc: "10Hc"}
-    # Mdot_in_allzmax = {}
-    # Mdot_out_allzmax = {}
+    zmax_array = [Hc, 2 * Hc, 3 * Hc, 4 * Hc, 5 * Hc, 10 * Hc]
+    zmax_labels = {Hc: "Hc", 2 * Hc: "2Hc", 3 * Hc: "3Hc", 4 * Hc: "4Hc", 5 * Hc: "5Hc", 10 * Hc: "10Hc"}
+    Mdot_in_allzmax = {}
+    Mdot_out_allzmax = {}
 
-    # for z in zmax_array:
+    for z in zmax_array:
 
-    #     print(z)
-    #     dotM_in_allit = []
-    #     dotM_out_allit = []
-    #     for i in range(len(allit_years)):
+        print(z)
+        dotM_in_allit = []
+        dotM_out_allit = []
+        for i in range(len(allit_years)):
 
-    #         _, dotM_in_z, dotM_out_z = calc_accretion(rho_allit[i], vrad_allit[i], domains["theta"], r0, 0, domains["phi"], z, Msun)
-    #         dotM_in_allit.append(dotM_in_z)
-    #         dotM_out_allit.append(dotM_out_z)
+            _, dotM_in_z, dotM_out_z = calc_accretion(rho_allit[i], vrad_allit[i], domains["theta"], r0, 0, domains["phi"], z, Msun)
+            dotM_in_allit.append(dotM_in_z)
+            dotM_out_allit.append(dotM_out_z)
 
-    #     dotM_in_allit = np.asarray(dotM_in_allit)
-    #     dotM_out_allit = np.asarray(dotM_out_allit)
+        dotM_in_allit = np.asarray(dotM_in_allit)
+        dotM_out_allit = np.asarray(dotM_out_allit)
 
-    #     # Adding time evolution of accretion rates to corresponding max height value in the dictionary
-    #     Mdot_in_allzmax[z] = dotM_in_allit
-    #     Mdot_out_allzmax[z] = dotM_out_allit
+        # Adding time evolution of accretion rates to corresponding max height value in the dictionary
+        Mdot_in_allzmax[z] = dotM_in_allit
+        Mdot_out_allzmax[z] = dotM_out_allit
 
     # Plotting the inward mass fluxes for all max heights
-    # fig, ax = plt.subplots()
-    # for key, value in Mdot_in_allzmax.items():
-    #     ax.plot(allit_years, np.log10(-value), label=zmax_labels[key])
-    # ax.set_xlabel(r"Time [kyr]")
-    # ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
-    # ax.set_title(fr"{sim_name}: Inward $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
-    # fig.tight_layout()
-    # ax.legend(loc="lower right")   # loc='upper left', 
-    # plt.savefig(f'{fig_imgs}/logMdot_vs_t_all_zmax.png')
-    # plt.show()
+    fig, ax = plt.subplots()
+    for key, value in Mdot_in_allzmax.items():
+        ax.plot(allit_years, np.log10(-value), label=zmax_labels[key])
+    ax.set_xlabel(r"Time [kyr]")
+    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
+    ax.set_title(fr"{sim_name}: Inward $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
+    fig.tight_layout()
+    ax.legend(loc="lower right")   # loc='upper left', 
+    plt.savefig(f'{fig_imgs}/logMdot_vs_t_all_zmax.png')
+    plt.show()
 
     # Plotting the outward mass fluxes for all max heights as a sanity check (SHOULD BE ZERO!)
-    # fig, ax = plt.subplots()
-    # for key, value in Mdot_in_allzmax.items():
-    #     ax.plot(allit_years, value, label=zmax_labels[key])
-    # ax.set_xlabel(r"Time [kyr]")
-    # ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
-    # ax.set_title(fr"{sim_name}: Outward $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
-    # fig.tight_layout()
-    # ax.legend(loc="lower right")   # loc='upper left', 
-    # plt.savefig(f'{fig_imgs}/logMoutdot_vs_t_all_zmax.png')
-    # plt.show()
+    fig, ax = plt.subplots()
+    for key, value in Mdot_in_allzmax.items():
+        ax.plot(allit_years, value, label=zmax_labels[key])
+    ax.set_xlabel(r"Time [kyr]")
+    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
+    ax.set_title(fr"{sim_name}: Outward $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
+    fig.tight_layout()
+    ax.legend(loc="lower right")   # loc='upper left', 
+    plt.savefig(f'{fig_imgs}/logMoutdot_vs_t_all_zmax.png')
+    plt.show()
 
 
     ########################## 2D accretion across radii and iteration times #######################

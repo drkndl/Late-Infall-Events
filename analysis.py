@@ -504,9 +504,9 @@ def calc_total_L(Lx_avg, Ly_avg, Lz_avg):
 
 def main():
 
-    # folder = Path("../cloud_disk_it450_rotX45/")                        # Folder with the output files
-    folder = Path("../fargo3d/outputs/cloud_disk_it450_rotX45")         # Folder with the output files (BinAC2)
-    fig_imgs = Path("cloud_disk_it450_rotX45/imgs/")                    # Folder to save images
+    # folder = Path("../cloud_disk_it450_rotY45/")                        # Folder with the output files
+    folder = Path("../fargo3d/outputs/cloud_disk_it450_rotY45")         # Folder with the output files (BinAC2)
+    fig_imgs = Path("cloud_disk_it450_rotY45/imgs/")                    # Folder to save images
     it = 450                                                       # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                         # Simulation name (for plot labels)
     sim_params = load_par_file(f"{sim_name}/{sim_name}.par")       # Loading simulation parameters from the .par file
@@ -586,9 +586,11 @@ def main():
     # print(itheta)
     itheta_deg = np.round(np.rad2deg(domains["theta"][itheta]), 2)
 
-    cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'Density R-Z Plane $\phi = $ {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_cyl_phi{iphi}_rad{irad}.png', showfig=True)
+    rho_phiavg = np.mean(rho, axis=2)
 
-    XY_2D_plot(rho, X, Y, irad, itheta, title=rf'Density X-Y Plane $\theta = $ {itheta_deg}$^{{\circ}}$', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=f'{fig_imgs}/dens_xy_theta{itheta}_rad{irad}.png', showfig=True)
+    cyl_2D_plot(rho_phiavg, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: $\phi$ Averaged Density R-Z Plane', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_cyl_phi{iphi}_rad{irad}.png', showfig=True, data_phiavg=True)
+
+    XY_2D_plot(rho, X, Y, irad, itheta, title=rf'{sim_name}: Density X-Y Plane $\theta = $ {itheta_deg}$^{{\circ}}$', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=f'{fig_imgs}/dens_xy_theta{itheta}_rad{irad}.png', showfig=True)
 
     # Plotting the 3D warp/disk densities 
     contours_3D(X_c/au, Y_c/au, Z_c/au, np.log10(rho_c_warp), r_select, plot_args, colorbarlabel=r'$\log(\rho) [g/cm^3]$', title=rf'{sim_name}: Initial & Outer Disks: $\log(\rho)$', savefig=True, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=True)
