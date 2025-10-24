@@ -17,7 +17,7 @@ import os
 au = c.au.cgs.value
 
 
-def cyl_2D_plot(data, RCYL, ZCYL, irad, iphi, title, colorbarlabel, savefig, figfolder, showfig):
+def cyl_2D_plot(data, RCYL, ZCYL, irad, iphi, title, colorbarlabel, savefig, figfolder, showfig, data_phiavg=True):
     """
     Plot 2D vertical projection of a physical quantity at a particular azimuth angle and range of radii
     
@@ -30,7 +30,8 @@ def cyl_2D_plot(data, RCYL, ZCYL, irad, iphi, title, colorbarlabel, savefig, fig
     title:           Plot title (str)
     colorbarlabel:   Colour bar label
     savefig:         if True, image is saved (bool)
-    figfolder:       Path where the image is to be saved (path)  
+    figfolder:       Path where the image is to be saved (path) 
+    data_phiavg:     True if data is azimuthally averaged (bool) (default=True)
     
     Outputs:
     -------
@@ -38,15 +39,19 @@ def cyl_2D_plot(data, RCYL, ZCYL, irad, iphi, title, colorbarlabel, savefig, fig
     """
 
     plt.figure()
-    plt.pcolormesh(RCYL[..., :irad, iphi]/au, ZCYL[..., :irad, iphi]/RCYL[..., :irad, iphi], np.log10(data[...,:irad, iphi]), cmap="Spectral_r", vmin=-19, vmax=-11, rasterized=True)
+    if data_phiavg:
+        plt.pcolormesh(RCYL[..., :irad, iphi]/au, ZCYL[..., :irad, iphi]/RCYL[..., :irad, iphi], np.log10(data[...,:irad]), cmap="Spectral_r", vmin=-19, vmax=-11, rasterized=True)
+    else:
+        plt.pcolormesh(RCYL[..., :irad, iphi]/au, ZCYL[..., :irad, iphi]/RCYL[..., :irad, iphi], np.log10(data[...,:irad, iphi]), cmap="Spectral_r", vmin=-19, vmax=-11, rasterized=True)
     plt.xlabel("rcyl / AU")
     plt.ylabel("z / r")
     plt.xscale("log")
     plt.ylim(-1,1)
     plt.title(title)
     plt.colorbar(label = colorbarlabel)
+
     # Save the figure?
-    if savefig == True:
+    if savefig:
         plt.savefig(figfolder)
 
     # Display the figure?
