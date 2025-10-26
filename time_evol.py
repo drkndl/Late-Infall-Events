@@ -301,8 +301,7 @@ def main():
 
 
     # Plot time evolution of surface densities
-    fig = plt.figure(figsize=(8, 6))
-    ax = fig.add_subplot(111, projection='3d')
+    fig, ax = plt.figure(figsize=(8, 6))
     for i in range(len(surf_dens_iter)):
         plt.plot(r_surf_dens_iter[i]/au, surf_dens_iter[i], color=cols(i), label=f"{int(dtkyrs_check[i])} kyr")
     plt.xlabel("R [AU]")

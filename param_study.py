@@ -151,7 +151,7 @@ def main():
         ax.plot(allit_years, np.log10(-value), label=folders_labels[key])
         # ax.plot(allit_years, dotM_out_allit, label="Outward flux")
     ax.set_xlabel(r"Time [kyr]")
-    ax.set_ylabel(r"$\mathrm{inc_{avg}}")
+    ax.set_ylabel(r"$\mathrm{inc_{avg}}$")
     ax.set_title(fr"Time Evolution of Average Inclinations")
     fig.tight_layout()
     ax.legend(loc="lower right")   # loc='upper left', 
@@ -164,7 +164,7 @@ def main():
         ax.plot(allit_years, np.log10(-value), label=folders_labels[key])
         # ax.plot(allit_years, dotM_out_allit, label="Outward flux")
     ax.set_xlabel(r"Time [kyr]")
-    ax.set_ylabel(r"$\mathrm{twist_{avg}}")
+    ax.set_ylabel(r"$\mathrm{twist_{avg}}$")
     ax.set_title(fr"Time Evolution of Average Twist")
     fig.tight_layout()
     ax.legend(loc="lower right")   # loc='upper left', 
