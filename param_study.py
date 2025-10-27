@@ -100,8 +100,9 @@ def main():
             # Calculating inclination, twist in the disk and saving the radial averages
             Lx_warp_avg_i, Ly_warp_avg_i, Lz_warp_avg_i = calc_L_average(Lx_c_warp_i, Ly_c_warp_i, Lz_c_warp_i, mass_i)
             inc_i, twist_i = calc_inc_twist(Lx_warp_avg_i, Ly_warp_avg_i, Lz_warp_avg_i, domains["r"], savefig=False, plot=False)
-            inc_avg_allit.append(np.mean(inc_i))
-            twist_avg_allit.append(np.mean(twist_i))            
+            print(np.shape(inc_i), np.nanmean(inc_i))
+            inc_avg_allit.append(np.nanmean(inc_i))
+            twist_avg_allit.append(np.nanmean(twist_i))            
 
         vrad_allit = np.asarray(vrad_allit)
         rho_allit = np.asarray(rho_allit)
