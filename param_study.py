@@ -148,28 +148,91 @@ def main():
 
     # Plotting inc_avg vs time 
     fig, ax = plt.subplots()
+    colours = ['black', 'blue', 'red', 'green']
+    current_color_index = -1
+    last_base = None    
     for key, value in disk_inc_avg_folder.items():
-        ax.plot(allit_years, value, label=folders_labels[key])
-        # ax.plot(allit_years, dotM_out_allit, label="Outward flux")
+
+        # Plotting rotX simulations in solid lines and rotY simulations in dashed lines (but same colour for easy comparison)
+        if "rotX" in key:
+            base = key.replace("rotX", "")
+            ls = "-"
+        elif "rotY" in key:
+            base = key.replace("rotY", "")
+            ls = "--"
+        # Only change color when we encounter a new base (first time we see either X or Y)
+        if base != last_base:
+            current_color_index = (current_color_index + 1) % len(colours)
+            last_base = base
+
+        colour = colours[current_color_index]
+        ax.plot(allit_years, value, linestyle=ls, color=colour, label=folders_labels[key])
+
     ax.set_xlabel(r"Time [kyr]")
-    ax.set_ylabel(r"$\mathrm{inc_{avg}}$")
+    ax.set_ylabel(r"$\mathrm{inc_{avg} [deg]}$")
     ax.set_title(fr"Time Evolution of Average Inclinations")
     fig.tight_layout()
-    ax.legend(loc="lower right")   # loc='upper left', 
+    ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
     plt.savefig('param_study_inc_avg_vs_t.png')
     plt.show()
 
     # Plotting twist_avg vs time 
     fig, ax = plt.subplots()
+    current_color_index = -1
+    last_base = None
     for key, value in disk_twist_avg_folder.items():
-        ax.plot(allit_years, value, label=folders_labels[key])
-        # ax.plot(allit_years, dotM_out_allit, label="Outward flux")
+
+        # Plotting rotX simulations in solid lines and rotY simulations in dashed lines (but same colour for easy comparison)
+        if "rotX" in key:
+            base = key.replace("rotX", "")
+            ls = "-"
+        elif "rotY" in key:
+            base = key.replace("rotY", "")
+            ls = "--"
+        # Only change color when we encounter a new base (first time we see either X or Y)
+        if base != last_base:
+            current_color_index = (current_color_index + 1) % len(colours)
+            last_base = base
+
+        colour = colours[current_color_index]
+        ax.plot(allit_years, value, linestyle=ls, color=colour, label=folders_labels[key])
+        
     ax.set_xlabel(r"Time [kyr]")
-    ax.set_ylabel(r"$\mathrm{twist_{avg}}$")
+    ax.set_ylabel(r"$\mathrm{twist_{avg} [deg]}$")
     ax.set_title(fr"Time Evolution of Average Twist")
     fig.tight_layout()
-    ax.legend(loc="lower right")   # loc='upper left', 
+    ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
     plt.savefig('param_study_twist_avg_vs_t.png')
+    plt.show()
+
+
+    # Plotting absolute values of twist_avg vs time 
+    fig, ax = plt.subplots()
+    current_color_index = -1
+    last_base = None
+    for key, value in disk_twist_avg_folder.items():
+
+        # Plotting rotX simulations in solid lines and rotY simulations in dashed lines (but same colour for easy comparison)
+        if "rotX" in key:
+            base = key.replace("rotX", "")
+            ls = "-"
+        elif "rotY" in key:
+            base = key.replace("rotY", "")
+            ls = "--"
+        # Only change color when we encounter a new base (first time we see either X or Y)
+        if base != last_base:
+            current_color_index = (current_color_index + 1) % len(colours)
+            last_base = base
+
+        colour = colours[current_color_index]
+        ax.plot(allit_years, np.abs(value), linestyle=ls, color=colour, label=folders_labels[key])
+        
+    ax.set_xlabel(r"Time [kyr]")
+    ax.set_ylabel(r"$\mathrm{\vert twist_{avg}\vert [deg]}$")
+    ax.set_title(fr"Time Evolution of Absolute Values of Average Twist")
+    fig.tight_layout()
+    ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
+    plt.savefig('param_study_absolute_twist_avg_vs_t.png')
     plt.show()
 
 
