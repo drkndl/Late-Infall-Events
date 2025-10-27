@@ -59,77 +59,77 @@ def main():
     # Mass in each spherical shell for a single iteration
     shell_mass = np.sum(mass, axis=(0,2))                       # Shell mass in shape (nr-1)
 
-    fig, ax = plt.subplots()
-    ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(shell_mass))
-    plt.axvline(2, linestyle=":", color="black")
-    plt.text(1.9, 29, "disk edge", rotation=90, verticalalignment='center')
-    ax.set_xlabel(r"$\log(r)$ [AU]")
-    ax.set_ylabel(r"$\mathrm{\log(M_{shell}(r))}$ [g]")
-    ax.set_title(fr"{sim_name}: $\mathrm{{\log(M_{{shell}}(r))}}$ vs logr")
-    plt.savefig(f'{fig_imgs}/logM_vs_logr_it{it}.png')
-    plt.show()
+    # fig, ax = plt.subplots()
+    # ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(shell_mass))
+    # plt.axvline(2, linestyle=":", color="black")
+    # plt.text(1.9, 29, "disk edge", rotation=90, verticalalignment='center')
+    # ax.set_xlabel(r"$\log(r)$ [AU]")
+    # ax.set_ylabel(r"$\mathrm{\log(M_{shell}(r))}$ [g]")
+    # ax.set_title(fr"{sim_name}: $\mathrm{{\log(M_{{shell}}(r))}}$ vs logr")
+    # plt.savefig(f'{fig_imgs}/logM_vs_logr_it{it}.png')
+    # plt.show()
 
-    # Time evolution of mass in spherical shells
+    # # Time evolution of mass in spherical shells
     shell_mass_allit = np.sum(mass_allit, axis=(1,3))           # Shell mass in shape (evol_it, nr-1)
     evol_it = len(shell_mass_allit[:,1])                        # Total number of snapshots loaded
     dtkyrs = calc_simtime(np.asarray(range(0, it+1, 10)))       # Convert iterations to kyrs
     
     cols = cm.get_cmap('viridis', evol_it)
-    fig, ax = plt.subplots()
-    for i in range(evol_it):
-        plt.plot(np.log10(domains["r"]/au)[:-1], np.log10(shell_mass_allit[i]), color=cols(i))
-    ax.set_xlabel(r"$\log(r)$ [AU]")
-    ax.set_ylabel(r"$\mathrm{\log(M_{shell}(r))}$ [g]")
-    plt.axvline(2, linestyle=":", color="black")
-    plt.text(1.9, 24, "disk edge", rotation=90, verticalalignment='center')
-    ax.set_title(fr"{sim_name}: $\mathrm{{\log(M_{{shell}}(r))}}$ vs logr time evolution")
+    # fig, ax = plt.subplots()
+    # for i in range(evol_it):
+    #     plt.plot(np.log10(domains["r"]/au)[:-1], np.log10(shell_mass_allit[i]), color=cols(i))
+    # ax.set_xlabel(r"$\log(r)$ [AU]")
+    # ax.set_ylabel(r"$\mathrm{\log(M_{shell}(r))}$ [g]")
+    # plt.axvline(2, linestyle=":", color="black")
+    # plt.text(1.9, 24, "disk edge", rotation=90, verticalalignment='center')
+    # ax.set_title(fr"{sim_name}: $\mathrm{{\log(M_{{shell}}(r))}}$ vs logr time evolution")
 
-    norm = mcolors.Normalize(vmin=min(dtkyrs), vmax=max(dtkyrs))     # Colorbar formatting
-    sm = cm.ScalarMappable(cmap=cols, norm=norm)
-    sm.set_array([])  
-    cbar = plt.colorbar(sm, ax=ax, pad=0.02)
-    cbar.set_label("Time [kyr]")
-    plt.savefig(f'{fig_imgs}/logM_vs_logr_timeevol.png')
-    plt.show()
+    # norm = mcolors.Normalize(vmin=min(dtkyrs), vmax=max(dtkyrs))     # Colorbar formatting
+    # sm = cm.ScalarMappable(cmap=cols, norm=norm)
+    # sm.set_array([])  
+    # cbar = plt.colorbar(sm, ax=ax, pad=0.02)
+    # cbar.set_label("Time [kyr]")
+    # plt.savefig(f'{fig_imgs}/logM_vs_logr_timeevol.png')
+    # plt.show()
 
 
     ############################## log(dM/dr) in each spherical shell ######################################
 
 
-    # Mass in each spherical shell for a single iteration
-    shell_dM = np.diff(shell_mass)
-    dR = np.diff(domains["r"][:-1])
+    # # Mass in each spherical shell for a single iteration
+    # shell_dM = np.diff(shell_mass)
+    # dR = np.diff(domains["r"][:-1])
 
-    fig, ax = plt.subplots()
-    ax.plot(np.log10(domains["r"]/au)[:-2], np.log10(shell_dM/dR))
-    plt.axvline(2, linestyle=":", color="black")
-    plt.text(1.9, 14, "disk edge", rotation=90, verticalalignment='center')
-    ax.set_xlabel(r"$\log(r)$ [AU]")
-    ax.set_ylabel(r"$\mathrm{\log(dM_{shell}(r)/dr)}$")
-    ax.set_title(rf"{sim_name}: $\mathrm{{\log(dM_{{shell}}(r)/dr)}}$ vs logr")
-    plt.savefig(f'{fig_imgs}/logdMdr_vs_logr_it{it}.png')
-    plt.show()
+    # fig, ax = plt.subplots()
+    # ax.plot(np.log10(domains["r"]/au)[:-2], np.log10(shell_dM/dR))
+    # plt.axvline(2, linestyle=":", color="black")
+    # plt.text(1.9, 14, "disk edge", rotation=90, verticalalignment='center')
+    # ax.set_xlabel(r"$\log(r)$ [AU]")
+    # ax.set_ylabel(r"$\mathrm{\log(dM_{shell}(r)/dr)}$")
+    # ax.set_title(rf"{sim_name}: $\mathrm{{\log(dM_{{shell}}(r)/dr)}}$ vs logr")
+    # plt.savefig(f'{fig_imgs}/logdMdr_vs_logr_it{it}.png')
+    # plt.show()
 
-    # Time evolution of mass in spherical shells
-    shell_mass_allit = np.sum(mass_allit, axis=(1,3))           # Shell mass in shape (evol_it, nr-1)
-    shell_dM_allit = np.diff(shell_mass_allit)
+    # # Time evolution of mass in spherical shells
+    # shell_mass_allit = np.sum(mass_allit, axis=(1,3))           # Shell mass in shape (evol_it, nr-1)
+    # shell_dM_allit = np.diff(shell_mass_allit)
     
-    fig, ax = plt.subplots()
-    for i in range(evol_it):
-        plt.plot(np.log10(domains["r"]/au)[:-2], np.log10(shell_dM_allit[i]/dR), color=cols(i))
-    ax.set_xlabel(r"$\log(r)$ [AU]")
-    ax.set_ylabel(r"$\mathrm{\log(dM_{shell}(r)/dr)}$")
-    plt.axvline(2, linestyle=":", color="black")
-    plt.text(1.9, 10, "disk edge", rotation=90, verticalalignment='center')
-    ax.set_title(fr"{sim_name}: $\mathrm{{\log(dM_{{shell}}(r)/dr)}}$ vs logr time evolution")
+    # fig, ax = plt.subplots()
+    # for i in range(evol_it):
+    #     plt.plot(np.log10(domains["r"]/au)[:-2], np.log10(shell_dM_allit[i]/dR), color=cols(i))
+    # ax.set_xlabel(r"$\log(r)$ [AU]")
+    # ax.set_ylabel(r"$\mathrm{\log(dM_{shell}(r)/dr)}$")
+    # plt.axvline(2, linestyle=":", color="black")
+    # plt.text(1.9, 10, "disk edge", rotation=90, verticalalignment='center')
+    # ax.set_title(fr"{sim_name}: $\mathrm{{\log(dM_{{shell}}(r)/dr)}}$ vs logr time evolution")
 
-    norm = mcolors.Normalize(vmin=min(dtkyrs), vmax=max(dtkyrs))     # Colorbar formatting
-    sm = cm.ScalarMappable(cmap=cols, norm=norm)
-    sm.set_array([])  
-    cbar = plt.colorbar(sm, ax=ax, pad=0.02)
-    cbar.set_label("Time [kyr]")
-    plt.savefig(f'{fig_imgs}/logdMdr_vs_logr_timeevol.png')
-    plt.show()
+    # norm = mcolors.Normalize(vmin=min(dtkyrs), vmax=max(dtkyrs))     # Colorbar formatting
+    # sm = cm.ScalarMappable(cmap=cols, norm=norm)
+    # sm.set_array([])  
+    # cbar = plt.colorbar(sm, ax=ax, pad=0.02)
+    # cbar.set_label("Time [kyr]")
+    # plt.savefig(f'{fig_imgs}/logdMdr_vs_logr_timeevol.png')
+    # plt.show()
 
 
     ############################################### Cumulative mass ###############################################
@@ -172,34 +172,34 @@ def main():
 
     dM_cum = np.diff(M_cumsum)
     
-    fig, ax = plt.subplots()
-    ax.plot(np.log10(domains["r"]/au)[:-2], np.log10(dM_cum/dR))
-    plt.axvline(2, linestyle=":", color="black")
-    plt.text(1.9, 15, "disk edge", rotation=90, verticalalignment='center')
-    ax.set_xlabel(r"$\log(r)$ [AU]")
-    ax.set_ylabel(r"$\log(\mathrm{dM_{cum}(r)/dr})$")
-    ax.set_title(fr"{sim_name}: log($\mathrm{{dM_{{cum}}(r)/dr}}$) vs logr")
-    plt.savefig(f'{fig_imgs}/logdMcumdr_vs_logr_it{it}.png')
-    plt.show()
+    # fig, ax = plt.subplots()
+    # ax.plot(np.log10(domains["r"]/au)[:-2], np.log10(dM_cum/dR))
+    # plt.axvline(2, linestyle=":", color="black")
+    # plt.text(1.9, 15, "disk edge", rotation=90, verticalalignment='center')
+    # ax.set_xlabel(r"$\log(r)$ [AU]")
+    # ax.set_ylabel(r"$\log(\mathrm{dM_{cum}(r)/dr})$")
+    # ax.set_title(fr"{sim_name}: log($\mathrm{{dM_{{cum}}(r)/dr}}$) vs logr")
+    # plt.savefig(f'{fig_imgs}/logdMcumdr_vs_logr_it{it}.png')
+    # plt.show()
 
     dM_cum_allit = np.diff(M_cumsum_allit, axis=1)
     
-    fig, ax = plt.subplots()
-    for i in range(evol_it):
-        plt.plot(np.log10(domains["r"]/au)[:-2], np.log10(dM_cum_allit[i]/dR), color=cols(i))
-    ax.set_xlabel(r"$\log(r)$ [AU]")
-    ax.set_ylabel(r"$\log(\mathrm{dM_{cum}(r)/dr})$")
-    plt.axvline(2, linestyle=":", color="black")
-    plt.text(1.9, 10, "disk edge", rotation=90, verticalalignment='center')
-    ax.set_title(fr"{sim_name}: log($\mathrm{{dM_{{cum}}(r)/dr}}$) vs logr time evol")
+    # fig, ax = plt.subplots()
+    # for i in range(evol_it):
+    #     plt.plot(np.log10(domains["r"]/au)[:-2], np.log10(dM_cum_allit[i]/dR), color=cols(i))
+    # ax.set_xlabel(r"$\log(r)$ [AU]")
+    # ax.set_ylabel(r"$\log(\mathrm{dM_{cum}(r)/dr})$")
+    # plt.axvline(2, linestyle=":", color="black")
+    # plt.text(1.9, 10, "disk edge", rotation=90, verticalalignment='center')
+    # ax.set_title(fr"{sim_name}: log($\mathrm{{dM_{{cum}}(r)/dr}}$) vs logr time evol")
 
-    norm = mcolors.Normalize(vmin=min(dtkyrs), vmax=max(dtkyrs))     # Colorbar formatting
-    sm = cm.ScalarMappable(cmap=cols, norm=norm)
-    sm.set_array([])  
-    cbar = plt.colorbar(sm, ax=ax, pad=0.02)
-    cbar.set_label("Time [kyr]")
-    plt.savefig(f'{fig_imgs}/logdMcumdr_vs_logr_timeevol.png')
-    plt.show()
+    # norm = mcolors.Normalize(vmin=min(dtkyrs), vmax=max(dtkyrs))     # Colorbar formatting
+    # sm = cm.ScalarMappable(cmap=cols, norm=norm)
+    # sm.set_array([])  
+    # cbar = plt.colorbar(sm, ax=ax, pad=0.02)
+    # cbar.set_label("Time [kyr]")
+    # plt.savefig(f'{fig_imgs}/logdMcumdr_vs_logr_timeevol.png')
+    # plt.show()
 
 
     ############################### log((dM_cumsum) / dlog(r)) in each spherical shell ##############################
@@ -238,18 +238,18 @@ def main():
     ##################################### Comparing different logM vs logr plots ################################
 
     
-    fig, ax = plt.subplots()
-    ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(shell_mass), label=r"$\mathrm{\log(M_{shell}(r))}$")
-    ax.plot(np.log10(domains["r"]/au)[:-2], np.log10(dM_cum/dR), label=r"$\log(\mathrm{dM_{cum}(r)/dr})$")
-    ax.plot(np.log10(domains["r"]/au)[:-2], np.log10(dM_cum/dlogR), label=r"$\mathrm{{\log(dM_{{cum}}(r)/d\log(r))}}$")
-    plt.axvline(2, linestyle=":", color="black")
-    plt.text(1.9, 23, "disk edge", rotation=90, verticalalignment='center')
-    ax.set_xlabel(r"$\log(r)$ [AU]")
-    # ax.set_ylabel(r"$\mathrm{\log(dM_{cum}(r)/d\log(r))}$")
-    ax.set_title(fr"{sim_name}: Different logM vs logr")
-    ax.legend()
-    plt.savefig(f'{fig_imgs}/compare_logM_vs_logr_it{it}.png')
-    plt.show()
+    # fig, ax = plt.subplots()
+    # ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(shell_mass), label=r"$\mathrm{\log(M_{shell}(r))}$")
+    # ax.plot(np.log10(domains["r"]/au)[:-2], np.log10(dM_cum/dR), label=r"$\log(\mathrm{dM_{cum}(r)/dr})$")
+    # ax.plot(np.log10(domains["r"]/au)[:-2], np.log10(dM_cum/dlogR), label=r"$\mathrm{{\log(dM_{{cum}}(r)/d\log(r))}}$")
+    # plt.axvline(2, linestyle=":", color="black")
+    # plt.text(1.9, 23, "disk edge", rotation=90, verticalalignment='center')
+    # ax.set_xlabel(r"$\log(r)$ [AU]")
+    # # ax.set_ylabel(r"$\mathrm{\log(dM_{cum}(r)/d\log(r))}$")
+    # ax.set_title(fr"{sim_name}: Different logM vs logr")
+    # ax.legend()
+    # plt.savefig(f'{fig_imgs}/compare_logM_vs_logr_it{it}.png')
+    # plt.show()
 
 
     ####################### Compare radial mass distribution for different no disk inclinations ########################

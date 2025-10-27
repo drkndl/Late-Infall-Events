@@ -234,8 +234,11 @@ def main():
     # Plot time evolution of warp inclination in 2D for some specific iters in iter_check
     fig = plt.figure(figsize=(8, 6))
     cols = cm.get_cmap('viridis', len(iter_check))
+    r_warp_extent = np.sqrt(X_c[warp_ids]**2 +  Y_c[warp_ids]**2 + Z_c[warp_ids]**2) / au
+    mask = (rc/au >= r_warp_extent.min()) & (rc/au <= r_warp_extent.max())
+    r_select = rc[mask]
     for i in range(len(iter_check)):
-        plt.plot(rc/au, inc_itercheck[i], color=cols(i), label=f"{int(dtkyrs_check[i])} kyr")
+        plt.plot(r_select/au, inc_itercheck[i], color=cols(i), label=f"{int(dtkyrs_check[i])} kyr")
     plt.xlabel("R [AU]")
     plt.ylabel("Warp inclination [°]")
     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
@@ -269,7 +272,7 @@ def main():
     # Plot time evolution of warp precession in 2D for some specific iters in iter_check
     fig = plt.figure(figsize=(8, 6))
     for i in range(len(iter_check)):
-        plt.plot(rc/au, prec_itercheck[i], color=cols(i), label=f"{int(dtkyrs_check[i])} kyr")
+        plt.plot(r_select/au, prec_itercheck[i], color=cols(i), label=f"{int(dtkyrs_check[i])} kyr")
     plt.xlabel("R [AU]")
     plt.ylabel("Warp precession [°]")
     plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
