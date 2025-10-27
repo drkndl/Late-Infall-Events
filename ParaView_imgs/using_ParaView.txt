@@ -42,3 +42,18 @@ Change colormap Properties
 3. Click on "Set a colormap from default presets" to change the type of colormap. Check "Use log scale when mapping data to colours".
 4. Click on "Rescale to custom data range" on the toolbar to add a custom range for the colormap in the dialog box that opens.
 5. Click on "Toggle colorbar visibility" to toggle colorbar on/off.
+
+Creating animations
+-------------------
+1. Ensure all .vtk files are saved in the same folder and named in an iterable way (gasdens0.vtk, gasdens1.vtk ....)
+2. Open ParaView and select the header of the drop-down listing all the files that should appear if all files are in the same folder and named correctly. 
+3. If there are problems loading the .vtk file, open using the "Legacy VTK Reader" in the "Open With" option in the dialog box.
+4. Apply usual filters and isosurfaces to the loaded vtk file. 
+5. Once you are happy with the state loaded, press the Play button in the toolbar. Everything is working correctly if the "Time: " button in the toolbar says "max is 450" where 450 in this example is the final iteration number.
+6. All the iterations will render to the same loaded state and you should see it update. Each iteration takes around 2 seconds.
+7. Go to File > Save Animation to save into a .avi movie. Give the file a name and choose file type as .avi. The animation takes time to complete.
+
+Adding simulation time to animation panels
+------------------------------------------
+1. To annotate the simulation time onto each iteration loaded state, go to Filters -> Alphabetical -> Annotate Time Filter and click Apply.
+2. To convert iteration time to simulation time, change Format in Properties to "Time: {time:.2f} kyr" and change Scale to 0.1186 where Scale = it * ninterm * dt / stoky based on my FARGO3D simulation parameters where it = iteration number from 0 to 450, dt = timestep = 1.87e7 seconds, ninterm = number of iterations between each output = 200, stoky = 3.156e10 to convert seconds to kilo years.
