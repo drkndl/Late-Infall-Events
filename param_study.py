@@ -149,7 +149,7 @@ def main():
     # Plotting inc_avg vs time 
     fig, ax = plt.subplots()
     for key, value in disk_inc_avg_folder.items():
-        ax.plot(allit_years, np.log10(-value), label=folders_labels[key])
+        ax.plot(allit_years, value, label=folders_labels[key])
         # ax.plot(allit_years, dotM_out_allit, label="Outward flux")
     ax.set_xlabel(r"Time [kyr]")
     ax.set_ylabel(r"$\mathrm{inc_{avg}}$")
@@ -162,7 +162,7 @@ def main():
     # Plotting twist_avg vs time 
     fig, ax = plt.subplots()
     for key, value in disk_twist_avg_folder.items():
-        ax.plot(allit_years, np.log10(-value), label=folders_labels[key])
+        ax.plot(allit_years, value, label=folders_labels[key])
         # ax.plot(allit_years, dotM_out_allit, label="Outward flux")
     ax.set_xlabel(r"Time [kyr]")
     ax.set_ylabel(r"$\mathrm{twist_{avg}}$")
