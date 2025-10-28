@@ -35,6 +35,8 @@ def main():
     disk_inc_avg_folder = {}           # Average disk inclination inc(t) for all sims
     disk_twist_avg_folder = {}         # Average disk twist twist(t) for all sims
     disk_Mdot_folder = {}              # Mass accretion rate onto star Mdot(t) for all sims
+    Mcumsum_folder ={}                 # Cumulative mass values M_cumsum(r, t) for all sims
+    dMcumdlogr_folder ={}              # log(dM_cumsum/dlogr)(r, t) for all sims
 
     N = 10                                             # Load data for every N iterations
 
@@ -64,7 +66,7 @@ def main():
         twist_avg_allit = []
 
 
-        ######################## Calculating inc, twist values ####################################
+        ######################## Calculating mass, inc, twist values ####################################
 
 
         for i in range(0, it+1, N):     
@@ -117,6 +119,19 @@ def main():
         allit_years = calc_simtime(np.asarray(range(0, it+1, N)))       # Convert iterations to kyrs
 
 
+        ################ Calculating M_cumsum and dlogMcum/dlogr values for each sim ####################
+
+
+        print(mass_allit.shape)
+        shell_mass_allit = np.sum(mass_allit, axis=(1,3))              # Shell mass in shape (nt, nr-1)
+        M_cumsum_allit = np.cumsum(shell_mass_allit, axis=1)           # Cumulative sum mass in shape (nt, nr-1)
+        dM_cum_allit = np.diff(M_cumsum_allit, axis=1)
+        dlogR = np.diff(np.log10(domains["r"][:-1]))
+
+        Mcumsum_folder[f_sim_name] = M_cumsum_allit
+        dMcumdlogr_folder[f_sim_name] = np.log10(dM_cum_allit/dlogR)   # log(dMcum/dlogr) in shape (nt, nr-1)
+
+
         ############################### Calculating mass accretion values ##################################
 
 
@@ -143,7 +158,7 @@ def main():
         # Mdot_out_allincs_nodisk[f_sim_name] = dotM_out_allit
 
     
-    ############################################ Plotting ############################################
+    ############################################ Time evolution plots ############################################
 
 
     # Plotting inc_avg vs time 
@@ -171,8 +186,8 @@ def main():
     ax.set_xlabel(r"Time [kyr]")
     ax.set_ylabel(r"$\mathrm{inc_{avg} [deg]}$")
     ax.set_title(fr"Time Evolution of Average Inclinations")
-    fig.tight_layout()
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
+    plt.tight_layout()
     plt.savefig('param_study_inc_avg_vs_t.png')
     plt.show()
 
@@ -200,11 +215,10 @@ def main():
     ax.set_xlabel(r"Time [kyr]")
     ax.set_ylabel(r"$\mathrm{twist_{avg} [deg]}$")
     ax.set_title(fr"Time Evolution of Average Twist")
-    fig.tight_layout()
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
+    plt.tight_layout()
     plt.savefig('param_study_twist_avg_vs_t.png')
     plt.show()
-
 
     # Plotting absolute values of twist_avg vs time 
     fig, ax = plt.subplots()
@@ -230,9 +244,47 @@ def main():
     ax.set_xlabel(r"Time [kyr]")
     ax.set_ylabel(r"$\mathrm{\vert twist_{avg}\vert [deg]}$")
     ax.set_title(fr"Time Evolution of Absolute Values of Average Twist")
-    fig.tight_layout()
-    ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
+    ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left',
+    plt.tight_layout() 
     plt.savefig('param_study_absolute_twist_avg_vs_t.png')
+    plt.show()
+
+    # Plotting the mass diagnostics with time
+    print("Mcumsum shape: ")
+    for key, value in Mcumsum_folder.items():
+        print(key, value.shape)
+
+    print("log(dMcum/dlogr) shape: ")
+    for key, value in dMcumdlogr_folder.items():
+        print(key, value.shape)
+
+    # Plotting the mass accretion rate onto star vs time
+    fig, ax = plt.subplots()
+    current_color_index = -1
+    last_base = None
+    for key, value in disk_Mdot_folder.items():
+
+        # Plotting rotX simulations in solid lines and rotY simulations in dashed lines (but same colour for easy comparison)
+        if "rotX" in key:
+            base = key.replace("rotX", "")
+            ls = "-"
+        elif "rotY" in key:
+            base = key.replace("rotY", "")
+            ls = "--"
+        # Only change color when we encounter a new base (first time we see either X or Y)
+        if base != last_base:
+            current_color_index = (current_color_index + 1) % len(colours)
+            last_base = base
+
+        colour = colours[current_color_index]
+        ax.plot(allit_years, np.log10(-value), linestyle=ls, color=colour, label=folders_labels[key])
+        
+    ax.set_xlabel(r"Time [kyr]")
+    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
+    ax.set_title(fr"Time Evolution of Mass Accretion Rate onto Star")
+    ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
+    plt.tight_layout()
+    plt.savefig('param_study_Mdot_vs_t.png')
     plt.show()
 
 
