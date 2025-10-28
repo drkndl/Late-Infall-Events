@@ -102,7 +102,6 @@ def main():
             # Calculating inclination, twist in the disk and saving the radial averages
             Lx_warp_avg_i, Ly_warp_avg_i, Lz_warp_avg_i = calc_L_average(Lx_c_warp_i, Ly_c_warp_i, Lz_c_warp_i, mass_i)
             inc_i, twist_i = calc_inc_twist(Lx_warp_avg_i, Ly_warp_avg_i, Lz_warp_avg_i, domains["r"], savefig=False, plot=False)
-            print(np.shape(inc_i), np.nanmean(inc_i))
             inc_avg_allit.append(np.nanmean(inc_i))
             twist_avg_allit.append(np.nanmean(twist_i))            
 
@@ -122,14 +121,13 @@ def main():
         ################ Calculating M_cumsum and dlogMcum/dlogr values for each sim ####################
 
 
-        print(mass_allit.shape)
         shell_mass_allit = np.sum(mass_allit, axis=(1,3))              # Shell mass in shape (nt, nr-1)
         M_cumsum_allit = np.cumsum(shell_mass_allit, axis=1)           # Cumulative sum mass in shape (nt, nr-1)
         dM_cum_allit = np.diff(M_cumsum_allit, axis=1)
         dlogR = np.diff(np.log10(domains["r"][:-1]))
 
         Mcumsum_folder[f_sim_name] = M_cumsum_allit
-        dMcumdlogr_folder[f_sim_name] = np.log10(dM_cum_allit/dlogR)   # log(dMcum/dlogr) in shape (nt, nr-1)
+        dMcumdlogr_folder[f_sim_name] = np.log10(dM_cum_allit/dlogR)   # log(dMcum/dlogr) in shape (nt, nr-2)
 
 
         ############################### Calculating mass accretion values ##################################
@@ -249,14 +247,63 @@ def main():
     plt.savefig('param_study_absolute_twist_avg_vs_t.png')
     plt.show()
 
-    # Plotting the mass diagnostics with time
-    print("Mcumsum shape: ")
-    for key, value in Mcumsum_folder.items():
-        print(key, value.shape)
+    # # Plotting time evolution of cumulative mass at 100 AU
+    # fig, ax = plt.subplots()
+    # current_color_index = -1
+    # last_base = None
+    # for key, value in Mcumsum_folder.items():
 
-    print("log(dMcum/dlogr) shape: ")
-    for key, value in dMcumdlogr_folder.items():
-        print(key, value.shape)
+    #     # Plotting rotX simulations in solid lines and rotY simulations in dashed lines (but same colour for easy comparison)
+    #     if "rotX" in key:
+    #         base = key.replace("rotX", "")
+    #         ls = "-"
+    #     elif "rotY" in key:
+    #         base = key.replace("rotY", "")
+    #         ls = "--"
+    #     # Only change color when we encounter a new base (first time we see either X or Y)
+    #     if base != last_base:
+    #         current_color_index = (current_color_index + 1) % len(colours)
+    #         last_base = base
+
+    #     colour = colours[current_color_index]
+    #     ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(value[-1, :]))   # -1 corresponds to last iteration
+
+    # ax.set_xlabel(r"$\log(r)$ [AU]")
+    # ax.set_ylabel(r"$\mathrm{\log(M_{cum}(r))}$")
+    # ax.set_title(fr"Time Evolution of $\mathrm{{\log(M_{{cum}}(r))}}$ (100 AU)")
+    # ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
+    # plt.tight_layout()
+    # plt.savefig('param_study_Mcumsum_100AU_vs_t.png')
+    # plt.show()
+
+    # # Plotting time evolution of dMcumdlogr at 100 AU
+    # fig, ax = plt.subplots()
+    # current_color_index = -1
+    # last_base = None
+    # for key, value in dMcumdlogr_folder.items():
+
+    #     # Plotting rotX simulations in solid lines and rotY simulations in dashed lines (but same colour for easy comparison)
+    #     if "rotX" in key:
+    #         base = key.replace("rotX", "")
+    #         ls = "-"
+    #     elif "rotY" in key:
+    #         base = key.replace("rotY", "")
+    #         ls = "--"
+    #     # Only change color when we encounter a new base (first time we see either X or Y)
+    #     if base != last_base:
+    #         current_color_index = (current_color_index + 1) % len(colours)
+    #         last_base = base
+
+    #     colour = colours[current_color_index]
+    #     ax.plot(np.log10(domains["r"]/au)[:-2], value[-1, :])   # -1 corresponds to last iteration
+
+    # ax.set_xlabel(r"$\log(r)$ [AU]")
+    # ax.set_ylabel(r"$\mathrm{\log(dM_{cum}(r)/d\log(r))}$")
+    # ax.set_title(fr"Time Evolution of $\mathrm{{\log(dM_{{cum}}(r)/d\log(r))}}$ (100 AU)")
+    # ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
+    # plt.tight_layout()
+    # plt.savefig('param_study_dMcumdlogr_100AU_vs_t.png')
+    # plt.show()
 
     # Plotting the mass accretion rate onto star vs time
     fig, ax = plt.subplots()
@@ -285,6 +332,68 @@ def main():
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
     plt.tight_layout()
     plt.savefig('param_study_Mdot_vs_t.png')
+    plt.show()
+
+
+    ################################ Final timestep values vs R plots ######################################
+
+
+    # Plotting Mcumsum_final vs R
+    fig, ax = plt.subplots()
+    current_color_index = -1
+    last_base = None
+    for key, value in Mcumsum_folder.items():
+
+        # Plotting rotX simulations in solid lines and rotY simulations in dashed lines (but same colour for easy comparison)
+        if "rotX" in key:
+            base = key.replace("rotX", "")
+            ls = "-"
+        elif "rotY" in key:
+            base = key.replace("rotY", "")
+            ls = "--"
+        # Only change color when we encounter a new base (first time we see either X or Y)
+        if base != last_base:
+            current_color_index = (current_color_index + 1) % len(colours)
+            last_base = base
+
+        colour = colours[current_color_index]
+        ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(value[-1, :]), label=folders_labels[key])   # -1 corresponds to last iteration
+
+    ax.set_xlabel(r"$\log(r)$ [AU]")
+    ax.set_ylabel(r"$\mathrm{\log(M_{cum}(r))}$")
+    ax.set_title(fr"$\mathrm{{\log(M_{{cum}}(r))}}$ vs logr (53 kyr)")
+    ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
+    plt.tight_layout()
+    plt.savefig('param_study_Mcumsum_final_iter_vs_r.png')
+    plt.show()
+
+    # Plotting dMcumdlogr_final vs R
+    fig, ax = plt.subplots()
+    current_color_index = -1
+    last_base = None
+    for key, value in dMcumdlogr_folder.items():
+
+        # Plotting rotX simulations in solid lines and rotY simulations in dashed lines (but same colour for easy comparison)
+        if "rotX" in key:
+            base = key.replace("rotX", "")
+            ls = "-"
+        elif "rotY" in key:
+            base = key.replace("rotY", "")
+            ls = "--"
+        # Only change color when we encounter a new base (first time we see either X or Y)
+        if base != last_base:
+            current_color_index = (current_color_index + 1) % len(colours)
+            last_base = base
+
+        colour = colours[current_color_index]
+        ax.plot(np.log10(domains["r"]/au)[:-2], value[-1, :], label=folders_labels[key])   # -1 corresponds to last iteration
+
+    ax.set_xlabel(r"$\log(r)$ [AU]")
+    ax.set_ylabel(r"$\mathrm{\log(dM_{cum}(r)/d\log(r))}$")
+    ax.set_title(fr"$\mathrm{{\log(dM_{{cum}}(r)/d\log(r))}}$ vs logr (53 kyr)")
+    ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
+    plt.tight_layout()
+    plt.savefig('param_study_dMcumdlogr_final_iter_vs_r.png')
     plt.show()
 
 

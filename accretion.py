@@ -58,7 +58,7 @@ def calc_accretion(rho, vr, theta, r0, r0_id, phi, max_height, Msun):
     dotM_out:     Outward flux [g/s]
     """
 
-    z = r0 * np.cos(theta)                          # Disk heights at inner radius
+    z = r0 * np.cos(theta)                          # Disk heights at given radius
 
     # Boolean mask selecting only polar angles within max_height so that we ignore cloudlet
     theta_mask = np.abs(z) <= max_height
