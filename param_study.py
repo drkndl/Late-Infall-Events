@@ -23,13 +23,13 @@ def main():
 
     folders = [Path("../fargo3d/outputs/cloud_disk_it450_rotX45"), Path("../fargo3d/outputs/cloud_disk_it450_rotY45"), Path("../fargo3d/outputs/cloud_disk_it450_Rout30_rotX45"), Path("../fargo3d/outputs/cloud_disk_it450_Rout30_rotY45"), Path("../fargo3d/outputs/cloud_disk_it450_cmass10_rotX45"), Path("../fargo3d/outputs/cloud_disk_it450_cmass10_rotY45"), Path("../fargo3d/outputs/cloud_disk_it450_cmass10_Rout30_rotX45"), Path("../fargo3d/outputs/cloud_disk_it450_cmass10_Rout30_rotY45")]
 
-    folders_labels = {"cloud_disk_it450_rotX45": r"$\mathrm{X = 45\degree, M_{cloud} / M_{disk}=0.45, R_{out} = 100 AU}$", "cloud_disk_it450_rotY45": r"$\mathrm{Y = 45\degree, M_{cloud} / M_{disk}=0.45, R_{out} = 100 AU}$", 
-    "cloud_disk_it450_Rout30_rotX45": r"$\mathrm{X = 45\degree, M_{cloud} / M_{disk}=0.45, R_{out} = 30 AU}$",
-    "cloud_disk_it450_Rout30_rotY45": r"$\mathrm{Y = 45\degree, M_{cloud} / M_{disk}=0.45, R_{out} = 30 AU}$",
-    "cloud_disk_it450_cmass10_rotX45": r"$\mathrm{X = 45\degree, M_{cloud} / M_{disk}=4.5, R_{out} = 100 AU}$",
-    "cloud_disk_it450_cmass10_rotY45": r"$\mathrm{Y = 45\degree, M_{cloud} / M_{disk}=4.5, R_{out} = 100 AU}$",
-    "cloud_disk_it450_cmass10_Rout30_rotX45": r"$\mathrm{X = 45\degree, M_{cloud} / M_{disk}=4.5, R_{out} = 30 AU}$",
-    "cloud_disk_it450_cmass10_Rout30_rotY45": r"$\mathrm{Y = 45\degree, M_{cloud} / M_{disk}=4.5, R_{out} = 30 AU}$"}
+    folders_labels = {"cloud_disk_it450_rotX45": r"$\mathrm{X = 45\degree, M_{c} / M_{d}=0.45, R_{out} = 100 AU}$", "cloud_disk_it450_rotY45": r"$\mathrm{Y = 45\degree, M_{c} / M_{d}=0.45, R_{out} = 100 AU}$", 
+    "cloud_disk_it450_Rout30_rotX45": r"$\mathrm{X = 45\degree, M_{c} / M_{d}=0.45, R_{out} = 30 AU}$",
+    "cloud_disk_it450_Rout30_rotY45": r"$\mathrm{Y = 45\degree, M_{c} / M_{d}=0.45, R_{out} = 30 AU}$",
+    "cloud_disk_it450_cmass10_rotX45": r"$\mathrm{X = 45\degree, M_{c} / M_{d}=4.5, R_{out} = 100 AU}$",
+    "cloud_disk_it450_cmass10_rotY45": r"$\mathrm{Y = 45\degree, M_{c} / M_{d}=4.5, R_{out} = 100 AU}$",
+    "cloud_disk_it450_cmass10_Rout30_rotX45": r"$\mathrm{X = 45\degree, M_{c} / M_{d}=4.5, R_{out} = 30 AU}$",
+    "cloud_disk_it450_cmass10_Rout30_rotY45": r"$\mathrm{Y = 45\degree, M_{c} / M_{d}=4.5, R_{out} = 30 AU}$"}
 
     disk_mass_folder = {}              # Disk masses m(t, theta, r, phi) for all sims
     disk_inc_avg_folder = {}           # Average disk inclination inc(t) for all sims
@@ -160,7 +160,7 @@ def main():
 
 
     # Plotting inc_avg vs time 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(9, 6))
     colours = ['black', 'blue', 'red', 'green']
     current_color_index = -1
     last_base = None    
@@ -190,7 +190,7 @@ def main():
     plt.show()
 
     # Plotting twist_avg vs time 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(9, 6))
     current_color_index = -1
     last_base = None
     for key, value in disk_twist_avg_folder.items():
@@ -219,7 +219,7 @@ def main():
     plt.show()
 
     # Plotting absolute values of twist_avg vs time 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(9, 6))
     current_color_index = -1
     last_base = None
     for key, value in disk_twist_avg_folder.items():
@@ -248,7 +248,7 @@ def main():
     plt.show()
 
     # # Plotting time evolution of cumulative mass at 100 AU
-    # fig, ax = plt.subplots()
+    # fig, ax = plt.subplots(figsize=(9, 6))
     # current_color_index = -1
     # last_base = None
     # for key, value in Mcumsum_folder.items():
@@ -277,7 +277,7 @@ def main():
     # plt.show()
 
     # # Plotting time evolution of dMcumdlogr at 100 AU
-    # fig, ax = plt.subplots()
+    # fig, ax = plt.subplots(figsize=(9, 6))
     # current_color_index = -1
     # last_base = None
     # for key, value in dMcumdlogr_folder.items():
@@ -306,7 +306,7 @@ def main():
     # plt.show()
 
     # Plotting the mass accretion rate onto star vs time
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(9, 6))
     current_color_index = -1
     last_base = None
     for key, value in disk_Mdot_folder.items():
@@ -339,7 +339,7 @@ def main():
 
 
     # Plotting Mcumsum_final vs R
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(9, 6))
     current_color_index = -1
     last_base = None
     for key, value in Mcumsum_folder.items():
@@ -368,7 +368,7 @@ def main():
     plt.show()
 
     # Plotting dMcumdlogr_final vs R
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(9, 6))
     current_color_index = -1
     last_base = None
     for key, value in dMcumdlogr_folder.items():
