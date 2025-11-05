@@ -34,6 +34,8 @@ def main():
     disk_mass_folder = {}              # Disk masses m(t, theta, r, phi) for all sims
     disk_inc_avg_folder = {}           # Average disk inclination inc(t) for all sims
     disk_twist_avg_folder = {}         # Average disk twist twist(t) for all sims
+    disk_inc_folder = {}               # Inclinations inc(r, t) at all radii and all timesteps for all sims
+    disk_twist_folder = {}             # Disk twists twist(r, t) at all radii and all timesteps for all sims
     disk_Mdot_folder = {}              # Mass accretion rate onto star Mdot(t) for all sims
     Mcumsum_folder ={}                 # Cumulative mass values M_cumsum(r, t) for all sims
     dMcumdlogr_folder ={}              # log(dM_cumsum/dlogr)(r, t) for all sims
@@ -64,6 +66,8 @@ def main():
         mass_allit = []
         inc_avg_allit = []
         twist_avg_allit = []
+        inc_allit =[]
+        twist_allit = []
 
 
         ######################## Calculating mass, inc, twist values ####################################
@@ -95,13 +99,15 @@ def main():
             Lx_i, Ly_i, Lz_i = calc_angular_momentum(mass_i, X, Y, ZCYL, vx_i, vy_i, vz_i)
 
             # Isolating the warped/broken disk
-            warp_thresh = -15   # log of density threshold for which we can see the warp in the primary
+            warp_thresh = -16   # log of density threshold for which we can see the warp in the primary
             warp_buffer = 500   # Isolates a box of 2 * warp_buffer around the star (AU)
             _, _, _, _, Lx_c_warp_i, Ly_c_warp_i, Lz_c_warp_i, _ = isolate_disk(X_c, Y_c, Z_c, Px * au, Py * au, Pz * au, warp_buffer * au, rho_c_i, vx_c_i, vy_c_i, vz_c_i, Lx_i, Ly_i, Lz_i, warp_thresh) 
 
             # Calculating inclination, twist in the disk and saving the radial averages
             Lx_warp_avg_i, Ly_warp_avg_i, Lz_warp_avg_i = calc_L_average(Lx_c_warp_i, Ly_c_warp_i, Lz_c_warp_i, mass_i)
             inc_i, twist_i = calc_inc_twist(Lx_warp_avg_i, Ly_warp_avg_i, Lz_warp_avg_i, domains["r"], savefig=False, plot=False)
+            inc_allit.append(inc_i)
+            twist_allit.append(twist_i)
             inc_avg_allit.append(np.nanmean(inc_i))
             twist_avg_allit.append(np.nanmean(twist_i))            
 
@@ -110,10 +116,14 @@ def main():
         mass_allit = np.asarray(mass_allit)
         inc_avg_allit = np.asarray(inc_avg_allit)
         twist_avg_allit = np.asarray(twist_avg_allit)
+        inc_allit = np.asarray(inc_allit)
+        twist_allit = np.asarray(twist_allit)
 
         disk_mass_folder[f_sim_name] = mass_allit
         disk_inc_avg_folder[f_sim_name] = inc_avg_allit
         disk_twist_avg_folder[f_sim_name] = twist_avg_allit
+        disk_inc_folder[f_sim_name] = inc_allit
+        disk_twist_folder[f_sim_name] = twist_allit
 
         allit_years = calc_simtime(np.asarray(range(0, it+1, N)))       # Convert iterations to kyrs
 
@@ -183,10 +193,10 @@ def main():
 
     ax.set_xlabel(r"Time [kyr]")
     ax.set_ylabel(r"$\mathrm{inc_{avg} [deg]}$")
-    ax.set_title(fr"Time Evolution of Average Inclinations")
+    ax.set_title(fr"Time Evolution of Average Inclinations $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
     plt.tight_layout()
-    plt.savefig('param_study_inc_avg_vs_t.png')
+    plt.savefig(f'param_study_inc_avg_vs_t_warp{warp_thresh}.png')
     plt.show()
 
     # Plotting twist_avg vs time 
@@ -212,10 +222,10 @@ def main():
         
     ax.set_xlabel(r"Time [kyr]")
     ax.set_ylabel(r"$\mathrm{twist_{avg} [deg]}$")
-    ax.set_title(fr"Time Evolution of Average Twist")
+    ax.set_title(fr"Time Evolution of Average Twist $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
     plt.tight_layout()
-    plt.savefig('param_study_twist_avg_vs_t.png')
+    plt.savefig(f'param_study_twist_avg_vs_t_warp{warp_thresh}.png')
     plt.show()
 
     # Plotting absolute values of twist_avg vs time 
@@ -241,10 +251,10 @@ def main():
         
     ax.set_xlabel(r"Time [kyr]")
     ax.set_ylabel(r"$\mathrm{\vert twist_{avg}\vert [deg]}$")
-    ax.set_title(fr"Time Evolution of Absolute Values of Average Twist")
+    ax.set_title(fr"Time Evolution of Absolute Values of Average Twist $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left',
     plt.tight_layout() 
-    plt.savefig('param_study_absolute_twist_avg_vs_t.png')
+    plt.savefig(f'param_study_absolute_twist_avg_vs_t_warp{warp_thresh}.png')
     plt.show()
 
     # # Plotting time evolution of cumulative mass at 100 AU
@@ -328,15 +338,73 @@ def main():
         
     ax.set_xlabel(r"Time [kyr]")
     ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
-    ax.set_title(fr"Time Evolution of Mass Accretion Rate onto Star")
+    ax.set_title(fr"Time Evolution of Mass Accretion Rate onto Star $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
     plt.tight_layout()
-    plt.savefig('param_study_Mdot_vs_t.png')
+    plt.savefig(f'param_study_Mdot_vs_t_warp{warp_thresh}.png')
     plt.show()
 
 
     ################################ Final timestep values vs R plots ######################################
 
+
+    # Plotting inc_final vs R
+    fig, ax = plt.subplots(figsize=(11, 6))
+    current_color_index = -1
+    last_base = None
+    for key, value in disk_inc_folder.items():
+
+        # Plotting rotX simulations in solid lines and rotY simulations in dashed lines (but same colour for easy comparison)
+        if "rotX" in key:
+            base = key.replace("rotX", "")
+            ls = "-"
+        elif "rotY" in key:
+            base = key.replace("rotY", "")
+            ls = "--"
+        # Only change color when we encounter a new base (first time we see either X or Y)
+        if base != last_base:
+            current_color_index = (current_color_index + 1) % len(colours)
+            last_base = base
+
+        colour = colours[current_color_index]
+        ax.plot(np.log10(domains["r"]/au)[:-1], value[-1, :], linestyle=ls, color=colour, label=folders_labels[key])   # -1 corresponds to last iteration
+
+    ax.set_xlabel(r"$\log(r)$ [AU]")
+    ax.set_ylabel(r"$\mathrm{Disk Inclination (\degree)}$")
+    ax.set_title(fr"Disk Inclination vs logr (53 kyr) $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
+    ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
+    plt.tight_layout()
+    plt.savefig(f'param_study_inc_final_iter_vs_r_warp{warp_thresh}.png')
+    plt.show()
+
+    # Plotting twist_final vs R
+    fig, ax = plt.subplots(figsize=(11, 6))
+    current_color_index = -1
+    last_base = None
+    for key, value in disk_twist_folder.items():
+
+        # Plotting rotX simulations in solid lines and rotY simulations in dashed lines (but same colour for easy comparison)
+        if "rotX" in key:
+            base = key.replace("rotX", "")
+            ls = "-"
+        elif "rotY" in key:
+            base = key.replace("rotY", "")
+            ls = "--"
+        # Only change color when we encounter a new base (first time we see either X or Y)
+        if base != last_base:
+            current_color_index = (current_color_index + 1) % len(colours)
+            last_base = base
+
+        colour = colours[current_color_index]
+        ax.plot(np.log10(domains["r"]/au)[:-1], value[-1, :], linestyle=ls, color=colour, label=folders_labels[key])   # -1 corresponds to last iteration
+
+    ax.set_xlabel(r"$\log(r)$ [AU]")
+    ax.set_ylabel(r"$\mathrm{Disk Twist (\degree)}$")
+    ax.set_title(fr"Twist vs logr (53 kyr) $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
+    ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
+    plt.tight_layout()
+    plt.savefig(f'param_study_twist_final_iter_vs_r_warp{warp_thresh}.png')
+    plt.show()
 
     # Plotting Mcumsum_final vs R
     fig, ax = plt.subplots(figsize=(11, 6))
@@ -361,10 +429,10 @@ def main():
 
     ax.set_xlabel(r"$\log(r)$ [AU]")
     ax.set_ylabel(r"$\mathrm{\log(M_{cum}(r))}$")
-    ax.set_title(fr"$\mathrm{{\log(M_{{cum}}(r))}}$ vs logr (53 kyr)")
+    ax.set_title(fr"$\mathrm{{\log(M_{{cum}}(r))}}$ vs logr (53 kyr) $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
     plt.tight_layout()
-    plt.savefig('param_study_Mcumsum_final_iter_vs_r.png')
+    plt.savefig(f'param_study_Mcumsum_final_iter_vs_r_warp{warp_thresh}.png')
     plt.show()
 
     # Plotting dMcumdlogr_final vs R
@@ -390,10 +458,10 @@ def main():
 
     ax.set_xlabel(r"$\log(r)$ [AU]")
     ax.set_ylabel(r"$\mathrm{\log(dM_{cum}(r)/d\log(r))}$")
-    ax.set_title(fr"$\mathrm{{\log(dM_{{cum}}(r)/d\log(r))}}$ vs logr (53 kyr)")
+    ax.set_title(fr"$\mathrm{{\log(dM_{{cum}}(r)/d\log(r))}}$ vs logr (53 kyr) $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
     plt.tight_layout()
-    plt.savefig('param_study_dMcumdlogr_final_iter_vs_r.png')
+    plt.savefig(f'param_study_dMcumdlogr_final_iter_vs_r_warp{warp_thresh}.png')
     plt.show()
 
 

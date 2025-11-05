@@ -53,9 +53,9 @@ def calc_accretion(rho, vr, theta, r0, r0_id, phi, max_height, Msun):
 
     Outputs:
     -------
-    dotM_total:   Total mass flux in and out of shell [g/s]
-    dotM_in:      Inward accretion [g/s]
-    dotM_out:     Outward flux [g/s]
+    dotM_total:       Total mass flux in and out of shell [g/s]
+    dotM_in:          Inward accretion [g/s]
+    dotM_out:         Outward flux [g/s]
     """
 
     z = r0 * np.cos(theta)                          # Disk heights at given radius
@@ -91,9 +91,9 @@ def calc_accretion(rho, vr, theta, r0, r0_id, phi, max_height, Msun):
 def main():
 
 
-    # folder = Path("../cloud_disk_it450_rotX45/")                    # Folder with the output files
-    folder = Path("../fargo3d/outputs/cloud_disk_it450_rotX45")       # Folder with the output files (BinAC2)
-    fig_imgs = Path("cloud_disk_it450_rotX45/imgs/")                  # Folder to save images
+    # folder = Path("../cloud_disk_it450_cmass10_rotY45/")                    # Folder with the output files
+    folder = Path("../fargo3d/outputs/cloud_disk_it450_cmass10_rotY45")       # Folder with the output files (BinAC2)
+    fig_imgs = Path("cloud_disk_it450_cmass10_rotY45/imgs/")                  # Folder to save images
     it = 450                                                             # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                               # Simulation name (for plot labels)
     sim_params = load_par_file(f"{sim_name}/{sim_name}.par")             # Loading simulation parameters from the .par file
@@ -171,12 +171,20 @@ def main():
 
     ########################### Check accretion for different max heights #############################
 
+    # Defining max heights and the corresponding plot labels
+    zmax_array = [Hc, 2 * Hc, 4 * Hc, 5 * Hc, 10 * Hc, 20 * Hc]
+    zmax_labels = {}
 
-    zmax_array = [Hc, 2 * Hc, 3 * Hc, 4 * Hc, 5 * Hc, 10 * Hc]
-    zmax_labels = {Hc: "Hc", 2 * Hc: "2Hc", 3 * Hc: "3Hc", 4 * Hc: "4Hc", 5 * Hc: "5Hc", 10 * Hc: "10Hc"}
+    for zmax in zmax_array:
+        z = r0 * np.cos(domains["theta"])               # Disk heights at given radius
+        theta_mask = np.abs(z) <= zmax            # Boolean mask selecting only polar angles within max_height so that we ignore cloudlet
+        theta_sel = domains["theta"][theta_mask]
+        theta_sel_min, theta_sel_max = np.min(np.round(np.degrees(theta_sel), 1)), np.max(np.round(np.degrees(theta_sel), 1))
+        zmax_labels[zmax] = f"{int(zmax/Hc)}Hc ({theta_sel_min} - {theta_sel_max})"
+
     Mdot_in_allzmax = {}
     Mdot_out_allzmax = {}
-
+    
     for z in zmax_array:
 
         print(z)
@@ -198,7 +206,7 @@ def main():
     # Plotting the inward mass fluxes for all max heights
     fig, ax = plt.subplots()
     for key, value in Mdot_in_allzmax.items():
-        ax.plot(allit_years, np.log10(-value), label=zmax_labels[key])
+        ax.plot(allit_years, np.log10(-value), label=f'{zmax_labels[key]} ()')
     ax.set_xlabel(r"Time [kyr]")
     ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
     ax.set_title(fr"{sim_name}: Inward $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
@@ -208,16 +216,16 @@ def main():
     plt.show()
 
     # Plotting the outward mass fluxes for all max heights as a sanity check (SHOULD BE ZERO!)
-    fig, ax = plt.subplots()
-    for key, value in Mdot_in_allzmax.items():
-        ax.plot(allit_years, value, label=zmax_labels[key])
-    ax.set_xlabel(r"Time [kyr]")
-    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
-    ax.set_title(fr"{sim_name}: Outward $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
-    fig.tight_layout()
-    ax.legend(loc="lower right")   # loc='upper left', 
-    plt.savefig(f'{fig_imgs}/logMoutdot_vs_t_all_zmax.png')
-    plt.show()
+    # fig, ax = plt.subplots()
+    # for key, value in Mdot_in_allzmax.items():
+    #     ax.plot(allit_years, value, label=zmax_labels[key])
+    # ax.set_xlabel(r"Time [kyr]")
+    # ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
+    # ax.set_title(fr"{sim_name}: Outward $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
+    # fig.tight_layout()
+    # ax.legend(loc="lower right")   # loc='upper left', 
+    # plt.savefig(f'{fig_imgs}/logMoutdot_vs_t_all_zmax.png')
+    # plt.show()
 
 
     ########################## 2D accretion across radii and iteration times #######################
