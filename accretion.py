@@ -231,7 +231,7 @@ def main():
     ########################### Check accretion at different radii for different max heights #############################
 
     # Defining max heights and the corresponding plot labels
-    zmax_array = [1, 2, 4, 5, 10, 20, 30]
+    zmax_array = [1, 2, 4, 5, 10, 20]
     zmax_labels = {}
 
     # Defining radii at which I want to plot accretion at different max heights
@@ -244,7 +244,7 @@ def main():
     r_for_acc = {r0: 0, r20: idx_20, r50: idx_50, r100: idx_100}
 
     # Defining subplots
-    fig, axes = plt.subplots(2, 2, figsize=(8, 6), constrained_layout=True)
+    fig, axes = plt.subplots(2, 2, figsize=(8, 6))
     axes = axes.flatten()
     plot_counter=0
     
@@ -285,7 +285,7 @@ def main():
         handles, labels = axes[plot_counter].get_legend_handles_labels()
         plot_counter += 1
        
-    fig.legend(handles, labels, loc="upper right", bbox_to_anchor=(1.05, 1.), borderaxespad=0., frameon=False)
+    # fig.legend(handles, labels, loc="upper right", bbox_to_anchor=(1.05, 1.), borderaxespad=0., frameon=False)
     fig.suptitle(f"{sim_name}")  
     fig.tight_layout()
     plt.savefig(f'{fig_imgs}/logMdot_vs_t_all_radii_all_zmax.png')
