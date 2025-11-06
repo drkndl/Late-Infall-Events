@@ -129,7 +129,7 @@ def main():
     rho_allit = []
     vrad_allit = [] 
 
-    for i in range(0, it+1, 5):     # loading density and vrad every 5 iterations
+    for i in range(0, it+1, 10):     # loading density and vrad every 10 iterations
         rho_i = get_data(folder, "dens", i, domains)
         vrad_i = get_data(folder, "vy", i, domains)          
         rho_allit.append(rho_i)
@@ -137,7 +137,7 @@ def main():
     
     vrad_allit = np.asarray(vrad_allit)
     rho_allit = np.asarray(rho_allit)
-    allit_years = calc_simtime(np.asarray(range(0, it+1, 5)))       # Convert iterations to kyrs
+    allit_years = calc_simtime(np.asarray(range(0, it+1, 10)))       # Convert iterations to kyrs
 
 
     #################################### Accretion onto star ##########################################
@@ -231,52 +231,64 @@ def main():
     ########################### Check accretion at different radii for different max heights #############################
 
     # Defining max heights and the corresponding plot labels
-    zmax_array = [Hc, 2 * Hc, 4 * Hc, 5 * Hc, 10 * Hc, 20 * Hc, 30 * Hc]
+    zmax_array = [1, 2, 4, 5, 10, 20, 30]
     zmax_labels = {}
-    r_for_acc = [r0, r10, r20, r100]
-
-    for zmax in zmax_array:
-        z = r0 * np.cos(domains["theta"])               # Disk heights at given radius
-        theta_mask = np.abs(z) <= zmax            # Boolean mask selecting only polar angles within max_height so that we ignore cloudlet
-        theta_sel = domains["theta"][theta_mask]
-        theta_sel_min, theta_sel_max = np.min(np.round(np.degrees(theta_sel), 1)), np.max(np.round(np.degrees(theta_sel), 1))
-        zmax_labels[zmax] = f"{int(zmax/Hc)}Hc ({theta_sel_min} - {theta_sel_max})"
 
     # Defining radii at which I want to plot accretion at different max heights
-    idx_10 = np.argmin(np.abs(domains["r"]/au - 10))    # Index of 10 AU
-    idx_20 = np.argmin(np.abs(r - 20))
-    Mdot_in_allzmax = {}
-    Mdot_out_allzmax = {}
+    idx_20 = np.argmin(np.abs(domains["r"]/au - 20))    # Index of 20 AU
+    idx_50 = np.argmin(np.abs(domains["r"]/au - 50))    # Index of 50 AU
+    idx_100  =np.argmin(np.abs(domains["r"]/au - 100))  # Index of 100 AU
+    r20 = domains["r"][idx_20]
+    r50 = domains["r"][idx_50]
+    r100 = domains["r"][idx_100]
+    r_for_acc = {r0: 0, r20: idx_20, r50: idx_50, r100: idx_100}
+
+    # Defining subplots
+    fig, axes = plt.subplots(2, 2, figsize=(8, 6))
+    axes = axes.flatten()
+    plot_counter=0
     
-    for z in zmax_array:
+    for r_acc, r_acc_id in r_for_acc.items():
 
-        print(z)
-        dotM_in_allit = []
-        dotM_out_allit = []
-        for i in range(len(allit_years)):
+        Mdot_in_allzmax = {}
+        Hc = scale_height(r_acc, h0, R0, f)
 
-            _, dotM_in_z, dotM_out_z = calc_accretion(rho_allit[i], vrad_allit[i], domains["theta"], r0, 0, domains["phi"], z, Msun)
-            dotM_in_allit.append(dotM_in_z)
-            dotM_out_allit.append(dotM_out_z)
+        for z_scale in zmax_array:
 
-        dotM_in_allit = np.asarray(dotM_in_allit)
-        dotM_out_allit = np.asarray(dotM_out_allit)
+            print(z_scale)
+            zmax = z_scale * Hc         # Defining max_height for scale height at given radius
 
-        # Adding time evolution of accretion rates to corresponding max height value in the dictionary
-        Mdot_in_allzmax[z] = dotM_in_allit
-        Mdot_out_allzmax[z] = dotM_out_allit
+            # Defining zmax_labels
+            z = r_acc * np.cos(domains["theta"])      # Disk heights at given radius
+            theta_mask = np.abs(z) <= zmax            # Boolean mask selecting only polar angles within max_height so that we ignore cloudlet
+            theta_sel = domains["theta"][theta_mask]
+            theta_sel_min, theta_sel_max = np.min(np.round(np.degrees(theta_sel), 1)), np.max(np.round(np.degrees(theta_sel), 1))
+            zmax_labels[zmax] = f"{int(zmax/Hc)}Hc ({theta_sel_min} - {theta_sel_max})"
 
-    # Plotting the inward mass fluxes for all max heights
-    fig, ax = plt.subplots()
-    for key, value in Mdot_in_allzmax.items():
-        ax.plot(allit_years, np.log10(-value), label=f'{zmax_labels[key]}')
-    ax.set_xlabel(r"Time [kyr]")
-    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
-    ax.set_title(fr"{sim_name}: Inward $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
-    fig.tight_layout()
-    ax.legend(loc="upper right")   # loc='upper left', 
-    plt.savefig(f'{fig_imgs}/logMdot_vs_t_all_zmax.png')
+            dotM_in_allit = []          # Inward accretion rates for given radius and given scale height at every 10 iters
+            for i in range(len(allit_years)):
+
+                _, dotM_in_z, _ = calc_accretion(rho_allit[i], vrad_allit[i], domains["theta"], r_acc, r_acc_id, domains["phi"], zmax, Msun)
+                dotM_in_allit.append(dotM_in_z)
+
+            dotM_in_allit = np.asarray(dotM_in_allit)
+
+            # Adding time evolution of accretion rates to corresponding max height value in the dictionary
+            Mdot_in_allzmax[zmax] = dotM_in_allit
+
+        # Plotting the inward mass fluxes for all max heights at given radius
+        for key, value in Mdot_in_allzmax.items():
+            axes[plot_counter].plot(allit_years, np.log10(-value), label=f'{zmax_labels[key]}')
+        axes[plot_counter].set_xlabel(r"Time [kyr]")
+        axes[plot_counter].set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
+        axes[plot_counter].set_title(fr"{sim_name}: Inward $\mathrm{{\log\dot{{M}}}}$ vs t (R = {int(r_acc)} AU)")
+        axes[plot_counter].legend(loc="upper right")   # loc='upper left',
+        plot_counter += 1
+    
+    fig.tight_layout()     
+    plt.savefig(f'{fig_imgs}/logMdot_vs_t_all_radii_all_zmax.png')
     plt.show()
+    ergjknkenvke
 
 
     ########################## 2D accretion across radii and iteration times #######################
