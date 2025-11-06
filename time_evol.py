@@ -29,7 +29,7 @@ def main():
     fig_imgs = Path("cloud_disk_it450_cmass10_rotY45/imgs/")                      # Folder to save images    
     iter_total = 450                                     # FARGO snapshot
 
-    first_it = 1
+    first_it = 100
     iter_check = np.arange(first_it, iter_total+1, 50)                       # Some iterations to plot
     sim_name = str(fig_imgs).split('/')[0]                                     # Simulation name (for plot labels)
     dt_years = calc_simtime(np.asarray(range(first_it, iter_total+1)))       # Convert iterations to kyrs
@@ -330,10 +330,10 @@ def main():
 
     # Make a time evolution GIF out of the 3D surface density and twist plots
     # make_evol_GIF(fig_imgs, "warp_dens_thresh", "warp_dens_movie")
-    make_evol_GIF(fig_imgs, "warp_twist_arrows", "warp_twist_movie")
-    make_evol_GIF(fig_imgs, "dens_phiavg_cyl_phi", "dens_phiavg_cyl_movie")
-    make_evol_GIF(fig_imgs, "dens_cyl_phi", "dens_cyl_movie")
-    make_evol_GIF(fig_imgs, "dens_xy_theta", "dens_xy_movie")
+    # make_evol_GIF(fig_imgs, "warp_twist_arrows", "warp_twist_movie")
+    # make_evol_GIF(fig_imgs, "dens_phiavg_cyl_phi", "dens_phiavg_cyl_movie")
+    # make_evol_GIF(fig_imgs, "dens_cyl_phi", "dens_cyl_movie")
+    # make_evol_GIF(fig_imgs, "dens_xy_theta", "dens_xy_movie")
     # make_evol_GIF(fig_imgs, "total_bonanza", "total_bonanza_movie")
 
 
