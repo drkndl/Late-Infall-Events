@@ -284,10 +284,10 @@ def main():
         axes[plot_counter].set_title(fr"R = {int(r_acc/au)}")
         handles, labels = axes[plot_counter].get_legend_handles_labels()
         plot_counter += 1
-    
-    fig.tight_layout(rect=[0, 0, 0.85, 1])   
-    fig.legend(handles, labels, loc="lower center", bbox_to_anchor=(0.5, -0.05), ncol=2, frameon=False)
+       
+    fig.legend(handles, labels, loc="upper left", bbox_to_anchor=(1.05, 1.), borderaxespad=0., frameon=False)
     fig.suptitle(f"{sim_name}")  
+    fig.tight_layout()
     plt.savefig(f'{fig_imgs}/logMdot_vs_t_all_radii_all_zmax.png')
     plt.show()
     wfrbekgke
