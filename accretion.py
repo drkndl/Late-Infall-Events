@@ -244,7 +244,7 @@ def main():
     r_for_acc = {r0: 0, r20: idx_20, r50: idx_50, r100: idx_100}
 
     # Defining subplots
-    fig, axes = plt.subplots(2, 2, figsize=(8, 6))
+    fig, axes = plt.subplots(2, 2, figsize=(8, 6), constrained_layout=True)
     axes = axes.flatten()
     plot_counter=0
     
@@ -286,7 +286,7 @@ def main():
         plot_counter += 1
     
     fig.tight_layout(rect=[0, 0, 0.85, 1])   
-    fig.legend(handles, labels, loc="center left", bbox_to_anchor=(1.02, 0.5), borderaxespad=0, frameon=False)
+    fig.legend(handles, labels, loc="lower center", bbox_to_anchor=(0.5, -0.05), ncol=2, frameon=False)
     fig.suptitle(f"{sim_name}")  
     plt.savefig(f'{fig_imgs}/logMdot_vs_t_all_radii_all_zmax.png')
     plt.show()
