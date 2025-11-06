@@ -123,12 +123,12 @@ def main():
         rho_phiavg = np.mean(rho, axis=2)
 
         # Azimuthally averaged density RZ plot
-        cyl_2D_plot(rho_phiavg, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: $\phi$ Averaged Density R-Z Plane t = {int(it * dt * ninterm / stoky)} kyr', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_phiavg_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=False, data_phiavg=True)
+        # cyl_2D_plot(rho_phiavg, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: $\phi$ Averaged Density R-Z Plane t = {int(it * dt * ninterm / stoky)} kyr', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_phiavg_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=False, data_phiavg=True)
 
         # Density RZ plot
-        cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Density R-Z Plane $\phi = $ {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$, t = {int(it * dt * ninterm / stoky)} kyr', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=False, data_phiavg=False)
+        # cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Density R-Z Plane $\phi = $ {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$, t = {int(it * dt * ninterm / stoky)} kyr', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=False, data_phiavg=False)
 
-        XY_2D_plot(rho, X, Y, irad, itheta, title=rf'{sim_name}: Density X-Y Plane $\theta = $ {itheta_deg}$^{{\circ}}$, t = {int(it * dt * ninterm / stoky)} kyr', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=f'{fig_imgs}/dens_xy_theta{itheta}_rad{irad}_it{it}.png', showfig=False)
+        # XY_2D_plot(rho, X, Y, irad, itheta, title=rf'{sim_name}: Density X-Y Plane $\theta = $ {itheta_deg}$^{{\circ}}$, t = {int(it * dt * ninterm / stoky)} kyr', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=f'{fig_imgs}/dens_xy_theta{itheta}_rad{irad}_it{it}.png', showfig=False)
 
         # Plotting the warp densities 
         # contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_warp, r_select, plot_args, colorbarlabel=r'$\rho [g/cm^3]$', title=rf'{sim_name} $\log(\rho)$ above $\rho = 10^{{{warp_thresh}}} g/cm^3$, t = {int(it * dt * ninterm / stoky)} kyr', savefig=True, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=False)
@@ -147,7 +147,7 @@ def main():
         L_prim_mag = np.sqrt(Lx_disk**2 + Ly_disk**2 + Lz_disk**2)
 
         # Calculating and plotting the radial profile of warp precession as a quiver plot
-        plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, plot_args, title=f"Warp twist {sim_name} t={int(calc_simtime(it))} kyr", savefig=True, figfolder=f'{fig_imgs}/warp_twist_arrows_it{it}.png', showfig=False)
+        # plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, plot_args, title=f"Warp twist {sim_name} t={int(calc_simtime(it))} kyr", savefig=True, figfolder=f'{fig_imgs}/warp_twist_arrows_it{it}.png', showfig=False)
 
         # Calculating warp surface density
         if it in iter_check:
@@ -249,16 +249,21 @@ def main():
 
 
     # Plot time evolution of warp inclination in 3D for all iters 
-    fig = plt.figure(figsize=(12, 6))
+    fig = plt.figure(figsize=(8, 6))
     ax = fig.add_subplot(111, projection='3d')
     r_warp_extent = np.sqrt(X_c[warp_ids]**2 +  Y_c[warp_ids]**2 + Z_c[warp_ids]**2) / au
     mask = (rc/au >= r_warp_extent.min()) & (rc/au <= r_warp_extent.max())
-    for i in range(len(dt_years[::4])):
+    for i in range(len(dt_years[100::4])):  # Plot starting from 100th iteration, every 4 iterations
         r_select = rc[mask]
         inc_it_select = inc_it[i][mask]
-        ax.plot(r_select/au, [dt_years[::4][i]] * len(r_select), inc_it_select, color=plt.cm.viridis(i/len(dt_years[::4])))
+        ax.plot([dt_years[100::4][i]] * len(r_select), r_select/au, inc_it_select, color=plt.cm.viridis(i/len(dt_years[100::4])))
 
+<<<<<<< HEAD
     ax.view_init(elev=-33, azim=-56)
+=======
+    ax.view_init(elev=35, azim=-31)
+    ax.set_box_aspect([3,1,1])
+>>>>>>> cac149d61f2637046b3793845a14b1e428bb255e
     ax.set_xlabel('R [AU]')
     ax.set_ylabel('Time [kyr]')
     ax.set_zlabel('Warp inclination [°]')
@@ -283,16 +288,21 @@ def main():
 
 
     # Plot time evolution of warp precession in 3D for all iters 
-    fig = plt.figure(figsize=(12, 6))
+    fig = plt.figure(figsize=(8, 6))
     ax = fig.add_subplot(111, projection='3d')
     r_warp_extent = np.sqrt(X_c[warp_ids]**2 +  Y_c[warp_ids]**2 + Z_c[warp_ids]**2) / au
     mask = (rc/au >= r_warp_extent.min()) & (rc/au <= r_warp_extent.max())
-    for i in range(len(dt_years[::4])):
+    for i in range(len(dt_years[100::4])):  # Plot starting from 100th iteration, every 4 iterations
         r_select = rc[mask]
         prec_it_select = prec_it[i][mask]
-        ax.plot(r_select/au, [dt_years[::4][i]] * len(r_select), prec_it_select, color=plt.cm.viridis(i/len(dt_years[::4])))
+        ax.plot([dt_years[100::4][i]] * len(r_select), r_select/au, prec_it_select, color=plt.cm.viridis(i/len(dt_years[100::4])))
 
+<<<<<<< HEAD
     ax.view_init(elev=-33, azim=-56)
+=======
+    ax.view_init(elev=35, azim=-31)
+    ax.set_box_aspect([3,1,1])
+>>>>>>> cac149d61f2637046b3793845a14b1e428bb255e
     ax.set_xlabel('R [AU]')
     ax.set_ylabel('Time [kyr]')
     ax.set_zlabel('Warp precession [°]')
@@ -328,10 +338,10 @@ def main():
 
     # Make a time evolution GIF out of the 3D surface density and twist plots
     # make_evol_GIF(fig_imgs, "warp_dens_thresh", "warp_dens_movie")
-    make_evol_GIF(fig_imgs, "warp_twist_arrows", "warp_twist_movie")
-    make_evol_GIF(fig_imgs, "dens_phiavg_cyl_phi", "dens_phiavg_cyl_movie")
-    make_evol_GIF(fig_imgs, "dens_cyl_phi", "dens_cyl_movie")
-    make_evol_GIF(fig_imgs, "dens_xy_theta", "dens_xy_movie")
+    # make_evol_GIF(fig_imgs, "warp_twist_arrows", "warp_twist_movie")
+    # make_evol_GIF(fig_imgs, "dens_phiavg_cyl_phi", "dens_phiavg_cyl_movie")
+    # make_evol_GIF(fig_imgs, "dens_cyl_phi", "dens_cyl_movie")
+    # make_evol_GIF(fig_imgs, "dens_xy_theta", "dens_xy_movie")
     # make_evol_GIF(fig_imgs, "total_bonanza", "total_bonanza_movie")
 
 
