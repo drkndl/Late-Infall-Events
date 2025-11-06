@@ -24,9 +24,9 @@ stoky = 3.156e7 * 1e3     # 1 kyr in sec
 def main():
 
 
-    # folder = Path("../cloud_disk_it450_cmass10_rotX45/")                        # Folder with the FARGO output files
-    folder = Path("../fargo3d/outputs/cloud_disk_it450_cmass10_rotX45/")          # Folder with the FARGO output files (Binac2)
-    fig_imgs = Path("cloud_disk_it450_cmass10_rotX45/imgs/")                      # Folder to save images    
+    # folder = Path("../cloud_disk_it450_rotX45/")                        # Folder with the FARGO output files
+    folder = Path("../fargo3d/outputs/cloud_disk_it450_rotX45/")          # Folder with the FARGO output files (Binac2)
+    fig_imgs = Path("cloud_disk_it450_rotX45/imgs/")                      # Folder to save images    
     iter_total = 450                                     # FARGO snapshot
 
     first_it = 100
@@ -260,8 +260,8 @@ def main():
 
     ax.view_init(elev=35, azim=-31)
     ax.set_box_aspect([3,1,1])
-    ax.set_xlabel('R [AU]')
-    ax.set_ylabel('Time [kyr]')
+    ax.set_xlabel('Time [kyr]')
+    ax.set_ylabel('R [AU]')
     ax.set_zlabel('Warp inclination [°]')
     ax.set_title(f'{sim_name}: Time evolution of warp inclination')
     # plt.colorbar(surf, label='Angle')
@@ -295,8 +295,8 @@ def main():
 
     ax.view_init(elev=35, azim=-31)
     ax.set_box_aspect([3,1,1])
-    ax.set_xlabel('R [AU]')
-    ax.set_ylabel('Time [kyr]')
+    ax.set_xlabel('Time [kyr]')
+    ax.set_ylabel('R [AU]')
     ax.set_zlabel('Warp precession [°]')
     ax.set_title(f'{sim_name}: Time evolution of warp precession')
     # plt.colorbar(surf, label='Angle')
