@@ -99,7 +99,7 @@ def main():
             Lx_i, Ly_i, Lz_i = calc_angular_momentum(mass_i, X, Y, ZCYL, vx_i, vy_i, vz_i)
 
             # Isolating the warped/broken disk
-            warp_thresh = -15   # log of density threshold for which we can see the warp in the primary
+            warp_thresh = -17   # log of density threshold for which we can see the warp in the primary
             warp_buffer = 500   # Isolates a box of 2 * warp_buffer around the star (AU)
             _, _, _, _, Lx_c_warp_i, Ly_c_warp_i, Lz_c_warp_i, _ = isolate_disk(X_c, Y_c, Z_c, Px * au, Py * au, Pz * au, warp_buffer * au, rho_c_i, vx_c_i, vy_c_i, vz_c_i, Lx_i, Ly_i, Lz_i, warp_thresh) 
 

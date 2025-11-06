@@ -91,9 +91,9 @@ def calc_accretion(rho, vr, theta, r0, r0_id, phi, max_height, Msun):
 def main():
 
 
-    # folder = Path("../cloud_disk_it450_Rout30_rotX45/")                    # Folder with the output files
-    folder = Path("../fargo3d/outputs/cloud_disk_it450_Rout30_rotX45")       # Folder with the output files (BinAC2)
-    fig_imgs = Path("cloud_disk_it450_Rout30_rotX45/imgs/")                  # Folder to save images
+    # folder = Path("../cloud_disk_it450_cmass10_rotY45/")                    # Folder with the output files
+    folder = Path("../fargo3d/outputs/cloud_disk_it450_cmass10_rotY45")       # Folder with the output files (BinAC2)
+    fig_imgs = Path("cloud_disk_it450_cmass10_rotY45/imgs/")                  # Folder to save images
     it = 450                                                             # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                               # Simulation name (for plot labels)
     sim_params = load_par_file(f"{sim_name}/{sim_name}.par")             # Loading simulation parameters from the .par file
@@ -263,7 +263,7 @@ def main():
             theta_mask = np.abs(z) <= zmax            # Boolean mask selecting only polar angles within max_height so that we ignore cloudlet
             theta_sel = domains["theta"][theta_mask]
             theta_sel_min, theta_sel_max = np.min(np.round(np.degrees(theta_sel), 1)), np.max(np.round(np.degrees(theta_sel), 1))
-            zmax_labels[zmax] = f"{int(zmax/Hc)}Hc ({theta_sel_min} - {theta_sel_max})"
+            zmax_labels[zmax] = fr"{int(zmax/Hc)}Hc ({theta_sel_min}$\degree$-{theta_sel_max}$\degree$)"
 
             dotM_in_allit = []          # Inward accretion rates for given radius and given scale height at every 10 iters
             for i in range(len(allit_years)):
@@ -281,12 +281,12 @@ def main():
             axes[plot_counter].plot(allit_years, np.log10(-value), label=f'{zmax_labels[key]}')
         axes[plot_counter].set_xlabel(r"Time [kyr]")
         axes[plot_counter].set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
-        axes[plot_counter].set_title(fr"R = {int(r_acc)}")
+        axes[plot_counter].set_title(fr"R = {int(r_acc/au)}")
         handles, labels = axes[plot_counter].get_legend_handles_labels()
         plot_counter += 1
     
-    fig.tight_layout(rect=[0, 0, 1, 0.95])   
-    fig.legend(handles, labels, loc='upper center', ncol=2, frameon=False)
+    fig.tight_layout(rect=[0, 0, 0.85, 1])   
+    fig.legend(handles, labels, loc="center left", bbox_to_anchor=(1.02, 0.5), borderaxespad=0, frameon=False)
     fig.suptitle(f"{sim_name}")  
     plt.savefig(f'{fig_imgs}/logMdot_vs_t_all_radii_all_zmax.png')
     plt.show()
