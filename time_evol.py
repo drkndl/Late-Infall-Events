@@ -24,9 +24,9 @@ stoky = 3.156e7 * 1e3     # 1 kyr in sec
 def main():
 
 
-    # folder = Path("../cloud_disk_it450_rotX45/")                        # Folder with the FARGO output files
-    folder = Path("../fargo3d/outputs/cloud_disk_it450_rotX45/")          # Folder with the FARGO output files (Binac2)
-    fig_imgs = Path("cloud_disk_it450_rotX45/imgs/")                      # Folder to save images    
+    # folder = Path("../cloud_disk_it450_cmass10_rotX45/")                        # Folder with the FARGO output files
+    folder = Path("../fargo3d/outputs/cloud_disk_it450_cmass10_rotX45/")          # Folder with the FARGO output files (Binac2)
+    fig_imgs = Path("cloud_disk_it450_cmass10_rotX45/imgs/")                      # Folder to save images    
     iter_total = 450                                     # FARGO snapshot
 
     first_it = 100
@@ -258,7 +258,8 @@ def main():
         inc_it_select = inc_it[i][mask]
         ax.plot([dt_years[100::4][i]] * len(r_select), r_select/au, inc_it_select, color=plt.cm.viridis(i/len(dt_years[100::4])))
 
-    ax.view_init(elev=-33, azim=-56)
+    ax.view_init(elev=35, azim=-31)
+    ax.set_box_aspect([3,1,1])
     ax.set_xlabel('R [AU]')
     ax.set_ylabel('Time [kyr]')
     ax.set_zlabel('Warp inclination [°]')
@@ -292,7 +293,8 @@ def main():
         prec_it_select = prec_it[i][mask]
         ax.plot([dt_years[100::4][i]] * len(r_select), r_select/au, prec_it_select, color=plt.cm.viridis(i/len(dt_years[100::4])))
 
-    ax.view_init(elev=-33, azim=-56)
+    ax.view_init(elev=35, azim=-31)
+    ax.set_box_aspect([3,1,1])
     ax.set_xlabel('R [AU]')
     ax.set_ylabel('Time [kyr]')
     ax.set_zlabel('Warp precession [°]')
