@@ -370,7 +370,7 @@ def main():
         ax.plot(np.log10(domains["r"]/au)[:-1], value[-1, :], linestyle=ls, color=colour, label=folders_labels[key])   # -1 corresponds to last iteration
 
     ax.set_xlabel(r"$\log(r)$ [AU]")
-    ax.set_ylabel(r"Disk Inclination $(\degree)}$")
+    ax.set_ylabel(r"Disk Inclination $(\degree)$")
     ax.set_title(fr"Disk Inclination vs logr (53 kyr) $(\mathrm{{\rho \geq 10^{{{warp_thresh}}}}})$")
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
     plt.tight_layout()
@@ -399,7 +399,7 @@ def main():
         ax.plot(np.log10(domains["r"]/au)[:-1], value[-1, :], linestyle=ls, color=colour, label=folders_labels[key])   # -1 corresponds to last iteration
 
     ax.set_xlabel(r"$\log(r)$ [AU]")
-    ax.set_ylabel(r"Disk Twist $(\degree)}$")
+    ax.set_ylabel(r"Disk Twist $(\degree)$")
     ax.set_title(fr"Twist vs logr (53 kyr) $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
     plt.tight_layout()
