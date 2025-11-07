@@ -2,7 +2,7 @@
 
 import numpy as np
 from pathlib import Path
-from read import get_domain_spherical, get_data, load_par_file
+from read import get_domain_spherical, get_data, load_par_file, get_param_value
 import matplotlib.pyplot as plt
 from no_thoughts_just_plots import quiver_plot_3d, contours_3D, plot_surf_dens, plot_twist_arrows, plot_total_disks_bonanza, cyl_2D_plot, XY_2D_plot
 import astropy.constants as c
@@ -509,10 +509,12 @@ def main():
     fig_imgs = Path("cloud_disk_it450_cmass10_rotY45/imgs/")                    # Folder to save images
     it = 450                                                       # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                         # Simulation name (for plot labels)
-    sim_params = load_par_file(f"{sim_name}/{sim_name}.par")       # Loading simulation parameters from the .par file
     
+    # Load some simulation parameters
+    b = get_param_value('ImpactParameter', sim_name)
+
     # Save simulation parameters into dictionary for plotting purposes
-    plot_args = {"Time": f"{int(calc_simtime(it))} kyr", "b": sim_params['ImpactParameter'] }
+    plot_args = {"Time": f"{int(calc_simtime(it))} kyr", "b": b}
     
 
     ###################### Load data (theta = 175, r = 150, phi = 100) ################################

@@ -2,7 +2,7 @@
 
 import numpy as np
 from pathlib import Path
-from read import get_domain_spherical, get_data, load_par_file
+from read import get_domain_spherical, get_data, load_par_file, get_param_value
 import matplotlib.pyplot as plt
 from analysis import calc_cell_volume, calc_mass, sph_to_cart, calc_simtime, vel_sph_to_cart, centering, calc_angular_momentum, isolate_disk, calc_L_average, calc_inc_twist
 from accretion import scale_height, calc_accretion
@@ -142,12 +142,11 @@ def main():
 
         ############################### Calculating mass accretion values ##################################
 
-
-        R0 = 5.2 * au                         # As defined in FARGO3D [cm]
-        # f = sim_params['FlaringIndex']      # Flaring index
-        # h0 = sim_params['AspectRatio']      # Aspect ratio
-        f = 0.25                              # Flaring index (from setups/cloud_disk.par)
-        h0 = 0.03799                          # Aspect ratio (from setups/cloud_disk.par)
+        # Loading all required basic set up parameters
+        h0 = get_param_value("AspectRatio", f_sim_name)      # Aspect ratio
+        f = get_param_value("FlaringIndex", f_sim_name)      # Flaring index
+        R0 = 5.2 * au                                      # As defined in FARGO3D [cm]
+        
         Hc = scale_height(domains["r"][0], h0, R0, f)
         zmax = 4 * Hc
         r0 = domains["r"][0]     # Taking the innermost radius to check accretion onto star

@@ -3,8 +3,9 @@ import matplotlib.pyplot as plt
 from matplotlib import cm 
 import matplotlib.colors as mcolors
 from pathlib import Path
-from read import get_domain_spherical, get_data, load_par_file
+from read import get_domain_spherical, get_data, load_par_file, get_param_value
 from analysis import calc_cell_volume, calc_mass, sph_to_cart, calc_simtime
+from check_mass import surf_dens_profile
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes, mark_inset
 import astropy.constants as c
 import pandas as pd
@@ -33,7 +34,25 @@ def scale_height(r0, h0, R0, f):
     """
 
     Hc = h0 * r0 * np.power(r0 / R0, f)             
-    return Hc
+    return Hc 
+
+
+def omega_kepler(Mstar, r):
+    """
+    Calculates the Keplerian velocities for an array of radii
+    
+    Inputs:
+    ------
+    Mstar:   Mass of the star [g]
+    r:       1D array of radii [cm]
+
+    Outputs:
+    -------
+    omega_k: 1D array of Keplerian velocities [/s]
+    """
+
+    omega_k = np.sqrt(G * Mstar / r**3)
+    return omega_k
 
 
 def calc_accretion(rho, vr, theta, r0, r0_id, phi, max_height, Msun):
@@ -88,21 +107,32 @@ def calc_accretion(rho, vr, theta, r0, r0_id, phi, max_height, Msun):
     return dotM_total, dotM_in, dotM_out
 
 
+def calc_accretion_theoretical():
+    """
+    Function to calculate the theoretical mass accretion values Mdot = 3 pi sigma nu
+    
+    Inputs:
+    -------
+
+    """
+
+
 def main():
 
 
-    # folder = Path("../cloud_disk_it450_Rout30_rotY45/")                    # Folder with the output files
-    folder = Path("../fargo3d/outputs/cloud_disk_it450_Rout30_rotY45")       # Folder with the output files (BinAC2)
+    folder = Path("../cloud_disk_it450_Rout30_rotY45/")                    # Folder with the output files
+    # folder = Path("../fargo3d/outputs/cloud_disk_it450_Rout30_rotY45")       # Folder with the output files (BinAC2)
     fig_imgs = Path("cloud_disk_it450_Rout30_rotY45/imgs/")                  # Folder to save images
     it = 450                                                             # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                               # Simulation name (for plot labels)
-    sim_params = load_par_file(f"{sim_name}/{sim_name}.par")             # Loading simulation parameters from the .par file
 
-    R0 = 5.2 * au                         # As defined in FARGO3D [cm]
-    # f = sim_params['FlaringIndex']      # Flaring index
-    # h0 = sim_params['AspectRatio']      # Aspect ratio
-    f = 0.25                              # Flaring index (from setups/cloud_disk.par)
-    h0 = 0.03799                          # Aspect ratio (from setups/cloud_disk.par)
+    # Loading all required basic set up parameters
+    h0 = get_param_value("AspectRatio", sim_name)      # Aspect ratio
+    f = get_param_value("FlaringIndex", sim_name)      # Flaring index
+    p = get_param_value('SigmaSlope', sim_name)        # Power law slope of surface densities
+    sigma0 = get_param_value('Sigma0', sim_name)       # Midplane surface density at R0 [g/cm^3]
+    alpha = get_param_value('Alpha', sim_name)         # Alpha viscosity value
+    R0 = 5.2 * au                                      # As defined in FARGO3D [cm]
     
 
     ############# Load data for single snapshot (theta = 175, r = 150, phi = 100) ######################
@@ -171,6 +201,7 @@ def main():
 
     ########################### Check accretion for different max heights #############################
 
+
     # Defining max heights and the corresponding plot labels
     zmax_array = [Hc, 2 * Hc, 4 * Hc, 5 * Hc, 10 * Hc, 20 * Hc, 30 * Hc]
     zmax_labels = {}
@@ -228,7 +259,15 @@ def main():
     # plt.show()
 
 
+    ################################# Compare theoretical and actual mass accretion ###################################
+
+
+    omega_k = omega_kepler(Mstar, domains["r"])
+
+
+
     ########################### Check accretion at different radii for different max heights #############################
+
 
     # Defining max heights and the corresponding plot labels
     zmax_array = [1, 2, 4, 5, 10, 20]
@@ -290,7 +329,6 @@ def main():
     fig.tight_layout()
     plt.savefig(f'{fig_imgs}/logMdot_vs_t_all_radii_all_zmax.png')
     plt.show()
-    wfrbekgke
 
 
     ########################## 2D accretion across radii and iteration times #######################

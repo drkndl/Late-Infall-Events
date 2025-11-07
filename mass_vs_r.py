@@ -25,7 +25,6 @@ def main():
     fig_imgs = Path("cloud_disk_it450_cmass10_rotY45/imgs/")                  # Folder to save images
     it = 450                                                             # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                               # Simulation name (for plot labels)
-    sim_params = load_par_file(f"{sim_name}/{sim_name}.par")             # Loading simulation parameters from the .par file
 
 
     ############# Load data for single snapshot (theta = 175, r = 150, phi = 100) ######################

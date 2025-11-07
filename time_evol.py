@@ -2,7 +2,7 @@
 
 import numpy as np
 from pathlib import Path
-from read import get_domain_spherical, get_data, load_par_file
+from read import get_domain_spherical, get_data, load_par_file, get_param_value
 from analysis import sph_to_cart, vel_sph_to_cart, centering, calc_angular_momentum, calc_cell_volume, calc_eccen, calc_LRL, calc_mass, calc_surfdens, isolate_disk, calc_L_average, calc_simtime, calc_inc_twist, calc_total_L
 import matplotlib.pyplot as plt
 from matplotlib import cm
@@ -34,9 +34,6 @@ def main():
     sim_name = str(fig_imgs).split('/')[0]                                     # Simulation name (for plot labels)
     dt_years = calc_simtime(np.asarray(range(first_it, iter_total+1)))       # Convert iterations to kyrs
     dtkyrs_check = calc_simtime(iter_check)                                  # Convert iterations into kyrs
-
-    sim_params = load_par_file(f"{sim_name}/{sim_name}.par")       # Loading simulation parameters from the .par file
-    print(sim_params)
 
     inc_it = []                                               # List to save disk inclination at each iteration
     prec_it = []                                              # List to save disk precession at each iteration
@@ -105,7 +102,9 @@ def main():
         r_select = domains["r"][mask]
         surf_dens_select = surf_dens[mask]
 
-        plot_args = {"Time": f"{int(calc_simtime(it))} kyr", "b": sim_params['ImpactParameter'] }
+        # Load some simulation parameters for plot labelling
+        b = get_param_value('ImpactParameter', sim_name)
+        plot_args = {"Time": f"{int(calc_simtime(it))} kyr", "b": b}
         plot_args[r"$\mathrm{Box}_{\mathrm{prim}}$"] = f"{2 * warp_buffer} AU"
         plot_args[r"$\rho_{\mathrm{prim}} \geq$"] = fr"$10^{{{warp_thresh}}} g/cm^3$"
         
@@ -123,12 +122,12 @@ def main():
         rho_phiavg = np.mean(rho, axis=2)
 
         # Azimuthally averaged density RZ plot
-        # cyl_2D_plot(rho_phiavg, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: $\phi$ Averaged Density R-Z Plane t = {int(it * dt * ninterm / stoky)} kyr', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_phiavg_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=False, data_phiavg=True)
+        cyl_2D_plot(rho_phiavg, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: $\phi$ Averaged Density R-Z Plane t = {int(it * dt * ninterm / stoky)} kyr', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_phiavg_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=False, data_phiavg=True)
 
         # Density RZ plot
-        # cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Density R-Z Plane $\phi = $ {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$, t = {int(it * dt * ninterm / stoky)} kyr', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=False, data_phiavg=False)
+        cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Density R-Z Plane $\phi = $ {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$, t = {int(it * dt * ninterm / stoky)} kyr', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=False, data_phiavg=False)
 
-        # XY_2D_plot(rho, X, Y, irad, itheta, title=rf'{sim_name}: Density X-Y Plane $\theta = $ {itheta_deg}$^{{\circ}}$, t = {int(it * dt * ninterm / stoky)} kyr', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=f'{fig_imgs}/dens_xy_theta{itheta}_rad{irad}_it{it}.png', showfig=False)
+        XY_2D_plot(rho, X, Y, irad, itheta, title=rf'{sim_name}: Density X-Y Plane $\theta = $ {itheta_deg}$^{{\circ}}$, t = {int(it * dt * ninterm / stoky)} kyr', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=f'{fig_imgs}/dens_xy_theta{itheta}_rad{irad}_it{it}.png', showfig=False)
 
         # Plotting the warp densities 
         # contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_warp, r_select, plot_args, colorbarlabel=r'$\rho [g/cm^3]$', title=rf'{sim_name} $\log(\rho)$ above $\rho = 10^{{{warp_thresh}}} g/cm^3$, t = {int(it * dt * ninterm / stoky)} kyr', savefig=True, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=False)
@@ -147,7 +146,7 @@ def main():
         L_prim_mag = np.sqrt(Lx_disk**2 + Ly_disk**2 + Lz_disk**2)
 
         # Calculating and plotting the radial profile of warp precession as a quiver plot
-        # plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, plot_args, title=f"Warp twist {sim_name} t={int(calc_simtime(it))} kyr", savefig=True, figfolder=f'{fig_imgs}/warp_twist_arrows_it{it}.png', showfig=False)
+        plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, plot_args, title=f"Warp twist {sim_name} t={int(calc_simtime(it))} kyr", savefig=True, figfolder=f'{fig_imgs}/warp_twist_arrows_it{it}.png', showfig=False)
 
         # Calculating warp surface density
         if it in iter_check:
@@ -330,10 +329,10 @@ def main():
 
     # Make a time evolution GIF out of the 3D surface density and twist plots
     # make_evol_GIF(fig_imgs, "warp_dens_thresh", "warp_dens_movie")
-    # make_evol_GIF(fig_imgs, "warp_twist_arrows", "warp_twist_movie")
-    # make_evol_GIF(fig_imgs, "dens_phiavg_cyl_phi", "dens_phiavg_cyl_movie")
-    # make_evol_GIF(fig_imgs, "dens_cyl_phi", "dens_cyl_movie")
-    # make_evol_GIF(fig_imgs, "dens_xy_theta", "dens_xy_movie")
+    make_evol_GIF(fig_imgs, "warp_twist_arrows", "warp_twist_movie")
+    make_evol_GIF(fig_imgs, "dens_phiavg_cyl_phi", "dens_phiavg_cyl_movie")
+    make_evol_GIF(fig_imgs, "dens_cyl_phi", "dens_cyl_movie")
+    make_evol_GIF(fig_imgs, "dens_xy_theta", "dens_xy_movie")
     # make_evol_GIF(fig_imgs, "total_bonanza", "total_bonanza_movie")
 
 
