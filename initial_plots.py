@@ -8,7 +8,7 @@ import astropy.constants as c
 au = c.au.cgs.value
 
 
-folder = Path("../cloud_disk_it450_b01_cmass10_rotX45/")         # Folder with the output files
+folder = Path("../cloud_disk_it450_cmass10_Rout30_rotX45/")         # Folder with the output files
 sim_name = str(folder).split('/')[1]                 # Simulation name (for plot labelling)
 it = 450                                             # FARGO snapshot
 
@@ -73,7 +73,7 @@ labels_allit = [r"Time"] + labels
 interactive_2D(np.log10(rho_allit[:,::-1,:,:]), [r"Time", r'$\phi$ [deg]'], (2,1), np.log10(domains['r'] / au), np.rad2deg(domains['theta']), labels_allit, title=rf"{sim_name}: $\rho$ $(r, \theta)$ Time Evolution")
 
 # mass plot at all iterations
-interactive_2D(np.log10(mass_allit[:,::-1,:,:]), [r"Time", r'$\phi$ [deg]'], (2,1), np.log10(domains['r'] / au)[:-1], np.rad2deg(domains['theta'])[:-1], labels_allit, vmin=20, title=rf"{sim_name}: $M$ $(r, \theta)$ Time Evolution")
+# interactive_2D(np.log10(mass_allit[:,::-1,:,:]), [r"Time", r'$\phi$ [deg]'], (2,1), np.log10(domains['r'] / au)[:-1], np.rad2deg(domains['theta'])[:-1], labels_allit, vmin=20, title=rf"{sim_name}: $M$ $(r, \theta)$ Time Evolution")
 
 # velocity plot at 1 iteration
 # interactive_2D(np.log10(vsph[::-1,:,:]), (1,0), np.log10(domains['r'] / au), np.rad2deg(domains['theta']), labels)
@@ -112,7 +112,7 @@ interactive_2D(np.log10(mass_allit[:,::-1,:,:]), [r"Time", r'$\phi$ [deg]'], (2,
 # velocity plot at 1 iteration
 # interactive_2D(np.log10(vsph[::-1,:,:]), (2,0), np.rad2deg(domains['phi']), np.rad2deg(domains['theta']), labels)
 
-wekfjwkf
+# wekfjwkf
 # for iphi in range(255):
 
 #     iphi_deg = np.round(np.rad2deg(domains["phi"][iphi]), 2)
@@ -144,22 +144,22 @@ wekfjwkf
 
 
 # Plot 3D contours up to a certain radial extent as defined by irad
-irad = np.where(domains["r"]/au < 500)[0][-1]
+# irad = np.where(domains["r"]/au < 500)[0][-1]
 # irad = -1
 # fig = plt.figure(figsize=(10, 7))
 # contours_3D(X /au, Y /au, ZCYL /au, np.log10(rho), fig, xlabel="X [AU]", ylabel="Y [AU]", zlabel="Z [AU]", colorbarlabel=r"$\log \rho (g/cm^3)$", title="Density contour")
 # contours_3D(X[:, :irad, :]/au, Y[:, :irad, :]/au, ZCYL[:, :irad, :]/au, np.log10(rho[:, :irad, :]), xlabel="X [AU]", ylabel="Y [AU]", zlabel="Z [AU]", colorbarlabel=r"$\log \rho (g/cm^3)$", title="Density contour", savefig=False, figfolder="")
 
-itheta = 62
-itheta_deg = np.round(np.rad2deg(domains["theta"][itheta]), 2)
-iphi = 0
-irad = -1
-irad = np.where(domains["r"]/au < 2000)[0][-1]
+# itheta = 62
+# itheta_deg = np.round(np.rad2deg(domains["theta"][itheta]), 2)
+# iphi = 0
+# irad = -1
+# irad = np.where(domains["r"]/au < 2000)[0][-1]
 # print(irad)
 
-cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'Density R-Z Plane $\phi = $ {np.round(domains["phi"][iphi], 2)}', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=folder / f"dens_cyl_phi{iphi}_rad{irad}.png", showfig=True)
+# cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'Density R-Z Plane $\phi = $ {np.round(domains["phi"][iphi], 2)}', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=folder / f"dens_cyl_phi{iphi}_rad{irad}.png", showfig=True)
 
-XY_2D_plot(rho, X, Y, irad, itheta, title=rf'Density X-Z Plane $\theta = $ {itheta_deg}', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=folder / f"dens_xz_theta{itheta}_rad{irad}.png", showfig=True)
+# XY_2D_plot(rho, X, Y, irad, itheta, title=rf'Density X-Z Plane $\theta = $ {itheta_deg}', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=folder / f"dens_xz_theta{itheta}_rad{irad}.png", showfig=True)
 
 # quiver_plots(X, Y, vx, vy, itheta, irad, title=rf'Velocity X-Y Plane $\theta = $ {itheta_deg}', savefig=True, figfolder=f"../vel_xy_theta{itheta}_rad{irad}.png")
 
