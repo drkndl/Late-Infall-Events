@@ -549,3 +549,44 @@ def make_evol_GIF(directory, fname, gif_name, delete_files=True):
             os.remove(f'{directory}/{file}') 
 
     return
+
+
+def param_study_plot(fig, ax, param_dict, x_arr, folders_labels, colours, xlabel, ylabel, title, figfolder, savefig, showfig):
+    """
+    Creates plots to compare values across parametric study of simulations
+    """
+
+    current_color_index = -1
+    last_base = None
+    for key, value in param_dict.items():
+
+        # Plotting rotX simulations in solid lines and rotY simulations in dashed lines (but same colour for easy comparison)
+        if "rotX" in key:
+            base = key.replace("rotX", "")
+            ls = "-"
+        elif "rotY" in key:
+            base = key.replace("rotY", "")
+            ls = "--"
+        # Only change color when we encounter a new base (first time we see either X or Y)
+        if base != last_base:
+            current_color_index = (current_color_index + 1) % len(colours)
+            last_base = base
+
+        colour = colours[current_color_index]
+        ax.plot(x_arr, value, linestyle=ls, color=colour, label=folders_labels[key])
+
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.set_title(title)
+    ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
+    plt.tight_layout()
+
+    # Save the figure?
+    if savefig == True:
+        plt.savefig(figfolder)
+
+    # Display the figure?
+    if showfig:
+        plt.show()
+    else:
+        plt.close()

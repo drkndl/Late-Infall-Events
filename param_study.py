@@ -6,7 +6,7 @@ from read import get_domain_spherical, get_data, load_par_file, get_param_value
 import matplotlib.pyplot as plt
 from analysis import calc_cell_volume, calc_mass, sph_to_cart, calc_simtime, vel_sph_to_cart, centering, calc_angular_momentum, isolate_disk, calc_L_average, calc_inc_twist
 from accretion import scale_height, calc_accretion
-from no_thoughts_just_plots import quiver_plot_3d, contours_3D, plot_surf_dens, plot_twist_arrows, plot_total_disks_bonanza, cyl_2D_plot, XY_2D_plot
+from no_thoughts_just_plots import quiver_plot_3d, contours_3D, plot_surf_dens, plot_twist_arrows, plot_total_disks_bonanza, cyl_2D_plot, XY_2D_plot, param_study_plot
 import astropy.constants as c
 import pandas as pd
 au = c.au.cgs.value
@@ -20,8 +20,11 @@ stoky = 3.156e7 * 1e3     # 1 kyr in sec
 
 def main():
 
+    # Simulation data in BinAC2
+    # folders = [Path("../fargo3d/outputs/cloud_disk_it450_rotX45"), Path("../fargo3d/outputs/cloud_disk_it450_rotY45"), Path("../fargo3d/outputs/cloud_disk_it450_Rout30_rotX45"), Path("../fargo3d/outputs/cloud_disk_it450_Rout30_rotY45"), Path("../fargo3d/outputs/cloud_disk_it450_cmass10_rotX45"), Path("../fargo3d/outputs/cloud_disk_it450_cmass10_rotY45"), Path("../fargo3d/outputs/cloud_disk_it450_cmass10_Rout30_rotX45"), Path("../fargo3d/outputs/cloud_disk_it450_cmass10_Rout30_rotY45")]
 
-    folders = [Path("../fargo3d/outputs/cloud_disk_it450_rotX45"), Path("../fargo3d/outputs/cloud_disk_it450_rotY45"), Path("../fargo3d/outputs/cloud_disk_it450_Rout30_rotX45"), Path("../fargo3d/outputs/cloud_disk_it450_Rout30_rotY45"), Path("../fargo3d/outputs/cloud_disk_it450_cmass10_rotX45"), Path("../fargo3d/outputs/cloud_disk_it450_cmass10_rotY45"), Path("../fargo3d/outputs/cloud_disk_it450_cmass10_Rout30_rotX45"), Path("../fargo3d/outputs/cloud_disk_it450_cmass10_Rout30_rotY45")]
+    # Simulation data locally
+    folders = [Path("../cloud_disk_it450_rotX45"), Path("../cloud_disk_it450_rotY45"), Path("../cloud_disk_it450_Rout30_rotX45"), Path("../cloud_disk_it450_Rout30_rotY45"), Path("../cloud_disk_it450_cmass10_rotX45"), Path("../cloud_disk_it450_cmass10_rotY45"), Path("../cloud_disk_it450_cmass10_Rout30_rotX45"), Path("../cloud_disk_it450_cmass10_Rout30_rotY45")]
 
     folders_labels = {"cloud_disk_it450_rotX45": r"$\mathrm{X_{45}, M_{c} / M_{d}=0.45, R_{out} = 100}$", "cloud_disk_it450_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=0.45, R_{out} = 100}$", 
     "cloud_disk_it450_Rout30_rotX45": r"$\mathrm{X_{45}, M_{c} / M_{d}=0.45, R_{out} = 30}$",
@@ -48,7 +51,7 @@ def main():
     for f in folders:
         
         # Load simulation 
-        f_sim_name = str(f).split('/')[3]                       # Simulation name (for plot labels)
+        f_sim_name = str(f).split('/')[1]                       # Simulation name (for plot labels)
         domains = get_domain_spherical(f)                       # Load coordinates  
         it = 450                                                # Final iteration (t=53kyr)    
 
@@ -171,61 +174,11 @@ def main():
     # Plotting inc_avg vs time 
     fig, ax = plt.subplots(figsize=(11, 6))
     colours = ['black', 'blue', 'red', 'green']
-    current_color_index = -1
-    last_base = None    
-    for key, value in disk_inc_avg_folder.items():
-
-        # Plotting rotX simulations in solid lines and rotY simulations in dashed lines (but same colour for easy comparison)
-        if "rotX" in key:
-            base = key.replace("rotX", "")
-            ls = "-"
-        elif "rotY" in key:
-            base = key.replace("rotY", "")
-            ls = "--"
-        # Only change color when we encounter a new base (first time we see either X or Y)
-        if base != last_base:
-            current_color_index = (current_color_index + 1) % len(colours)
-            last_base = base
-
-        colour = colours[current_color_index]
-        ax.plot(allit_years, value, linestyle=ls, color=colour, label=folders_labels[key])
-
-    ax.set_xlabel(r"Time [kyr]")
-    ax.set_ylabel(r"$\mathrm{inc_{avg} [deg]}$")
-    ax.set_title(fr"Time Evolution of Average Inclinations $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
-    ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
-    plt.tight_layout()
-    plt.savefig(f'param_study_inc_avg_vs_t_warp{warp_thresh}.png')
-    plt.show()
+    param_study_plot(fig, ax, disk_inc_avg_folder, allit_years, folders_labels, colours, xlabel=r"Time [kyr]", ylabel=r"$\mathrm{inc_{avg} [deg]}$", title=fr"Time Evolution of Average Inclinations $(\mathrm{{\rho \geq 10^{warp_thresh}}})$", figfolder=f'param_study_inc_avg_vs_t_warp{warp_thresh}.png', savefig=True, showfig=True)
 
     # Plotting twist_avg vs time 
     fig, ax = plt.subplots(figsize=(11, 6))
-    current_color_index = -1
-    last_base = None
-    for key, value in disk_twist_avg_folder.items():
-
-        # Plotting rotX simulations in solid lines and rotY simulations in dashed lines (but same colour for easy comparison)
-        if "rotX" in key:
-            base = key.replace("rotX", "")
-            ls = "-"
-        elif "rotY" in key:
-            base = key.replace("rotY", "")
-            ls = "--"
-        # Only change color when we encounter a new base (first time we see either X or Y)
-        if base != last_base:
-            current_color_index = (current_color_index + 1) % len(colours)
-            last_base = base
-
-        colour = colours[current_color_index]
-        ax.plot(allit_years, value, linestyle=ls, color=colour, label=folders_labels[key])
-        
-    ax.set_xlabel(r"Time [kyr]")
-    ax.set_ylabel(r"$\mathrm{twist_{avg} [deg]}$")
-    ax.set_title(fr"Time Evolution of Average Twist $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
-    ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
-    plt.tight_layout()
-    plt.savefig(f'param_study_twist_avg_vs_t_warp{warp_thresh}.png')
-    plt.show()
+    param_study_plot(fig, ax, disk_twist_avg_folder, allit_years, folders_labels, colours, xlabel=r"Time [kyr]", ylabel=r"$\mathrm{twist_{avg} [deg]}$", title=fr"Time Evolution of Average Twist $(\mathrm{{\rho \geq 10^{warp_thresh}}})$", figfolder=f'param_study_twist_avg_vs_t_warp{warp_thresh}.png', savefig=True, showfig=True)
 
     # Plotting absolute values of twist_avg vs time 
     fig, ax = plt.subplots(figsize=(11, 6))
