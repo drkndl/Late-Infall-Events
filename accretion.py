@@ -18,12 +18,13 @@ ninterm = 200             # Total number of timesteps between outputs in FARGO s
 stoky = 3.156e7 * 1e3     # 1 kyr in sec
 
 
-def scale_height(r0, h0, R0, f):
+def scale_height(r, h0, R0, f):
     """
     Calculates the scale height of the disk at a given radius r0
 
     Inputs:
     ------
+    r:            Radius at which pressure scale height is calcualted [cm] (float)
     h0:           Aspect ratio (float)
     R0:           Radius at which aspect ratio is defined (FARGO3D standard) [cm] (float)
     f:            Disk flaring index (float)
@@ -33,7 +34,7 @@ def scale_height(r0, h0, R0, f):
     Hc:           Scale height at given radius r0 [cm]
     """
 
-    Hc = h0 * r0 * np.power(r0 / R0, f)             
+    Hc = h0 * r * np.power(r / R0, f)             
     return Hc 
 
 
@@ -107,14 +108,19 @@ def calc_accretion(rho, vr, theta, r0, r0_id, phi, max_height, Msun):
     return dotM_total, dotM_in, dotM_out
 
 
-def calc_accretion_theoretical():
+def calc_accretion_theoretical(sigma, H, ok, alpha):
     """
     Function to calculate the theoretical mass accretion values Mdot = 3 pi sigma nu
     
     Inputs:
     -------
-
     """
+
+    cs = H * ok                                     # Isothermal sound speed [cm/s]
+    nu = alpha * cs**2 / ok                         # Viscosity (?) [cgs]
+    Mdot_theo = 3 * np.pi * sigma * nu              # Theoretical mass accretion rate [g/s]
+    Mdot_theo = Mdot_theo / Msun * stoky / 1e3      # Theoretical mass accretion rate [Msun/yr]
+    return Mdot_theo
 
 
 def main():
@@ -132,6 +138,9 @@ def main():
     p = get_param_value('SigmaSlope', sim_name)        # Power law slope of surface densities
     sigma0 = get_param_value('Sigma0', sim_name)       # Midplane surface density at R0 [g/cm^3]
     alpha = get_param_value('Alpha', sim_name)         # Alpha viscosity value
+    Rin = get_param_value('Ymin', sim_name)            # Disk inner radius [cm]
+    Rout = get_param_value('Rout', sim_name)           # Disk outer radius [cm]
+    Nr = get_param_value('Ny', sim_name)               # Radial resolution (in FARGO3D, x=theta, y=r, z=phi)
     R0 = 5.2 * au                                      # As defined in FARGO3D [cm]
     
 
@@ -176,6 +185,8 @@ def main():
     dotM_tot_allit = []
     dotM_in_allit = []
     dotM_out_allit = []
+    Hc = scale_height(domains["r"][0], h0, R0, f)
+    zmax = 4 * Hc
     for i in range(len(allit_years)):
         dotM_tot_i, dotM_in_i, dotM_out_i = calc_accretion(rho_allit[i], vrad_allit[i], domains["theta"], r0, 0, domains["phi"], zmax, Msun)
         dotM_tot_allit.append(dotM_tot_i)
@@ -203,6 +214,7 @@ def main():
 
 
     # Defining max heights and the corresponding plot labels
+    Hc = scale_height(domains["r"][0], h0, R0, f)
     zmax_array = [Hc, 2 * Hc, 4 * Hc, 5 * Hc, 10 * Hc, 20 * Hc, 30 * Hc]
     zmax_labels = {}
 
@@ -262,8 +274,18 @@ def main():
     ################################# Compare theoretical and actual mass accretion ###################################
 
 
-    omega_k = omega_kepler(Mstar, domains["r"])
+    r_theo = np.logspace(np.log10(Rin / au), np.log10(Rout / au), Nr) * au       # Radius array
+    omega_k = omega_kepler(Mstar, r_theo)                                        # Keplerian velocities
+    Hc_arr = scale_height(r_theo, h0, R0, f)                                     # Pressure scale heights 
+    sigma = surf_dens_profile(sigma0, p, R0, r_theo, Rout, plot=False)           # Surface densities
+    Mdot_theo = calc_accretion_theoretical(sigma, Hc_arr, omega_k, alpha)        # Theoretical mass accretion rate
 
+    plt.plot(np.log10(r_theo/au), Mdot_theo)
+    plt.xlabel("logR")
+    plt.ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
+    plt.title("Theoretical Mass Accretion Rate")
+    plt.show()
+    ebvkevnke
 
 
     ########################### Check accretion at different radii for different max heights #############################

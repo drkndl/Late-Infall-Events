@@ -93,58 +93,58 @@ def sph_cell_area_2D(r, theta):
 ###################################### Numerically integrating for the disk mass ##########################################
 
 
-# Disk parameters from corresponding nocloud_nocomp par file
-folder = Path("nocloud_nocomp_it10/")                                  # Folder with the output files
-it = 10                                                                # FARGO snapshot of interest
-sim_params = load_par_file(f"{folder}/{folder}.par")                   # Loading simulation parameters from the .par file
+def main():
+    
+    # Disk parameters from corresponding nocloud_nocomp par file
+    folder = Path("nocloud_nocomp_it10/")                                  # Folder with the output files
+    it = 10                                                                # FARGO snapshot of interest
+    sim_params = load_par_file(f"{folder}/{folder}.par")                   # Loading simulation parameters from the .par file
 
-R0 = 5.2 * au                         # As defined in FARGO3D [cm]
-Rin = 10. * au                        # Disk inner radius in cm (corresponds to Ymin in mesh parameters) 
-Rout = 100. * au                      # Disk outer radius in cm (corresponds to Rout in disk parameters)
-sigma0 = sim_params['Sigma0']         # Surface density at R0 in g/cm^2
-p = sim_params['SigmaSlope']          # Negative surface density power law slope
-f = sim_params['FlaringIndex']        # Flaring index
-h0 = sim_params['AspectRatio']        # Aspect ratio 
-theta_min = 0.17453292519943          # Theta lower limit (corresponds to Zmin in mesh params, 10 deg)
-theta_max = 2.96705972839036          # Theta upper limit (corresponds to Zmax in mesh params, 170 deg)
-# phi_min = - np.pi                     # Phi lower limit (corresponds to Xmin in mesh params)
-# phi_max = np.pi                       # Phi lower limit (corresponds to Xmax in mesh params)
+    R0 = 5.2 * au                         # As defined in FARGO3D [cm]
+    Rin = 10. * au                        # Disk inner radius in cm (corresponds to Ymin in mesh parameters) 
+    Rout = 100. * au                      # Disk outer radius in cm (corresponds to Rout in disk parameters)
+    sigma0 = sim_params['Sigma0']         # Surface density at R0 in g/cm^2
+    p = sim_params['SigmaSlope']          # Negative surface density power law slope
+    f = sim_params['FlaringIndex']        # Flaring index
+    h0 = sim_params['AspectRatio']        # Aspect ratio 
+    theta_min = 0.17453292519943          # Theta lower limit (corresponds to Zmin in mesh params, 10 deg)
+    theta_max = 2.96705972839036          # Theta upper limit (corresponds to Zmax in mesh params, 170 deg)
+    # phi_min = - np.pi                     # Phi lower limit (corresponds to Xmin in mesh params)
+    # phi_max = np.pi                       # Phi lower limit (corresponds to Xmax in mesh params)
 
-theta = np.linspace(theta_min, theta_max, sim_params['Nz'])                           # Theta array
-r = np.logspace(np.log10(Rin / au), np.log10(Rout / au), sim_params['Ny']) * au       # Radius array
-# phi = np.linspace(phi_min, phi_max, sim_params['Nx'])
+    theta = np.linspace(theta_min, theta_max, sim_params['Nz'])                           # Theta array
+    r = np.logspace(np.log10(Rin / au), np.log10(Rout / au), sim_params['Ny']) * au       # Radius array
+    # phi = np.linspace(phi_min, phi_max, sim_params['Nx'])
 
-# Centering the cells
-r_c = 0.5 * (r[:-1] + r[1:])
-theta_c = 0.5 * (theta[:-1] + theta[1:])
-# phi_c = 0.5 * (phi[:-1] + phi[1:])
+    # Centering the cells
+    r_c = 0.5 * (r[:-1] + r[1:])
+    theta_c = 0.5 * (theta[:-1] + theta[1:])
+    # phi_c = 0.5 * (phi[:-1] + phi[1:])
 
-# Converting to cylindrical coordinates
-THETA, R = np.meshgrid(theta_c, r_c, indexing="ij")
-RCYL = R * np.sin(THETA)
-ZCYL = R * np.cos(THETA)
-# X = R * np.sin(THETA) * np.cos(PHI)
-# Y = R * np.sin(THETA) * np.sin(PHI)
-# RCYL = R * np.sin(THETA)
-# ZCYL = R * np.cos(THETA)
+    # Converting to cylindrical coordinates
+    THETA, R = np.meshgrid(theta_c, r_c, indexing="ij")
+    RCYL = R * np.sin(THETA)
+    ZCYL = R * np.cos(THETA)
+    # X = R * np.sin(THETA) * np.cos(PHI)
+    # Y = R * np.sin(THETA) * np.sin(PHI)
+    # RCYL = R * np.sin(THETA)
+    # ZCYL = R * np.cos(THETA)
 
-# Calculating and plotting the surface density profile
-sigma_r = surf_dens_profile(sigma0, p, R0, r_c, Rout, plot=False)
-print(sigma_r.shape)
+    # Calculating and plotting the surface density profile
+    sigma_r = surf_dens_profile(sigma0, p, R0, r_c, Rout, plot=False)
+    print(sigma_r.shape)
 
-# Calculating and plotting the density profile
-rho_r = dens_profile(sigma_r, h0, R0, RCYL, f, ZCYL, plot=False)
+    # Calculating and plotting the density profile
+    rho_r = dens_profile(sigma_r, h0, R0, RCYL, f, ZCYL, plot=False)
 
-# Calculating total disk mass
-S = sph_cell_area_2D(r, theta)
-disk_mass_theoretical = np.sum(sigma_r * S)
-# disk_mass_theoretical = np.sum(rho_r * S)
+    # Calculating total disk mass
+    S = sph_cell_area_2D(r, theta)
+    disk_mass_theoretical = np.sum(sigma_r * S)
+    # disk_mass_theoretical = np.sum(rho_r * S)
 
 
 #################################### Adding up mass from the simulation ######################################
 
-
-def main():
 
     disk_folder = Path("../nocloud_nocomp_it10/")                      # Folder with the output files
     disk_fig_imgs = Path("nocloud_nocomp_it10/imgs/")                  # Folder to save images
