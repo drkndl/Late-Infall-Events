@@ -6,7 +6,7 @@ from read import get_domain_spherical, get_data, load_par_file, get_param_value
 import matplotlib.pyplot as plt
 from analysis import calc_cell_volume, calc_mass, sph_to_cart, calc_simtime, vel_sph_to_cart, centering, calc_angular_momentum, isolate_disk, calc_L_average, calc_inc_twist
 from accretion import scale_height, calc_accretion
-from no_thoughts_just_plots import quiver_plot_3d, contours_3D, plot_surf_dens, plot_twist_arrows, plot_total_disks_bonanza, cyl_2D_plot, XY_2D_plot, param_study_plot
+from no_thoughts_just_plots import param_study_plot, make_evol_GIF
 import astropy.constants as c
 import pandas as pd
 au = c.au.cgs.value
@@ -102,7 +102,7 @@ def main():
             Lx_i, Ly_i, Lz_i = calc_angular_momentum(mass_i, X, Y, ZCYL, vx_i, vy_i, vz_i)
 
             # Isolating the warped/broken disk
-            warp_thresh = -17   # log of density threshold for which we can see the warp in the primary
+            warp_thresh = -16   # log of density threshold for which we can see the warp in the primary
             warp_buffer = 500   # Isolates a box of 2 * warp_buffer around the star (AU)
             _, _, _, _, Lx_c_warp_i, Ly_c_warp_i, Lz_c_warp_i, _ = isolate_disk(X_c, Y_c, Z_c, Px * au, Py * au, Pz * au, warp_buffer * au, rho_c_i, vx_c_i, vy_c_i, vz_c_i, Lx_i, Ly_i, Lz_i, warp_thresh) 
 
@@ -415,6 +415,40 @@ def main():
     plt.tight_layout()
     plt.savefig(f'param_study_dMcumdlogr_final_iter_vs_r_warp{warp_thresh}.png')
     plt.show()
+
+    # Making a GIF to show time evolution of dMcumdlogr vs logR
+    for t in range(len(allit_years)):
+        fig, ax = plt.subplots(figsize=(11, 6))
+        current_color_index = -1
+        last_base = None
+        for key, value in dMcumdlogr_folder.items():
+
+            # Plotting rotX simulations in solid lines and rotY simulations in dashed lines (but same colour for easy comparison)
+            if "rotX" in key:
+                base = key.replace("rotX", "")
+                ls = "-"
+            elif "rotY" in key:
+                base = key.replace("rotY", "")
+                ls = "--"
+            # Only change color when we encounter a new base (first time we see either X or Y)
+            if base != last_base:
+                current_color_index = (current_color_index + 1) % len(colours)
+                last_base = base
+
+            colour = colours[current_color_index]
+            ax.plot(np.log10(domains["r"]/au)[:-2], value[t, :], linestyle=ls, color=colour, label=folders_labels[key])   # -1 corresponds to last iteration
+
+        ax.set_xlabel(r"$\log(r)$ [AU]")
+        ax.set_ylabel(r"$\mathrm{\log(dM_{cum}(r)/d\log(r))}$")
+        ax.set_title(fr"$\mathrm{{\log(dM_{{cum}}(r)/d\log(r))}}$ vs logr ({int(allit_years[t])} kyr) $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
+        ax.set_ylim(26, 33)
+        ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
+        plt.tight_layout()
+        plt.savefig(f'param_study_dMcumdlogr_it{t}.png')
+        plt.close()
+
+    make_evol_GIF(".", "param_study_dMcumdlogr_it", f"param_study_dMcumdlogr_warp{warp_thresh}_movie")
+
 
 
 if __name__ == "__main__":
