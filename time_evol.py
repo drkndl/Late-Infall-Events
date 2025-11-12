@@ -260,7 +260,7 @@ def main():
 
         # Adding a shadow effect
         verts = [list(zip([dt_years[100::4][i]] * len(r_select) + [dt_years[100::4][i]] * len(r_select), np.concatenate((r_select/au, r_select[::-1]/au)), np.concatenate((np.zeros_like(inc_it_select), inc_it_select[::-1]))))]
-        poly = Poly3DCollection(verts, color=plt.cm.viridis(i / len(dt_years[100::4])), alpha=0.3)
+        poly = Poly3DCollection(verts, color=plt.cm.viridis(i / len(dt_years[100::4])), alpha=0.2, edgecolor='none')
         ax.add_collection3d(poly)
 
     ax.view_init(elev=35, azim=-31)
@@ -297,6 +297,10 @@ def main():
         r_select = rc[mask]
         prec_it_select = prec_it[i][mask]
         ax.plot([dt_years[100::4][i]] * len(r_select), r_select/au, prec_it_select, color=plt.cm.viridis(i/len(dt_years[100::4])))
+        # Adding a shadow effect
+        verts = [list(zip([dt_years[100::4][i]] * len(r_select) + [dt_years[100::4][i]] * len(r_select), np.concatenate((r_select/au, r_select[::-1]/au)), np.concatenate((np.zeros_like(prec_it_select), prec_it_select[::-1]))))]
+        poly = Poly3DCollection(verts, color=plt.cm.viridis(i / len(dt_years[100::4])), alpha=0.2, edgecolor='none')
+        ax.add_collection3d(poly)
 
     ax.view_init(elev=35, azim=-31)
     ax.set_box_aspect([3,1,1])
