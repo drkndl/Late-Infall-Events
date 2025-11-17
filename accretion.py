@@ -7,6 +7,7 @@ from read import get_domain_spherical, get_data, load_par_file, get_param_value
 from analysis import calc_cell_volume, calc_mass, sph_to_cart, calc_simtime
 from check_mass import surf_dens_profile
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes, mark_inset
+import matplotlib.colors as colors
 import astropy.constants as c
 import pandas as pd
 au = c.au.cgs.value
@@ -16,6 +17,14 @@ Mstar = 0.7 * Msun        # Mass of the primary star in IRAS 04125+2902 (Barbe
 dt = 1.87e7               # Timestep length of simulations in sec
 ninterm = 200             # Total number of timesteps between outputs in FARGO simulations
 stoky = 3.156e7 * 1e3     # 1 kyr in sec
+
+
+# Global plot formatting 
+plt.rcParams['lines.linewidth'] = 2.5
+plt.rcParams['axes.labelsize'] = 14     # x/y label size
+plt.rcParams['xtick.labelsize'] = 12     # x-tick label size
+plt.rcParams['ytick.labelsize'] = 12     # y-tick label size
+plt.rcParams['legend.fontsize'] = 10     # legend font size
 
 
 def scale_height(r, h0, R0, f):
@@ -359,7 +368,7 @@ def main():
     plt.savefig(f'{fig_imgs}/logMdot_vs_t_all_radii_all_zmax.png')
     plt.show()
 
-    # Defining subplots to plot inward accretion
+    # Defining subplots to plot outward accretion
     fig, axes = plt.subplots(2, 2, figsize=(8,6))
     axes = axes.flatten()
     plot_counter=0
@@ -410,6 +419,60 @@ def main():
     fig.suptitle(f"{sim_name}: Outward flux", fontsize=10, y=0.95)  
     fig.tight_layout()
     plt.savefig(f'{fig_imgs}/logMoutdot_vs_t_all_radii_all_zmax.png')
+    plt.show()
+
+
+    # Defining subplots to plot net accretion
+    fig, axes = plt.subplots(2, 2, figsize=(8,6))
+    axes = axes.flatten()
+    plot_counter=0
+    
+    for r_acc, r_acc_id in r_for_acc.items():
+
+        Mdot_net_allzmax = {}
+        Hc = scale_height(r_acc, h0, R0, f)
+        print(r_acc/au, Hc/au)
+
+        for z_scale in zmax_array:
+
+            print(z_scale)
+            zmax = z_scale * Hc         # Defining max_height for scale height at given radius
+
+            # Defining zmax_labels
+            z = r_acc * np.cos(domains["theta"])      # Disk heights at given radius
+            theta_mask = np.abs(z) <= zmax            # Boolean mask selecting only polar angles within max_height so that we ignore cloudlet
+            theta_sel = domains["theta"][theta_mask]
+            theta_sel_min, theta_sel_max = np.min(np.round(np.degrees(theta_sel), 1)), np.max(np.round(np.degrees(theta_sel), 1))
+            # zmax_labels[zmax] = fr"{int(zmax/Hc)}Hc ({theta_sel_min}$\degree$-{theta_sel_max}$\degree$)"
+            zmax_labels[zmax] = fr"{int(zmax/Hc)}Hc"
+
+            dotM_net_allit = []          # Outward accretion rates for given radius and given scale height at every 10 iters
+            for i in range(len(allit_years)):
+
+                dotM_net_z, _, _ = calc_accretion(rho_allit[i], vrad_allit[i], domains["theta"], r_acc, r_acc_id, domains["phi"], zmax, Msun)
+                dotM_net_allit.append(dotM_net_z)
+
+            dotM_net_allit = np.asarray(dotM_net_allit)
+
+            # Adding time evolution of accretion rates to corresponding max height value in the dictionary
+            Mdot_net_allzmax[zmax] = dotM_net_allit
+
+        # Plotting the outward mass fluxes for all max heights at given radius
+        for key, value in Mdot_net_allzmax.items():
+            if int(r_acc/au) == 10:
+                axes[plot_counter].plot(allit_years, value, label=f'{zmax_labels[key]}')
+            else:
+                axes[plot_counter].plot(allit_years, np.log10(value), label=f'{zmax_labels[key]}')
+        axes[plot_counter].set_xlabel(r"Time [kyr]")
+        axes[plot_counter].set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
+        axes[plot_counter].set_title(fr"R = {int(r_acc/au)} AU")
+        handles, labels = axes[plot_counter].get_legend_handles_labels()
+        plot_counter += 1
+       
+    fig.legend(handles, labels, loc="upper center", ncol=6, frameon=False)
+    fig.suptitle(f"{sim_name}: Net flux", fontsize=10, y=0.95)  
+    fig.tight_layout()
+    plt.savefig(f'{fig_imgs}/logMnetdot_vs_t_all_radii_all_zmax.png')
     plt.show()
 
 
@@ -523,6 +586,55 @@ def main():
     plt.show()
 
 
+    # Defining subplots to plot net accretion
+    fig, axes = plt.subplots(2, 2, figsize=(8,6))
+    axes = axes.flatten()
+    plot_counter=0
+    
+    for r_acc, r_acc_id in r_for_acc.items():
+
+        Mdot_net_allzrange = {}
+        Hc = scale_height(r_acc, h0, R0, f)
+        print(r_acc/au, Hc/au)
+
+        for z_scale_i in range(len(zmax_array)):
+
+            zmax = zmax_array[z_scale_i] * Hc         # Defining max_height for scale height at given radius
+            zmin = zmin_array[z_scale_i] * Hc         # Defining min_height for scale height at given radius
+
+            # Defining zrange_labels
+            zrange_labels[zmin] = fr"{int(zmin/Hc)}Hc - {int(zmax/Hc)}Hc"
+
+            dotM_net_allit = []          # Net accretion rates for given radius and given scale height at every 10 iters
+            for i in range(len(allit_years)):
+
+                dotM_net_z, _, _ = calc_accretion(rho_allit[i], vrad_allit[i], domains["theta"], r_acc, r_acc_id, domains["phi"], zmax, Msun, zmin)
+                dotM_net_allit.append(dotM_net_z)
+
+            dotM_net_allit = np.asarray(dotM_net_allit)
+
+            # Adding time evolution of accretion rates to corresponding max height value in the dictionary
+            Mdot_net_allzrange[zmin] = dotM_net_allit
+
+        # Plotting the net mass fluxes for all max heights at given radius
+        for key, value in Mdot_net_allzrange.items():
+            if int(r_acc/au) == 10:
+                axes[plot_counter].plot(allit_years, value, label=f'{zrange_labels[key]}')
+            else:
+                axes[plot_counter].plot(allit_years, np.log10(value), label=f'{zrange_labels[key]}')
+        axes[plot_counter].set_xlabel(r"Time [kyr]")
+        axes[plot_counter].set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
+        axes[plot_counter].set_title(fr"R = {int(r_acc/au)} AU")
+        handles, labels = axes[plot_counter].get_legend_handles_labels()
+        plot_counter += 1
+       
+    fig.legend(handles, labels, loc="upper center", ncol=6, frameon=False)
+    fig.suptitle(f"{sim_name}: Net flux between diff heights", fontsize=10, y=0.95)  
+    fig.tight_layout()
+    plt.savefig(f'{fig_imgs}/logMnetdot_vs_t_all_radii_all_zrange.png')
+    plt.show()
+
+
     ########################## 2D accretion across radii and iteration times #######################
 
 
@@ -567,8 +679,10 @@ def main():
     Xtemp, Ytemp = np.meshgrid(np.log10(domains["r"]/au), allit_years)
     U = np.sign(Mdot_net_2D)  # horizontal direction (positive = outward)
     V = np.zeros_like(U)      # no vertical component
+    arrow_cmap = plt.cm.bwr   # blue–white–red
+    arrow_norm = colors.Normalize(vmin=-1, vmax=1)
     step = (slice(None, None, 5), slice(None, None, 10))  # Downsampling to avoid clutter
-    q1 = ax3.quiver(Xtemp[step], Ytemp[step], U[step], V[step], color='black', scale=20)
+    q1 = ax3.quiver(Xtemp[step], Ytemp[step], U[step], V[step], U[step], cmap=arrow_cmap, norm=arrow_norm, scale=20)
     
     fig.tight_layout()
     plt.savefig(f'{fig_imgs}/logMdot_2D.png', bbox_inches="tight")

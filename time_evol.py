@@ -21,12 +21,19 @@ dt = 1.87e7               # Timestep length of simulations in sec
 ninterm = 200             # Total number of timesteps between outputs in FARGO simulations
 stoky = 3.156e7 * 1e3     # 1 kyr in sec
 
+# Global plot formatting 
+plt.rcParams['lines.linewidth'] = 2.5
+plt.rcParams['axes.labelsize'] = 14     # x/y label size
+plt.rcParams['xtick.labelsize'] = 12     # x-tick label size
+plt.rcParams['ytick.labelsize'] = 12     # y-tick label size
+plt.rcParams['legend.fontsize'] = 14     # legend font size
+
 
 def main():
 
 
-    # folder = Path("../cloud_disk_it450_rotX45/")                        # Folder with the FARGO output files
-    folder = Path("../fargo3d/outputs/cloud_disk_it450_rotX45/")          # Folder with the FARGO output files (Binac2)
+    folder = Path("../cloud_disk_it450_rotX45/")                        # Folder with the FARGO output files
+    # folder = Path("../fargo3d/outputs/cloud_disk_it450_rotX45/")          # Folder with the FARGO output files (Binac2)
     fig_imgs = Path("cloud_disk_it450_rotX45/imgs/")                      # Folder to save images    
     iter_total = 450                                     # FARGO snapshot
 
@@ -264,7 +271,7 @@ def main():
         ax.add_collection3d(poly)
 
     ax.view_init(elev=35, azim=-31)
-    ax.set_box_aspect([3,1,1])
+    ax.set_box_aspect([4,1,1])
     ax.set_xlabel('Time [kyr]')
     ax.set_ylabel('R [AU]')
     ax.set_zlabel('Warp inclination [°]')
@@ -303,7 +310,7 @@ def main():
         ax.add_collection3d(poly)
 
     ax.view_init(elev=35, azim=-31)
-    ax.set_box_aspect([3,1,1])
+    ax.set_box_aspect([4,1,1])
     ax.set_xlabel('Time [kyr]')
     ax.set_ylabel('R [AU]')
     ax.set_zlabel('Warp precession [°]')
