@@ -3,9 +3,11 @@ import matplotlib.pyplot as plt
 from matplotlib import cm 
 import matplotlib.colors as mcolors
 from pathlib import Path
+import colormaps as cmaps
 from read import get_domain_spherical, get_data, load_par_file, get_param_value
 from analysis import calc_cell_volume, calc_mass, sph_to_cart, calc_simtime
 from check_mass import surf_dens_profile
+from no_thoughts_just_plots import load_sciviscolor_colormaps
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes, mark_inset
 import matplotlib.colors as colors
 import astropy.constants as c
@@ -24,7 +26,11 @@ plt.rcParams['lines.linewidth'] = 2.5
 plt.rcParams['axes.labelsize'] = 14     # x/y label size
 plt.rcParams['xtick.labelsize'] = 12     # x-tick label size
 plt.rcParams['ytick.labelsize'] = 12     # y-tick label size
-plt.rcParams['legend.fontsize'] = 10     # legend font size
+plt.rcParams['legend.fontsize'] = 11     # legend font size
+
+# cmap1 = load_sciviscolor_colormaps("colourmaps/discrete-2-5-discrete-gr-ye-rd-dark.xml")
+# cmap1 = list(cmap1.values())[0]
+cmap1 = cmaps.agsunset
 
 
 def scale_height(r, h0, R0, f):
@@ -141,9 +147,9 @@ def calc_accretion_theoretical(sigma, H, ok, alpha):
 def main():
 
 
-    folder = Path("../cloud_disk_it450_Rout30_rotX45/")                    # Folder with the output files
-    # folder = Path("../fargo3d/outputs/cloud_disk_it450_Rout30_rotX45")       # Folder with the output files (BinAC2)
-    fig_imgs = Path("cloud_disk_it450_Rout30_rotX45/imgs/")                  # Folder to save images
+    folder = Path("../cloud_disk_it450_rotX45/")                    # Folder with the output files
+    # folder = Path("../fargo3d/outputs/cloud_disk_it450_rotX45")       # Folder with the output files (BinAC2)
+    fig_imgs = Path("cloud_disk_it450_rotX45/imgs/")                  # Folder to save images
     it = 450                                                             # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                               # Simulation name (for plot labels)
 
@@ -238,7 +244,8 @@ def main():
         theta_mask = np.abs(z) <= zmax            # Boolean mask selecting only polar angles within max_height so that we ignore cloudlet
         theta_sel = domains["theta"][theta_mask]
         theta_sel_min, theta_sel_max = np.min(np.round(np.degrees(theta_sel), 1)), np.max(np.round(np.degrees(theta_sel), 1))
-        zmax_labels[zmax] = f"{int(zmax/Hc)}Hc ({theta_sel_min} - {theta_sel_max})"
+        # zmax_labels[zmax] = f"{int(zmax/Hc)}Hc ({theta_sel_min}$\degree$ - {theta_sel_max}$\degree$)"
+        zmax_labels[zmax] = f"{int(zmax/Hc)}Hc"
 
     Mdot_in_allzmax = {}
     Mdot_out_allzmax = {}
@@ -263,8 +270,10 @@ def main():
 
     # Plotting the inward mass fluxes for all max heights
     fig, ax = plt.subplots()
+    i=0
     for key, value in Mdot_in_allzmax.items():
-        ax.plot(allit_years, np.log10(-value), label=f'{zmax_labels[key]}')
+        ax.plot(allit_years, np.log10(-value), label=f'{zmax_labels[key]}', color=cmap1(i / (len(Mdot_in_allzmax)-1)))
+        i+=1
     ax.set_xlabel(r"Time [kyr]")
     ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
     ax.set_title(fr"{sim_name}: Inward $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
@@ -320,7 +329,7 @@ def main():
     r_for_acc = {r0: 0, r20: idx_20, r50: idx_50, r100: idx_100}
 
     # Defining subplots to plot inward accretion
-    fig, axes = plt.subplots(2, 2, figsize=(8,6))
+    fig, axes = plt.subplots(2, 2, figsize=(8,6), sharex=True, sharey=True)
     axes = axes.flatten()
     plot_counter=0
     
@@ -354,22 +363,26 @@ def main():
             Mdot_in_allzmax[zmax] = dotM_in_allit
 
         # Plotting the inward mass fluxes for all max heights at given radius
+        i=0
         for key, value in Mdot_in_allzmax.items():
-            axes[plot_counter].plot(allit_years, np.log10(-value), label=f'{zmax_labels[key]}')
-        axes[plot_counter].set_xlabel(r"Time [kyr]")
-        axes[plot_counter].set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
+            axes[plot_counter].plot(allit_years, np.log10(-value), label=f'{zmax_labels[key]}', color=cmap1(i / (len(Mdot_in_allzmax)-1)))
+            i+=1 
+        # axes[plot_counter].set_xlabel(r"Time [kyr]")
+        # axes[plot_counter].set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
         axes[plot_counter].set_title(fr"R = {int(r_acc/au)} AU")
         handles, labels = axes[plot_counter].get_legend_handles_labels()
         plot_counter += 1
        
     fig.legend(handles, labels, loc="upper center", ncol=6, frameon=False)
+    fig.supxlabel(r"Time [kyr]")  
+    fig.supylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")  
     fig.suptitle(f"{sim_name}: Inward flux", fontsize=10, y=0.95)  
     fig.tight_layout()
     plt.savefig(f'{fig_imgs}/logMdot_vs_t_all_radii_all_zmax.png')
     plt.show()
 
     # Defining subplots to plot outward accretion
-    fig, axes = plt.subplots(2, 2, figsize=(8,6))
+    fig, axes = plt.subplots(2, 2, figsize=(8,6), sharex=True, sharey=True)
     axes = axes.flatten()
     plot_counter=0
     
@@ -404,18 +417,23 @@ def main():
             Mdot_out_allzmax[zmax] = dotM_out_allit
 
         # Plotting the outward mass fluxes for all max heights at given radius
+        i=0
         for key, value in Mdot_out_allzmax.items():
             if int(r_acc/au) == 10:
-                axes[plot_counter].plot(allit_years, value, label=f'{zmax_labels[key]}')
+                axes[plot_counter].plot(allit_years, value, label=f'{zmax_labels[key]}', color=cmap1(i / (len(Mdot_out_allzmax)-1)))
+                i+=1
             else:
-                axes[plot_counter].plot(allit_years, np.log10(value), label=f'{zmax_labels[key]}')
-        axes[plot_counter].set_xlabel(r"Time [kyr]")
-        axes[plot_counter].set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
+                axes[plot_counter].plot(allit_years, np.log10(value), label=f'{zmax_labels[key]}', color=cmap1(i / (len(Mdot_out_allzmax)-1)))
+                i+=1
+        # axes[plot_counter].set_xlabel(r"Time [kyr]")
+        # axes[plot_counter].set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
         axes[plot_counter].set_title(fr"R = {int(r_acc/au)} AU")
         handles, labels = axes[plot_counter].get_legend_handles_labels()
         plot_counter += 1
        
     fig.legend(handles, labels, loc="upper center", ncol=6, frameon=False)
+    fig.supxlabel(r"Time [kyr]")  
+    fig.supylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
     fig.suptitle(f"{sim_name}: Outward flux", fontsize=10, y=0.95)  
     fig.tight_layout()
     plt.savefig(f'{fig_imgs}/logMoutdot_vs_t_all_radii_all_zmax.png')
@@ -423,7 +441,7 @@ def main():
 
 
     # Defining subplots to plot net accretion
-    fig, axes = plt.subplots(2, 2, figsize=(8,6))
+    fig, axes = plt.subplots(2, 2, figsize=(8,6), sharex=True, sharey=True)
     axes = axes.flatten()
     plot_counter=0
     
@@ -457,19 +475,23 @@ def main():
             # Adding time evolution of accretion rates to corresponding max height value in the dictionary
             Mdot_net_allzmax[zmax] = dotM_net_allit
 
-        # Plotting the outward mass fluxes for all max heights at given radius
+        # Plotting the net mass fluxes for all max heights at given radius
+        i=0
         for key, value in Mdot_net_allzmax.items():
-            if int(r_acc/au) == 10:
-                axes[plot_counter].plot(allit_years, value, label=f'{zmax_labels[key]}')
-            else:
-                axes[plot_counter].plot(allit_years, np.log10(value), label=f'{zmax_labels[key]}')
-        axes[plot_counter].set_xlabel(r"Time [kyr]")
-        axes[plot_counter].set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
+            # if int(r_acc/au) == 10:
+            #     axes[plot_counter].plot(allit_years, value, label=f'{zmax_labels[key]}')
+            # else:
+            axes[plot_counter].plot(allit_years, np.log10(value), label=f'{zmax_labels[key]}', color=cmap1(i / (len(Mdot_net_allzmax)-1)))
+            i+=1
+        # axes[plot_counter].set_xlabel(r"Time [kyr]")
+        # axes[plot_counter].set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
         axes[plot_counter].set_title(fr"R = {int(r_acc/au)} AU")
         handles, labels = axes[plot_counter].get_legend_handles_labels()
         plot_counter += 1
        
     fig.legend(handles, labels, loc="upper center", ncol=6, frameon=False)
+    fig.supxlabel(r"Time [kyr]")  
+    fig.supylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
     fig.suptitle(f"{sim_name}: Net flux", fontsize=10, y=0.95)  
     fig.tight_layout()
     plt.savefig(f'{fig_imgs}/logMnetdot_vs_t_all_radii_all_zmax.png')
@@ -494,7 +516,7 @@ def main():
     r_for_acc = {r0: 0, r20: idx_20, r50: idx_50, r100: idx_100}
 
     # Defining subplots to plot inward accretion
-    fig, axes = plt.subplots(2, 2, figsize=(8,6))
+    fig, axes = plt.subplots(2, 2, figsize=(8,6), sharex=True, sharey=True)
     axes = axes.flatten()
     plot_counter=0
     
@@ -523,22 +545,26 @@ def main():
             Mdot_in_allzrange[zmin] = dotM_in_allit
 
         # Plotting the inward mass fluxes for all max heights at given radius
+        i=0
         for key, value in Mdot_in_allzrange.items():
-            axes[plot_counter].plot(allit_years, np.log10(-value), label=f'{zrange_labels[key]}')
-        axes[plot_counter].set_xlabel(r"Time [kyr]")
-        axes[plot_counter].set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
+            axes[plot_counter].plot(allit_years, np.log10(-value), label=f'{zrange_labels[key]}', color=cmap1(i / (len(Mdot_in_allzrange)-1)))
+            i+=1
+        # axes[plot_counter].set_xlabel(r"Time [kyr]")
+        # axes[plot_counter].set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
         axes[plot_counter].set_title(fr"R = {int(r_acc/au)} AU")
         handles, labels = axes[plot_counter].get_legend_handles_labels()
         plot_counter += 1
        
     fig.legend(handles, labels, loc="upper center", ncol=6, frameon=False)
     fig.suptitle(f"{sim_name}: Inward flux between diff heights", fontsize=10, y=0.95)  
+    fig.supxlabel(r"Time [kyr]")  
+    fig.supylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
     fig.tight_layout()
     plt.savefig(f'{fig_imgs}/logMdot_vs_t_all_radii_all_zrange.png')
     plt.show()
 
     # Defining subplots to plot inward accretion
-    fig, axes = plt.subplots(2, 2, figsize=(8,6))
+    fig, axes = plt.subplots(2, 2, figsize=(8,6), sharex=True, sharey=True)
     axes = axes.flatten()
     plot_counter=0
     
@@ -568,18 +594,23 @@ def main():
             Mdot_out_allzrange[zmin] = dotM_out_allit
 
         # Plotting the outward mass fluxes for all max heights at given radius
+        i=0
         for key, value in Mdot_out_allzrange.items():
             if int(r_acc/au) == 10:
-                axes[plot_counter].plot(allit_years, value, label=f'{zrange_labels[key]}')
+                axes[plot_counter].plot(allit_years, value, label=f'{zrange_labels[key]}', color=cmap1(i / (len(Mdot_out_allzrange)-1)))
+                i+=1
             else:
-                axes[plot_counter].plot(allit_years, np.log10(value), label=f'{zrange_labels[key]}')
-        axes[plot_counter].set_xlabel(r"Time [kyr]")
-        axes[plot_counter].set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
+                axes[plot_counter].plot(allit_years, np.log10(value), label=f'{zrange_labels[key]}', color=cmap1(i / (len(Mdot_out_allzrange)-1)))
+                i+=1
+        # axes[plot_counter].set_xlabel(r"Time [kyr]")
+        # axes[plot_counter].set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
         axes[plot_counter].set_title(fr"R = {int(r_acc/au)} AU")
         handles, labels = axes[plot_counter].get_legend_handles_labels()
         plot_counter += 1
        
     fig.legend(handles, labels, loc="upper center", ncol=6, frameon=False)
+    fig.supxlabel(r"Time [kyr]")  
+    fig.supylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
     fig.suptitle(f"{sim_name}: Outward flux between diff heights", fontsize=10, y=0.95)  
     fig.tight_layout()
     plt.savefig(f'{fig_imgs}/logMoutdot_vs_t_all_radii_all_zrange.png')
@@ -587,7 +618,7 @@ def main():
 
 
     # Defining subplots to plot net accretion
-    fig, axes = plt.subplots(2, 2, figsize=(8,6))
+    fig, axes = plt.subplots(2, 2, figsize=(8,6), sharex=True, sharey=True)
     axes = axes.flatten()
     plot_counter=0
     
@@ -617,18 +648,22 @@ def main():
             Mdot_net_allzrange[zmin] = dotM_net_allit
 
         # Plotting the net mass fluxes for all max heights at given radius
+        i=0
         for key, value in Mdot_net_allzrange.items():
-            if int(r_acc/au) == 10:
-                axes[plot_counter].plot(allit_years, value, label=f'{zrange_labels[key]}')
-            else:
-                axes[plot_counter].plot(allit_years, np.log10(value), label=f'{zrange_labels[key]}')
-        axes[plot_counter].set_xlabel(r"Time [kyr]")
-        axes[plot_counter].set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
+            # if int(r_acc/au) == 10:
+            #     axes[plot_counter].plot(allit_years, value, label=f'{zrange_labels[key]}')
+            # else:
+            axes[plot_counter].plot(allit_years, np.log10(value), label=f'{zrange_labels[key]}', color=cmap1(i / (len(Mdot_net_allzrange)-1)))
+            i+=1
+        # axes[plot_counter].set_xlabel(r"Time [kyr]")
+        # axes[plot_counter].set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
         axes[plot_counter].set_title(fr"R = {int(r_acc/au)} AU")
         handles, labels = axes[plot_counter].get_legend_handles_labels()
         plot_counter += 1
        
     fig.legend(handles, labels, loc="upper center", ncol=6, frameon=False)
+    fig.supxlabel(r"Time [kyr]")  
+    fig.supylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
     fig.suptitle(f"{sim_name}: Net flux between diff heights", fontsize=10, y=0.95)  
     fig.tight_layout()
     plt.savefig(f'{fig_imgs}/logMnetdot_vs_t_all_radii_all_zrange.png')
@@ -659,35 +694,44 @@ def main():
     # Plotting heat maps of the 2D accretion values
     fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(5,7), sharex=True)
 
-    c1 = ax1.imshow(np.log10(-Mdot_in_2D), extent=[np.log10(domains["r"].min()/au), np.log10(domains["r"].max()/au), allit_years.min(), allit_years.max()], origin="lower", cmap="inferno", aspect='auto', vmin=-17.5, vmax=-5)
+    c1 = ax1.imshow(np.log10(-Mdot_in_2D), extent=[np.log10(domains["r"].min()/au), np.log10(domains["r"].max()/au), allit_years.min(), allit_years.max()], origin="lower", cmap=cmaps.matter, aspect='auto', vmin=-17.5, vmax=-5)
     fig.colorbar(c1, ax=ax1, label=r"$\mathrm{\log\dot{M} [M_{sun}/yr]}$")
     ax1.set_title("Inward flux")
     ax1.set_ylabel("Time [kyr]")
 
-    c2 = ax2.imshow(np.log10(Mdot_out_2D), extent=[np.log10(domains["r"].min()/au), np.log10(domains["r"].max()/au), allit_years.min(), allit_years.max()], origin="lower", cmap="inferno", aspect='auto', vmin=-17.5, vmax=-5)
+    c2 = ax2.imshow(np.log10(Mdot_out_2D), extent=[np.log10(domains["r"].min()/au), np.log10(domains["r"].max()/au), allit_years.min(), allit_years.max()], origin="lower", cmap=cmaps.matter, aspect='auto', vmin=-17.5, vmax=-5)
     fig.colorbar(c2, ax=ax2, label=r"$\mathrm{\log\dot{M} [M_{sun}/yr]}$")
     ax2.set_title("Outward flux")
     ax2.set_ylabel("Time [kyr]")
 
-    c3 = ax3.imshow(np.log10(Mdot_net_2D), extent=[np.log10(domains["r"].min()/au), np.log10(domains["r"].max()/au), allit_years.min(), allit_years.max()], origin="lower", cmap="inferno", aspect='auto', vmin=-17.5, vmax=-5)
+    c3 = ax3.imshow(np.sign(Mdot_net_2D) * np.log10(np.abs(Mdot_net_2D)), extent=[np.log10(domains["r"].min()/au), np.log10(domains["r"].max()/au), allit_years.min(), allit_years.max()], origin="lower", cmap=cmaps.BlueRed, aspect='auto', vmin=-17.5, vmax=17.5)
     fig.colorbar(c3, ax=ax3, label=r"$\mathrm{\log\dot{M} [M_{sun}/yr]}$")
     ax3.set_title("Net accretion")
     ax3.set_xlabel("log(R) [AU]")
     ax3.set_ylabel("Time [kyr]")
     
     # Add arrows to show direction of net accretion
-    Xtemp, Ytemp = np.meshgrid(np.log10(domains["r"]/au), allit_years)
-    U = np.sign(Mdot_net_2D)  # horizontal direction (positive = outward)
-    V = np.zeros_like(U)      # no vertical component
-    arrow_cmap = plt.cm.bwr   # blue–white–red
-    arrow_norm = colors.Normalize(vmin=-1, vmax=1)
-    step = (slice(None, None, 5), slice(None, None, 10))  # Downsampling to avoid clutter
-    q1 = ax3.quiver(Xtemp[step], Ytemp[step], U[step], V[step], U[step], cmap=arrow_cmap, norm=arrow_norm, scale=20)
+    # Xtemp, Ytemp = np.meshgrid(np.log10(domains["r"]/au), allit_years)
+    # U = np.sign(Mdot_net_2D)  # horizontal direction (positive = outward)
+    # V = np.zeros_like(U)      # no vertical component
+    # arrow_cmap = plt.cm.bwr   # blue–white–red
+    # arrow_norm = colors.Normalize(vmin=-1, vmax=1)
+    # step = (slice(None, None, 5), slice(None, None, 10))  # Downsampling to avoid clutter
+    # q1 = ax3.quiver(Xtemp[step], Ytemp[step], U[step], V[step], U[step], cmap=arrow_cmap, norm=arrow_norm, scale=20)
     
     fig.tight_layout()
     plt.savefig(f'{fig_imgs}/logMdot_2D.png', bbox_inches="tight")
     plt.show()
 
+    fig, ax = plt.subplots(1, 1, figsize=(5,4))
+    c3 = ax.imshow(np.sign(Mdot_net_2D) * np.log10(np.abs(Mdot_net_2D)), extent=[np.log10(domains["r"].min()/au), np.log10(domains["r"].max()/au), allit_years.min(), allit_years.max()], origin="lower", cmap=cmaps.BlueRed, aspect='auto', vmin=-17.5, vmax=17.5)
+    fig.colorbar(c3, ax=ax, label=r"$\mathrm{\log\dot{M} [M_{sun}/yr]}$")
+    ax.set_title("Net accretion")
+    ax.set_xlabel("log(R) [AU]")
+    ax.set_ylabel("Time [kyr]")
+    fig.tight_layout()
+    plt.savefig(f'{fig_imgs}/logMnetdot_2D.png', bbox_inches="tight")
+    plt.show()
 
     ####################### Compare Mdot for different no disk inclinations ########################
 

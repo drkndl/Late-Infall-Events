@@ -6,7 +6,7 @@ from read import get_domain_spherical, get_data, load_par_file, get_param_value
 import matplotlib.pyplot as plt
 from analysis import calc_cell_volume, calc_mass, sph_to_cart, calc_simtime, vel_sph_to_cart, centering, calc_angular_momentum, isolate_disk, calc_L_average, calc_inc_twist
 from accretion import scale_height, calc_accretion
-from no_thoughts_just_plots import param_study_plot, make_evol_GIF
+from no_thoughts_just_plots import param_study_plot, make_evol_GIF, load_sciviscolor_colormaps
 import astropy.constants as c
 import pandas as pd
 au = c.au.cgs.value
@@ -16,6 +16,18 @@ Mstar = 0.7 * Msun        # Mass of the primary star in IRAS 04125+2902 (Barbe
 dt = 1.87e7               # Timestep length of simulations in sec
 ninterm = 200             # Total number of timesteps between outputs in FARGO simulations
 stoky = 3.156e7 * 1e3     # 1 kyr in sec
+
+# Global plot formatting 
+plt.rcParams['lines.linewidth'] = 2.5
+plt.rcParams['axes.labelsize'] = 14     # x/y label size
+plt.rcParams['xtick.labelsize'] = 12     # x-tick label size
+plt.rcParams['ytick.labelsize'] = 12     # y-tick label size
+plt.rcParams['legend.fontsize'] = 11     # legend font size
+
+# colormaps = load_sciviscolor_colormaps("discrete-5-4-section-blue-orange.xml")
+colormaps = load_sciviscolor_colormaps("colourmaps/discrete-5-4-section-blue-orange.xml")
+print(colormaps.keys())
+colours = [colormaps['colormap_1'](x) for x in np.linspace(0, 1, 4)]
 
 
 def main():
@@ -173,7 +185,6 @@ def main():
 
     # Plotting inc_avg vs time 
     fig, ax = plt.subplots(figsize=(11, 6))
-    colours = ['black', 'blue', 'red', 'green']
     param_study_plot(fig, ax, disk_inc_avg_folder, allit_years, folders_labels, colours, xlabel=r"Time [kyr]", ylabel=r"$\mathrm{inc_{avg} [deg]}$", title=fr"Time Evolution of Average Inclinations $(\mathrm{{\rho \geq 10^{warp_thresh}}})$", figfolder=f'param_study_inc_avg_vs_t_warp{warp_thresh}.png', savefig=True, showfig=True)
 
     # Plotting twist_avg vs time 
@@ -417,37 +428,37 @@ def main():
     plt.show()
 
     # Making a GIF to show time evolution of dMcumdlogr vs logR
-    for t in range(len(allit_years)):
-        fig, ax = plt.subplots(figsize=(11, 6))
-        current_color_index = -1
-        last_base = None
-        for key, value in dMcumdlogr_folder.items():
+    # for t in range(len(allit_years)):
+    #     fig, ax = plt.subplots(figsize=(11, 6))
+    #     current_color_index = -1
+    #     last_base = None
+    #     for key, value in dMcumdlogr_folder.items():
 
-            # Plotting rotX simulations in solid lines and rotY simulations in dashed lines (but same colour for easy comparison)
-            if "rotX" in key:
-                base = key.replace("rotX", "")
-                ls = "-"
-            elif "rotY" in key:
-                base = key.replace("rotY", "")
-                ls = "--"
-            # Only change color when we encounter a new base (first time we see either X or Y)
-            if base != last_base:
-                current_color_index = (current_color_index + 1) % len(colours)
-                last_base = base
+    #         # Plotting rotX simulations in solid lines and rotY simulations in dashed lines (but same colour for easy comparison)
+    #         if "rotX" in key:
+    #             base = key.replace("rotX", "")
+    #             ls = "-"
+    #         elif "rotY" in key:
+    #             base = key.replace("rotY", "")
+    #             ls = "--"
+    #         # Only change color when we encounter a new base (first time we see either X or Y)
+    #         if base != last_base:
+    #             current_color_index = (current_color_index + 1) % len(colours)
+    #             last_base = base
 
-            colour = colours[current_color_index]
-            ax.plot(np.log10(domains["r"]/au)[:-2], value[t, :], linestyle=ls, color=colour, label=folders_labels[key])   # -1 corresponds to last iteration
+    #         colour = colours[current_color_index]
+    #         ax.plot(np.log10(domains["r"]/au)[:-2], value[t, :], linestyle=ls, color=colour, label=folders_labels[key])   # -1 corresponds to last iteration
 
-        ax.set_xlabel(r"$\log(r)$ [AU]")
-        ax.set_ylabel(r"$\mathrm{\log(dM_{cum}(r)/d\log(r))}$")
-        ax.set_title(fr"$\mathrm{{\log(dM_{{cum}}(r)/d\log(r))}}$ vs logr ({int(allit_years[t])} kyr) $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
-        ax.set_ylim(26, 33)
-        ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
-        plt.tight_layout()
-        plt.savefig(f'param_study_dMcumdlogr_it{t}.png')
-        plt.close()
+    #     ax.set_xlabel(r"$\log(r)$ [AU]")
+    #     ax.set_ylabel(r"$\mathrm{\log(dM_{cum}(r)/d\log(r))}$")
+    #     ax.set_title(fr"$\mathrm{{\log(dM_{{cum}}(r)/d\log(r))}}$ vs logr ({int(allit_years[t])} kyr) $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
+    #     ax.set_ylim(26, 33)
+    #     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
+    #     plt.tight_layout()
+    #     plt.savefig(f'param_study_dMcumdlogr_it{t}.png')
+    #     plt.close()
 
-    make_evol_GIF(".", "param_study_dMcumdlogr_it", f"param_study_dMcumdlogr_warp{warp_thresh}_movie")
+    # make_evol_GIF(".", "param_study_dMcumdlogr_it", f"param_study_dMcumdlogr_warp{warp_thresh}_movie")
 
 
 

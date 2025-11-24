@@ -6,6 +6,8 @@ from matplotlib import colors
 from mpl_toolkits.mplot3d import axes3d
 from matplotlib.cm import ScalarMappable
 from matplotlib.colors import Normalize
+import xml.etree.ElementTree as ET
+import matplotlib.colors as mcolors
 #from matplotlib.ticker import LinearLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.interpolate import RegularGridInterpolator
@@ -590,3 +592,53 @@ def param_study_plot(fig, ax, param_dict, x_arr, folders_labels, colours, xlabel
         plt.show()
     else:
         plt.close()
+
+
+def load_sciviscolor_colormaps(path):
+    """
+    Load all <ColorMap> entries from a VTK-style colormap XML file. This function was written with heavy help from ChatGPT
+    
+    Inputs:
+    ------
+    path:    Path to the XML file containing <ColorMap> info
+
+    Outputs:
+    -------
+    dict: A dictionary mapping colormap names to Matplotlib LinearSegmentedColormap objects.
+    """
+    tree = ET.parse(path)
+    root = tree.getroot()
+
+    colormaps = {}
+
+    # Loop through all <ColorMap> elements
+    for cm_node in root.findall("ColorMap"):
+        name = cm_node.get("name", "unnamed")
+        if name == "unnamed":
+            name = f"colormap_{len(colormaps)+1}"
+
+        # Collect control points
+        points = []
+        for p in cm_node.findall("Point"):
+            x = float(p.get("x"))
+            r = float(p.get("r"))
+            g = float(p.get("g"))
+            b = float(p.get("b"))
+            points.append((x, (r, g, b)))
+
+        # Sort by x position (important!)
+        points.sort(key=lambda t: t[0])
+
+        # Build LinearSegmentedColormap structure
+        cdict = {"red": [], "green": [], "blue": []}
+
+        for x, (r, g, b) in points:
+            cdict["red"].append((x, r, r))
+            cdict["green"].append((x, g, g))
+            cdict["blue"].append((x, b, b))
+
+        # Create the Matplotlib colormap
+        cmap = mcolors.LinearSegmentedColormap(name, segmentdata=cdict)
+        colormaps[name] = cmap
+
+    return colormaps

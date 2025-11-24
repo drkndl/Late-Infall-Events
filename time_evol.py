@@ -26,7 +26,7 @@ plt.rcParams['lines.linewidth'] = 2.5
 plt.rcParams['axes.labelsize'] = 14     # x/y label size
 plt.rcParams['xtick.labelsize'] = 12     # x-tick label size
 plt.rcParams['ytick.labelsize'] = 12     # y-tick label size
-plt.rcParams['legend.fontsize'] = 14     # legend font size
+plt.rcParams['legend.fontsize'] = 12     # legend font size
 
 
 def main():
@@ -260,21 +260,21 @@ def main():
     ax = fig.add_subplot(111, projection='3d')
     r_warp_extent = np.sqrt(X_c[warp_ids]**2 +  Y_c[warp_ids]**2 + Z_c[warp_ids]**2) / au
     mask = (rc/au >= r_warp_extent.min()) & (rc/au <= r_warp_extent.max())
-    for i in range(len(dt_years[100::4])):  # Plot starting from 100th iteration, every 4 iterations
+    for i in range(len(dt_years[100::7])):  # Plot starting from 100th iteration, every 4 iterations
         r_select = rc[mask]
         inc_it_select = inc_it[i][mask]
-        ax.plot([dt_years[100::4][i]] * len(r_select), r_select/au, inc_it_select, color=plt.cm.viridis(i/len(dt_years[100::4])))
+        ax.plot([dt_years[100::7][i]] * len(r_select), r_select/au, inc_it_select, color=plt.cm.viridis(i/len(dt_years[100::7])))
 
         # Adding a shadow effect
-        verts = [list(zip([dt_years[100::4][i]] * len(r_select) + [dt_years[100::4][i]] * len(r_select), np.concatenate((r_select/au, r_select[::-1]/au)), np.concatenate((np.zeros_like(inc_it_select), inc_it_select[::-1]))))]
-        poly = Poly3DCollection(verts, color=plt.cm.viridis(i / len(dt_years[100::4])), alpha=0.2, edgecolor='none')
+        verts = [list(zip([dt_years[100::7][i]] * len(r_select) + [dt_years[100::7][i]] * len(r_select), np.concatenate((r_select/au, r_select[::-1]/au)), np.concatenate((np.zeros_like(inc_it_select), inc_it_select[::-1]))))]
+        poly = Poly3DCollection(verts, color=plt.cm.viridis(i / len(dt_years[100::7])), alpha=0.15, edgecolor='none')
         ax.add_collection3d(poly)
 
     ax.view_init(elev=35, azim=-31)
-    ax.set_box_aspect([4,1,1])
-    ax.set_xlabel('Time [kyr]')
-    ax.set_ylabel('R [AU]')
-    ax.set_zlabel('Warp inclination [°]')
+    ax.set_box_aspect([4,2,2])
+    ax.set_xlabel('Time [kyr]', labelpad=10)
+    ax.set_ylabel('R [AU]', labelpad=7)
+    ax.set_zlabel('Warp inclination [°]', labelpad=10)
     ax.set_title(f'{sim_name}: Time evolution of warp inclination')
     # plt.colorbar(surf, label='Angle')
     plt.tight_layout()
@@ -300,20 +300,20 @@ def main():
     ax = fig.add_subplot(111, projection='3d')
     r_warp_extent = np.sqrt(X_c[warp_ids]**2 +  Y_c[warp_ids]**2 + Z_c[warp_ids]**2) / au
     mask = (rc/au >= r_warp_extent.min()) & (rc/au <= r_warp_extent.max())
-    for i in range(len(dt_years[100::4])):  # Plot starting from 100th iteration, every 4 iterations
+    for i in range(len(dt_years[100::7])):  # Plot starting from 100th iteration, every 4 iterations
         r_select = rc[mask]
         prec_it_select = prec_it[i][mask]
-        ax.plot([dt_years[100::4][i]] * len(r_select), r_select/au, prec_it_select, color=plt.cm.viridis(i/len(dt_years[100::4])))
+        ax.plot([dt_years[100::7][i]] * len(r_select), r_select/au, prec_it_select, color=plt.cm.viridis(i/len(dt_years[100::7])))
         # Adding a shadow effect
-        verts = [list(zip([dt_years[100::4][i]] * len(r_select) + [dt_years[100::4][i]] * len(r_select), np.concatenate((r_select/au, r_select[::-1]/au)), np.concatenate((np.zeros_like(prec_it_select), prec_it_select[::-1]))))]
-        poly = Poly3DCollection(verts, color=plt.cm.viridis(i / len(dt_years[100::4])), alpha=0.2, edgecolor='none')
+        verts = [list(zip([dt_years[100::7][i]] * len(r_select) + [dt_years[100::7][i]] * len(r_select), np.concatenate((r_select/au, r_select[::-1]/au)), np.concatenate((np.full(len(prec_it_select), np.min(prec_it_select)), prec_it_select[::-1]))))]
+        poly = Poly3DCollection(verts, color=plt.cm.viridis(i / len(dt_years[100::7])), alpha=0.15, edgecolor='none')
         ax.add_collection3d(poly)
 
-    ax.view_init(elev=35, azim=-31)
-    ax.set_box_aspect([4,1,1])
-    ax.set_xlabel('Time [kyr]')
-    ax.set_ylabel('R [AU]')
-    ax.set_zlabel('Warp precession [°]')
+    ax.view_init(elev=31, azim=32)
+    ax.set_box_aspect([4,2,2])
+    ax.set_xlabel('Time [kyr]', labelpad=10)
+    ax.set_ylabel('R [AU]', labelpad=7)
+    ax.set_zlabel('Warp precession [°]', labelpad=10)
     ax.set_title(f'{sim_name}: Time evolution of warp precession')
     # plt.colorbar(surf, label='Angle')
     plt.tight_layout()
