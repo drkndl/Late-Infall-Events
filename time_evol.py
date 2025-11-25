@@ -32,8 +32,8 @@ plt.rcParams['legend.fontsize'] = 12     # legend font size
 def main():
 
 
-    folder = Path("../cloud_disk_it450_rotX45/")                        # Folder with the FARGO output files
-    # folder = Path("../fargo3d/outputs/cloud_disk_it450_rotX45/")          # Folder with the FARGO output files (Binac2)
+    # folder = Path("../cloud_disk_it450_rotX45/")                        # Folder with the FARGO output files
+    folder = Path("../fargo3d/outputs/cloud_disk_it450_rotX45/")          # Folder with the FARGO output files (Binac2)
     fig_imgs = Path("cloud_disk_it450_rotX45/imgs/")                      # Folder to save images    
     iter_total = 450                                     # FARGO snapshot
 
@@ -130,10 +130,10 @@ def main():
         rho_phiavg = np.mean(rho, axis=2)
 
         # Azimuthally averaged density RZ plot
-        cyl_2D_plot(rho_phiavg, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: $\phi$ Averaged Density R-Z Plane t = {int(it * dt * ninterm / stoky)} kyr', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_phiavg_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=False, data_phiavg=True)
+        # cyl_2D_plot(rho_phiavg, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: $\phi$ Averaged Density R-Z Plane t = {int(it * dt * ninterm / stoky)} kyr', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_phiavg_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=False, data_phiavg=True)
 
         # Density RZ plot
-        # cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Density R-Z Plane $\phi = $ {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$, t = {int(it * dt * ninterm / stoky)} kyr', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=False, data_phiavg=False)
+        cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Density R-Z Plane $\phi = $ {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$, t = {int(it * dt * ninterm / stoky)} kyr', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=False, data_phiavg=False)
 
         # XY_2D_plot(rho, X, Y, irad, itheta, title=rf'{sim_name}: Density X-Y Plane $\theta = $ {itheta_deg}$^{{\circ}}$, t = {int(it * dt * ninterm / stoky)} kyr', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=f'{fig_imgs}/dens_xy_theta{itheta}_rad{irad}_it{it}.png', showfig=False)
 
