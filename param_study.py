@@ -18,7 +18,7 @@ ninterm = 200             # Total number of timesteps between outputs in FARGO s
 stoky = 3.156e7 * 1e3     # 1 kyr in sec
 
 # Global plot formatting 
-plt.rcParams['lines.linewidth'] = 2.5
+plt.rcParams['lines.linewidth'] = 3
 plt.rcParams['axes.labelsize'] = 14     # x/y label size
 plt.rcParams['xtick.labelsize'] = 12     # x-tick label size
 plt.rcParams['ytick.labelsize'] = 12     # y-tick label size
