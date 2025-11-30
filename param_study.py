@@ -4,6 +4,7 @@ import numpy as np
 from pathlib import Path
 from read import get_domain_spherical, get_data, load_par_file, get_param_value
 import matplotlib.pyplot as plt
+import colormaps as cmaps
 from analysis import calc_cell_volume, calc_mass, sph_to_cart, calc_simtime, vel_sph_to_cart, centering, calc_angular_momentum, isolate_disk, calc_L_average, calc_inc_twist
 from accretion import scale_height, calc_accretion
 from no_thoughts_just_plots import param_study_plot, make_evol_GIF, load_sciviscolor_colormaps
@@ -25,9 +26,8 @@ plt.rcParams['ytick.labelsize'] = 12     # y-tick label size
 plt.rcParams['legend.fontsize'] = 11     # legend font size
 
 # colormaps = load_sciviscolor_colormaps("discrete-5-4-section-blue-orange.xml")
-colormaps = load_sciviscolor_colormaps("colourmaps/discrete-5-4-section-blue-orange.xml")
-print(colormaps.keys())
-colours = [colormaps['colormap_1'](x) for x in np.linspace(0, 1, 4)]
+colours = cmaps.drought_severity.discrete(5)
+colours = colours(np.linspace(0, 1, 5))
 
 
 def main():
@@ -36,7 +36,7 @@ def main():
     # folders = [Path("../fargo3d/outputs/cloud_disk_it450_rotX45"), Path("../fargo3d/outputs/cloud_disk_it450_rotY45"), Path("../fargo3d/outputs/cloud_disk_it450_Rout30_rotX45"), Path("../fargo3d/outputs/cloud_disk_it450_Rout30_rotY45"), Path("../fargo3d/outputs/cloud_disk_it450_cmass10_rotX45"), Path("../fargo3d/outputs/cloud_disk_it450_cmass10_rotY45"), Path("../fargo3d/outputs/cloud_disk_it450_cmass10_Rout30_rotX45"), Path("../fargo3d/outputs/cloud_disk_it450_cmass10_Rout30_rotY45")]
 
     # Simulation data locally
-    folders = [Path("../cloud_disk_it450_rotX45"), Path("../cloud_disk_it450_rotY45"), Path("../cloud_disk_it450_Rout30_rotX45"), Path("../cloud_disk_it450_Rout30_rotY45"), Path("../cloud_disk_it450_cmass10_rotX45"), Path("../cloud_disk_it450_cmass10_rotY45"), Path("../cloud_disk_it450_cmass10_Rout30_rotX45"), Path("../cloud_disk_it450_cmass10_Rout30_rotY45"), Path("../cloud_disk_it450_retro_rotX45")]
+    folders = [Path("../cloud_disk_it450_rotX45"), Path("../cloud_disk_it450_rotY45"), Path("../cloud_disk_it450_Rout30_rotX45"), Path("../cloud_disk_it450_Rout30_rotY45"), Path("../cloud_disk_it450_cmass10_rotX45"), Path("../cloud_disk_it450_cmass10_rotY45"), Path("../cloud_disk_it450_cmass10_Rout30_rotX45"), Path("../cloud_disk_it450_cmass10_Rout30_rotY45"), Path("../cloud_disk_it450_retro_rotX45"), Path("../cloud_disk_it450_retro_rotY45")]
 
     folders_labels = {"cloud_disk_it450_rotX45": r"$\mathrm{X_{45}, M_{c} / M_{d}=0.45, R_{out} = 100}$", "cloud_disk_it450_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=0.45, R_{out} = 100}$", 
     "cloud_disk_it450_Rout30_rotX45": r"$\mathrm{X_{45}, M_{c} / M_{d}=0.45, R_{out} = 30}$",
@@ -45,7 +45,8 @@ def main():
     "cloud_disk_it450_cmass10_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=4.5, R_{out} = 100}$",
     "cloud_disk_it450_cmass10_Rout30_rotX45": r"$\mathrm{X_{45}, M_{c} / M_{d}=4.5, R_{out} = 30}$",
     "cloud_disk_it450_cmass10_Rout30_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=4.5, R_{out} = 30}$",
-    "cloud_disk_it450_retro_rotX45": r"$\mathrm{X_{45, retro}, M_{c} / M_{d}=4.5, R_{out} = 30}$"}
+    "cloud_disk_it450_retro_rotX45": r"$\mathrm{X_{45, retro}, M_{c} / M_{d}=0.45, R_{out} = 100}$",
+    "cloud_disk_it450_retro_rotY45": r"$\mathrm{Y_{45, retro}, M_{c} / M_{d}=0.45, R_{out} = 100}$"}
 
     disk_mass_folder = {}              # Disk masses m(t, theta, r, phi) for all sims
     disk_inc_avg_folder = {}           # Average disk inclination inc(t) for all sims
@@ -115,7 +116,7 @@ def main():
             Lx_i, Ly_i, Lz_i = calc_angular_momentum(mass_i, X, Y, ZCYL, vx_i, vy_i, vz_i)
 
             # Isolating the warped/broken disk
-            warp_thresh = -16   # log of density threshold for which we can see the warp in the primary
+            warp_thresh = -17   # log of density threshold for which we can see the warp in the primary
             warp_buffer = 500   # Isolates a box of 2 * warp_buffer around the star (AU)
             _, _, _, _, Lx_c_warp_i, Ly_c_warp_i, Lz_c_warp_i, _ = isolate_disk(X_c, Y_c, Z_c, Px * au, Py * au, Pz * au, warp_buffer * au, rho_c_i, vx_c_i, vy_c_i, vz_c_i, Lx_i, Ly_i, Lz_i, warp_thresh) 
 

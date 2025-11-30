@@ -16,3 +16,29 @@ ninterm = 200             # Total number of timesteps between outputs in FARGO s
 stoky = 3.156e7 * 1e3     # 1 kyr in sec
 
 
+def rescale_t(t, f):
+    """
+    Function to rescale time based on scaling parameter f of stellar mass
+    """
+
+    tprime = np.sqrt(f) * t 
+    return tprime
+
+
+def rescale_v(v, f):
+    """
+    Function to rescale velocity based on scaling parameter f of stellar mass
+    """
+
+    vprime = np.sqrt(f) * v
+    return vprime 
+
+
+def rescale_Mdot(Mdot, f):
+    """
+    Function to rescale accretion rate based on scaling parameter f of stellar mass
+    """
+
+    Mdotprime = np.sqrt(f) * Mdot 
+    return Mdotprime 
+
