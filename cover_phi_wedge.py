@@ -36,9 +36,34 @@ def cover_phi_wedge(data, theta, r, phi):
     return data_ext, phi_ext
 
 
+def write_dat(folder, quant, iter, data_ext):
+    """
+    Creates a new dat file with the extended data 
+
+    Inputs:
+    ------
+    folder:   
+    quant:      Scalar field keyword (str)
+    iter:       Simulation snapshot (int)
+    data_ext:   Full pizza data (ntheta, nr, nphi+2)
+    """
+
+    np.ascontiguousarray(data_ext, dtype=np.float64).tofile(folder / f"gas{quant}{iter}.dat")
+    return 
+
+
 def main():
 
-    cover_phi_wedge()
+    ###################### Load data (theta = 175, r = 150, phi = 100) ################################
+
+    # folder = Path("../cloud_disk_it450_rotX45/")                            # Folder with the output files
+    folder = Path("../fargo3d/outputs/cloud_disk_it450_rotX45")               # Folder with the output files (BinAC2)
+    ext_folder = Path("../fargo3d/outputs/cloud_disk_it450_rotX45_ext/")      # Folder to save images
+    it = 450                                                                  # FARGO snapshot of interest
+    domains = get_domain_spherical(folder)
+    rho = get_data(folder, "dens", it, domains)                                                # Load 3D array of density values
+    rho_ext, phi_ext = cover_phi_wedge(rho, domains["theta"], domains["r"], domains["phi"])    # Cover empty wedge in phi
+    write_dat(ext_folder, "dens", it, rho_ext)                                                 # Write 3D array of densities into dat file (nth, nr, nphi+2)
     
 
 if __name__ == "__main__":
