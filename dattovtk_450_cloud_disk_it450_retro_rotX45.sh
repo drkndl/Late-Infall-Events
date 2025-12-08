@@ -31,4 +31,4 @@ module load mpi/openmpi/4.1-gnu-13.3
 module load devel/cuda/12.6
 
 mkdir -p outputs/cloud_disk_it450_retro_rotX45_vtk/monitor/{gas,tracer}
-mpirun --bind-to core --map-by core -report-bindings --mca pml ucx --mca btl ^openib ./fargo3d -V 450 -o "OutputDir=@outputs/cloud_disk_it450_retro_rotX45_vtk, Nx=102" ./in/cloud_disk_it450_retro_rotX45.par
+mpirun --bind-to core --map-by core -report-bindings --mca pml ucx --mca btl ^openib ./fargo3d -V 450 -o "OutputDir=@outputs/cloud_disk_it450_retro_rotX45_vtk, Nx=102, Xmin=-3.14159265, Xmax=3.14159265" ./in/cloud_disk_it450_retro_rotX45.par

@@ -14,8 +14,8 @@ def cover_phi_wedge(data, theta, r, phi):
 
     Outputs:
     -------
-    pizza:      3D data of shape (ntheta, nr, nphi) which is now without a missing wedge in phi
-    pizza_phi:  1D array of phi values without a missing wedge
+    data_ext:   3D data of shape (ntheta, nr, nphi) which is now without a missing wedge in phi
+    phi_ext:    1D array of phi values without a missing wedge
     """
 
     nth,nr,nph = data.shape
