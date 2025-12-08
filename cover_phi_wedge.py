@@ -23,7 +23,7 @@ def cover_phi_wedge(data, theta, r, phi):
     assert nr == len(r)
     assert nph == len(phi)
     
-    # To ensure that we have no "empty wedge" near the extrema of phi:
+    # To ensure that we have no "empty wedge" near the extrema of phi 
     data_ext           = np.zeros((nth,nr,nph+2))
     data_ext[:,:,1:-1] = data[:,:,:]
     data_ext[:,:,0]    = data_ext[:,:,-2]
@@ -56,9 +56,9 @@ def main():
 
     ###################### Load data (theta = 175, r = 150, phi = 100) ################################
 
-    # folder = Path("../cloud_disk_it450_rotX45/")                            # Folder with the output files
-    folder = Path("../fargo3d/outputs/cloud_disk_it450_rotX45")               # Folder with the output files (BinAC2)
-    ext_folder = Path("../fargo3d/outputs/cloud_disk_it450_rotX45_vtk/")      # Folder to save images
+    # folder = Path("../cloud_disk_it450_retro_rotX45/")                            # Folder with the output files
+    folder = Path("../fargo3d/outputs/cloud_disk_it450_retro_rotX45")               # Folder with the output files (BinAC2)
+    ext_folder = Path("../fargo3d/outputs/cloud_disk_it450_retro_rotX45_vtk/")      # Folder to save images
     it = 450                                                                  # FARGO snapshot of interest
     domains = get_domain_spherical(folder)
     rho = get_data(folder, "dens", it, domains)         # Load 3D array of density values
