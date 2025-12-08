@@ -26,8 +26,8 @@ plt.rcParams['ytick.labelsize'] = 12     # y-tick label size
 plt.rcParams['legend.fontsize'] = 11     # legend font size
 
 # colormaps = load_sciviscolor_colormaps("discrete-5-4-section-blue-orange.xml")
-colours = cmaps.drought_severity.discrete(5)
-colours = colours(np.linspace(0, 1, 5))
+colours = cmaps.drought_severity.discrete(4)
+colours = colours(np.linspace(0, 1, 4))
 
 
 def main():
@@ -36,7 +36,7 @@ def main():
     # folders = [Path("../fargo3d/outputs/cloud_disk_it450_rotX45"), Path("../fargo3d/outputs/cloud_disk_it450_rotY45"), Path("../fargo3d/outputs/cloud_disk_it450_Rout30_rotX45"), Path("../fargo3d/outputs/cloud_disk_it450_Rout30_rotY45"), Path("../fargo3d/outputs/cloud_disk_it450_cmass10_rotX45"), Path("../fargo3d/outputs/cloud_disk_it450_cmass10_rotY45"), Path("../fargo3d/outputs/cloud_disk_it450_cmass10_Rout30_rotX45"), Path("../fargo3d/outputs/cloud_disk_it450_cmass10_Rout30_rotY45")]
 
     # Simulation data locally
-    folders = [Path("../cloud_disk_it450_rotX45"), Path("../cloud_disk_it450_rotY45"), Path("../cloud_disk_it450_Rout30_rotX45"), Path("../cloud_disk_it450_Rout30_rotY45"), Path("../cloud_disk_it450_cmass10_rotX45"), Path("../cloud_disk_it450_cmass10_rotY45"), Path("../cloud_disk_it450_cmass10_Rout30_rotX45"), Path("../cloud_disk_it450_cmass10_Rout30_rotY45"), Path("../cloud_disk_it450_retro_rotX45"), Path("../cloud_disk_it450_retro_rotY45")]
+    folders = [Path("../cloud_disk_it450_rotX45"), Path("../cloud_disk_it450_rotY45"), Path("../cloud_disk_it450_Rout30_rotX45"), Path("../cloud_disk_it450_Rout30_rotY45"), Path("../cloud_disk_it450_cmass10_rotX45"), Path("../cloud_disk_it450_cmass10_rotY45"), Path("../cloud_disk_it450_cmass10_Rout30_rotX45"), Path("../cloud_disk_it450_cmass10_Rout30_rotY45")] #, Path("../cloud_disk_it450_retro_rotX45"), Path("../cloud_disk_it450_retro_rotY45")]
 
     folders_labels = {"cloud_disk_it450_rotX45": r"$\mathrm{X_{45}, M_{c} / M_{d}=0.45, R_{out} = 100}$", "cloud_disk_it450_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=0.45, R_{out} = 100}$", 
     "cloud_disk_it450_Rout30_rotX45": r"$\mathrm{X_{45}, M_{c} / M_{d}=0.45, R_{out} = 30}$",
@@ -44,9 +44,9 @@ def main():
     "cloud_disk_it450_cmass10_rotX45": r"$\mathrm{X_{45}, M_{c} / M_{d}=4.5, R_{out} = 100}$",
     "cloud_disk_it450_cmass10_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=4.5, R_{out} = 100}$",
     "cloud_disk_it450_cmass10_Rout30_rotX45": r"$\mathrm{X_{45}, M_{c} / M_{d}=4.5, R_{out} = 30}$",
-    "cloud_disk_it450_cmass10_Rout30_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=4.5, R_{out} = 30}$",
-    "cloud_disk_it450_retro_rotX45": r"$\mathrm{X_{45, retro}, M_{c} / M_{d}=0.45, R_{out} = 100}$",
-    "cloud_disk_it450_retro_rotY45": r"$\mathrm{Y_{45, retro}, M_{c} / M_{d}=0.45, R_{out} = 100}$"}
+    "cloud_disk_it450_cmass10_Rout30_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=4.5, R_{out} = 30}$"} #,
+    # "cloud_disk_it450_retro_rotX45": r"$\mathrm{X_{45, retro}, M_{c} / M_{d}=0.45, R_{out} = 100}$",
+    # "cloud_disk_it450_retro_rotY45": r"$\mathrm{Y_{45, retro}, M_{c} / M_{d}=0.45, R_{out} = 100}$"}
 
     disk_mass_folder = {}              # Disk masses m(t, theta, r, phi) for all sims
     disk_inc_avg_folder = {}           # Average disk inclination inc(t) for all sims
