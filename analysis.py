@@ -4,9 +4,12 @@ import numpy as np
 from pathlib import Path
 from read import get_domain_spherical, get_data, load_par_file, get_param_value
 import matplotlib.pyplot as plt
-from no_thoughts_just_plots import quiver_plot_3d, contours_3D, plot_surf_dens, plot_twist_arrows, plot_total_disks_bonanza, cyl_2D_plot, XY_2D_plot
+from no_thoughts_just_plots import quiver_plot_3d, contours_3D, plot_surf_dens, plot_twist_arrows, plot_total_disks_bonanza, cyl_2D_plot, XY_2D_plot, velocity_streamlines
 import astropy.constants as c
 import pandas as pd
+# import pyvista as pv 
+
+# pv.global_theme.allow_empty_mesh = True
 au = c.au.cgs.value
 G = 6.67e-8               # Gravitational constant in cgs units
 Msun = 1.989e33           # Mass of the Sun in g
@@ -504,9 +507,9 @@ def calc_total_L(Lx_avg, Ly_avg, Lz_avg):
 
 def main():
 
-    # folder = Path("../cloud_disk_it450_cmass10_rotY45/")                        # Folder with the output files
-    folder = Path("../fargo3d/outputs/cloud_disk_it450_cmass10_rotY45")         # Folder with the output files (BinAC2)
-    fig_imgs = Path("cloud_disk_it450_cmass10_rotY45/imgs/")                    # Folder to save images
+    folder = Path("../cloud_disk_it450_rotX45/")                        # Folder with the output files
+    # folder = Path("../fargo3d/outputs/cloud_disk_it450_rotX45")         # Folder with the output files (BinAC2)
+    fig_imgs = Path("cloud_disk_it450_rotX45/imgs/")                    # Folder to save images
     it = 450                                                       # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                         # Simulation name (for plot labels)
     
@@ -564,7 +567,7 @@ def main():
 
     # Note 1: I am using centered densities to isolate the warp to match the indices corresponding to the warp with the angular momenta indices
     # Note 2: The warp_ids itself is a 3D Boolean array, but when applied to another array such as x[warp_ids], the latter array becomes 1D
-    warp_thresh = -16   # log of density threshold for which we can see the warp in the primary
+    warp_thresh = -17   # log of density threshold for which we can see the warp in the primary
     warp_buffer = 500   # Isolates a box of 2 * warp_buffer around the star (AU)
     rho_c_warp, vx_c_warp, vy_c_warp, vz_c_warp, Lx_c_warp, Ly_c_warp, Lz_c_warp, warp_ids = isolate_disk(X_c, Y_c, Z_c, Px * au, Py * au, Pz * au, warp_buffer * au, rho_c, vx_c, vy_c, vz_c, Lx, Ly, Lz, warp_thresh) 
 
@@ -581,28 +584,40 @@ def main():
 
 
     # 2D visualizations
-    irad = -1
-    # irad = np.where(domains["r"]/au < 1000)[0][-1]
+    # irad = -1
+    irad = np.where(domains["r"]/au < 150)[0][-1]
     iphi = 0
-    itheta = int(len(domains["theta"])/2)
+    itheta = int(7*len(domains["theta"])/15)
     # print(itheta)
     itheta_deg = np.round(np.rad2deg(domains["theta"][itheta]), 2)
+    print(itheta_deg)
 
     rho_phiavg = np.mean(rho, axis=2)
 
     # Azimuthally averaged density RZ plot
-    cyl_2D_plot(rho_phiavg, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: $\phi$ Averaged Density R-Z Plane', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_phiavg_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, data_phiavg=True)
+    # cyl_2D_plot(rho_phiavg, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: $\phi$ Averaged Density R-Z Plane', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_phiavg_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, data_phiavg=True)
 
     # Density RZ plot
-    cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Density R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, data_phiavg=False)
+    # cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Density R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, data_phiavg=False)
 
-    XY_2D_plot(rho, X, Y, irad, itheta, title=rf'{sim_name}: Density X-Y Plane $\theta = $ {itheta_deg}$^{{\circ}}$', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=f'{fig_imgs}/dens_xy_theta{itheta}_rad{irad}_it{it}.png', showfig=True)
+    # XY_2D_plot(rho, X, Y, irad, itheta, title=rf'{sim_name}: Density X-Y Plane $\theta = $ {itheta_deg}$^{{\circ}}$', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=f'{fig_imgs}/dens_xy_theta{itheta}_rad{irad}_it{it}.png', showfig=True)
 
     # Plotting the 3D warp/disk densities 
-    contours_3D(X_c/au, Y_c/au, Z_c/au, np.log10(rho_c_warp), r_select, plot_args, colorbarlabel=r'$\log(\rho) [g/cm^3]$', title=rf'{sim_name}: Initial & Outer Disks: $\log(\rho)$', savefig=True, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=True)
+    # contours_3D(X_c/au, Y_c/au, Z_c/au, np.log10(rho_c_warp), r_select, plot_args, colorbarlabel=r'$\log(\rho) [g/cm^3]$', title=rf'{sim_name}: Initial & Outer Disks: $\log(\rho)$', savefig=True, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=True)
     
     # Another way to plot the warp/disk densities
     # contours_3D(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, rho_c[warp_ids], fig, colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$')
+
+    # Plotting the disk velocities
+    # azim=-90, elev=-108 (Top-down)
+    # quiver_plot_3d(X_c/au, Y_c/au, Z_c/au, vx_c_warp, vy_c_warp, vz_c_warp, stagger=5, length=30, title=f"{sim_name}: velocities {int(calc_simtime(it))} kyr", colorbarlabel="velocities", savefig=True, figfolder=f'{fig_imgs}/warp_vel_thresh{warp_thresh}_it{it}.png', azim=-90, elev=-170, logmag=True, ignorecol=True)
+
+    # Disk velocity streamline plots at different theta values
+    targets = np.array([60, 70, 80, 90, 100, 110])   
+    ithetas = [np.abs(np.rad2deg(domains["theta"]) - t).argmin() for t in targets]
+    # velocity_streamlines(X_c, Y_c, vx_c_warp, vy_c_warp, rho_c_warp, ithetas, irad, savefig=True, figfolder=f'{fig_imgs}/vel_streamlines_thresh{warp_thresh}_it{it}.png', showfig=True)
+
+    # quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, vx_c[warp_ids], vy_c[warp_ids], vz_c[warp_ids], stagger=10, length=30, title=f"{sim_name}: velocities {int(calc_simtime(it))} kyr", colorbarlabel="velocities", savefig=False, figfolder=f'../warp_vel_thresh{warp_thresh}_it{it}.png', azim=-90, elev=-178, logmag=True, ignorecol=False)
 
     # Plotting the Cartesian warp/disk angular momenta
     # quiver_plot_3d(X_c/au, Y_c/au, Z_c/au, Lx_c_warp, Ly_c_warp, Lz_c_warp, stagger=10, length=2, title="Disk Angular Momenta", colorbarlabel="logL", savefig=False, figfolder=f'../warp_L_thresh{warp_thresh}_it{it}.png', logmag=True, ignorecol=True)
@@ -620,7 +635,7 @@ def main():
 
     # Calculating and plotting the total angular momentum of the warped disk
     Lx_disk, Ly_disk, Lz_disk = calc_total_L(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg)
-    # quiver_plot_3d(np.array([Px]), np.array([Py]), np.array([Pz]), np.array([Lx_disk]), np.array([Ly_disk]), np.array([Lz_disk]), stagger=1, length=0.05, title=f"{sim_name} Total disk angular momentum", colorbarlabel="logL", savefig=False, figfolder=f'{fig_imgs}/{sim_name}_totalL.png', logmag=True)
+    quiver_plot_3d(np.array([Px]), np.array([Py]), np.array([Pz]), np.array([Lx_disk]), np.array([Ly_disk]), np.array([Lz_disk]), stagger=1, length=0.05, title=f"{sim_name} Total disk angular momentum", colorbarlabel="logL", savefig=False, figfolder=f'{fig_imgs}/{sim_name}_totalL.png', logmag=True)
 
     # plot_total_disks_bonanza(X_c/au, Y_c/au, Z_c/au, rho_c_warp, None, Px, Py, Pz, Lx_disk, Ly_disk, Lz_disk, sim_params, length=150, Rwarp=r_select, azim=-106, elev=36, colorbarlabel=r'$\rho_{norm}$', title=rf'{sim_name} Disk $\rho$ and L, t = {int(it * dt * ninterm / stoky)} kyr', savefig=True, figfolder=f'{fig_imgs}/total_bonanza_it{it}_dens{warp_thresh}.png', showfig=True)
 

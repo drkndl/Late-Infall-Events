@@ -8,6 +8,7 @@ from matplotlib.cm import ScalarMappable
 from matplotlib.colors import Normalize
 import xml.etree.ElementTree as ET
 import matplotlib.colors as mcolors
+from scipy.interpolate import griddata
 #from matplotlib.ticker import LinearLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.interpolate import RegularGridInterpolator
@@ -282,7 +283,7 @@ def interactive_interp_3d(data, Rmax, colorbarlabel, title, idxnames):
     plt.show()
 
 
-def quiver_plot_3d(X, Y, Z, dx, dy, dz, stagger, length, title, colorbarlabel, savefig, figfolder, showfig=True, ignorecol=False, logmag=True):
+def quiver_plot_3d(X, Y, Z, dx, dy, dz, stagger, length, title, colorbarlabel, savefig, figfolder, elev=8, azim=-66, showfig=True, ignorecol=False, logmag=True):
     """
     Plots quiver plot in 3D 
     
@@ -322,20 +323,25 @@ def quiver_plot_3d(X, Y, Z, dx, dy, dz, stagger, length, title, colorbarlabel, s
 
     # Plot the arrows
     if ignorecol == True:
-        Q = ax.quiver(X[::stagger, ::stagger, ::stagger], Y[::stagger, ::stagger, ::stagger], Z[::stagger, ::stagger, ::stagger], dx[::stagger, ::stagger, ::stagger], dy[::stagger, ::stagger, ::stagger], dz[::stagger, ::stagger, ::stagger], length=length, pivot='tip', alpha=0.8, arrow_length_ratio = 0.5, normalize=True) 
+        Q = ax.quiver(X[::stagger, ::stagger, ::stagger], Y[::stagger, ::stagger, ::stagger], Z[::stagger, ::stagger, ::stagger], dx[::stagger, ::stagger, ::stagger], dy[::stagger, ::stagger, ::stagger], dz[::stagger, ::stagger, ::stagger], length=length, pivot='tip', alpha=0.5, color='black', arrow_length_ratio = 0.5, normalize=True) 
     else:
         print(X, Y, Z, dx, dy, dz)
         Q = ax.quiver(X[::stagger], Y[::stagger], Z[::stagger], dx[::stagger], dy[::stagger], dz[::stagger], length=length, pivot='tip', alpha=0.8, colors=cmap(norm(o)), arrow_length_ratio = 0.5, normalize=True) 
         plt.colorbar(sm, label=colorbarlabel)
 
     # Best initial camera projection to see the arrows properly 
-    ax.view_init(elev=8, azim=-66)
+    ax.view_init(elev=elev, azim=azim)
 
     # Plot formatting
-    ax.set_xlabel("X [AU]")
-    ax.set_ylabel("Y [AU]")
-    ax.set_zlabel("Z [AU]")
-    ax.set_title(title)
+    ax.set_xlabel("X")
+    ax.set_ylabel("Y")
+    ax.set_zlabel("Z")
+    # ax.grid(False)
+    # ax.set_title(title)
+    ax.set_xticklabels([])
+    ax.set_yticklabels([])
+    ax.set_zticklabels([])
+    ax.set_position([0.0, 0.0, 1.0, 1.0])  # [left, bottom, width, height]
     plt.tight_layout()
 
     # Save the figure?
@@ -410,6 +416,7 @@ def plot_twist_arrows(Lx_avg, Ly_avg, Lz_avg, R, Rwarp, sim_params, title, savef
     # Radially plotting averaged angular momenta (assuming R along X-axis and keeping Y- and Z- axes 0)
     # ax.quiver(Rc/au, 0, 0, Lx_avg, Ly_avg, Lz_avg, arrow_length_ratio=1, length=1, normalize=True, pivot='tip', color="black")          # Workaround to add arrowheads (fuck matplotlib 3D quiver plots)
     q = ax.quiver(Rc/au, 0, 0, Lx_avg, Ly_avg, Lz_avg, length=3, normalize=True, pivot='tip', color="black")
+    q2 = ax.quiver(0, Rc/au/30, 0, Lx_avg, Ly_avg, Lz_avg, length=3, normalize=True, pivot='tip', color="black")
     # plt.colorbar(q, label=r"Normalized warp precession")
 
     # Overplotting the density as well
@@ -642,3 +649,60 @@ def load_sciviscolor_colormaps(path):
         colormaps[name] = cmap
 
     return colormaps
+
+
+def velocity_streamlines(X_c, Y_c, vx_c_warp, vy_c_warp, rho_c_warp, ithetas, irad, savefig, figfolder, showfig):
+    """
+   
+    """
+
+    fig, axes = plt.subplots(2, 3, figsize=(8,6), sharex=True, sharey=True)
+    axes = axes.flatten()
+
+    for i in range(len(ithetas)):
+
+        # Original curvilinear coordinates
+        Xc = X_c[ithetas[i], :irad, ...]/au
+        Yc = Y_c[ithetas[i], :irad, ...]/au
+
+        Uc = vx_c_warp[ithetas[i], :irad, ...]
+        Vc = vy_c_warp[ithetas[i], :irad, ...]
+
+        # Make uniform grid
+        x_reg = np.linspace(Xc.min(), Xc.max(), 300)
+        y_reg = np.linspace(Yc.min(), Yc.max(), 300)
+        Xg, Yg = np.meshgrid(x_reg, y_reg)
+
+        # Interpolate onto regular grid
+        Ugrid = griddata((Xc.ravel(), Yc.ravel()), Uc.ravel(), (Xg, Yg))
+        Vgrid = griddata((Xc.ravel(), Yc.ravel()), Vc.ravel(), (Xg, Yg))
+        RHOgrid = griddata((Xc.ravel(), Yc.ravel()), rho_c_warp[ithetas[i], :irad, ...].ravel(), (Xg, Yg))
+
+        map = axes[i].pcolormesh(Xg, Yg, np.log10(RHOgrid), cmap="Spectral_r", vmin=-19, vmax=-11)
+        axes[i].streamplot(Xg, Yg, Ugrid, Vgrid, color="black")
+        axes[i].set_aspect("equal")
+        axes[i].set_title(rf"$\theta$ = {ithetas[i]}$\degree$")
+    
+    # fig.subplots_adjust(right=0.8)
+    # cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
+    # fig.colorbar(map, ax=axes, orientation="horizontal", shrink=0.8) #, cax=cbar_ax)
+    fig.supxlabel(r"X [AU]")  
+    fig.supylabel(r"Y [AU]")
+    # fig.tight_layout()
+
+    plt.tight_layout(rect=[0, 0, 0.85, 1])   # leave space on the right
+
+    # dedicated colorbar axis
+    cax = fig.add_axes([0.87, 0.15, 0.02, 0.7])  # (left, bottom, width, height)
+    cbar = fig.colorbar(map, cax=cax)
+    cbar.set_label(r"$\log(\rho)$")
+    
+    # Save the figure?
+    if savefig == True:
+        plt.savefig(figfolder)
+
+    # Display the figure?
+    if showfig:
+        plt.show()
+    else:
+        plt.close()
