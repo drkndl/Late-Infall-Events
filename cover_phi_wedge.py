@@ -1,6 +1,7 @@
 import numpy as np
 from pathlib import Path
 from read import get_domain_spherical, get_data
+import argparse
 
 
 def cover_phi_wedge(data, theta, r, phi):
@@ -56,11 +57,17 @@ def main():
 
     ###################### Load data (theta = 175, r = 150, phi = 100) ################################
 
-    # folder = Path("../cloud_disk_it450_retro_rotX45/")                            # Folder with the output files
-    folder = Path("../fargo3d/outputs/cloud_disk_it450_retro_rotX45")               # Folder with the output files (BinAC2)
-    ext_folder = Path("../fargo3d/outputs/cloud_disk_it450_retro_rotX45_vtk/")      # Folder to save new dat and vtk files
-    it = 450                                                                        # FARGO total snapshots
-    N = 5                                                                           # Save vtk files for every N files 
+    parser = argparse.ArgumentParser()
+    parser.add_argument("ifold", help="Input data folder")
+    parser.add_argument("-N", type=int, default=5, help="Create vtk files every N outputs")
+    args = parser.parse_args()
+
+    folder = Path(args.ifold)                     # Input folder of dat files
+    ofold = "vtk_" + args.ifold
+    ext_folder = Path(ofold)                      # Output folder for new dat and vtk files
+    print(args.ifold, ofold)
+    it = 450                                      # FARGO total snapshots
+    N = args.N                                    # Save vtk files for every N files 
 
     domains = get_domain_spherical(folder)
 
