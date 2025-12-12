@@ -12,6 +12,7 @@ from scipy.interpolate import griddata
 #from matplotlib.ticker import LinearLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.interpolate import RegularGridInterpolator
+import plotly.graph_objects as go
 import astropy.constants as c
 import imageio
 import re
@@ -355,6 +356,23 @@ def quiver_plot_3d(X, Y, Z, dx, dy, dz, stagger, length, title, colorbarlabel, s
         plt.close()
 
 
+def plotly_quiver3D(X, Y, Z, dx, dy, dz, savefig, figfolder, showfig=True, ignorecol=False, logmag=True):
+    """
+    Plotting a 3D quiver plot (for velocities/angular momenta) but using the Plotly library since Matplotlib is shit
+    """
+
+    fig = go.Figure(data = go.Cone(x=X, y=Y, z=Z, u=dx, v=dy, w=dz, colorscale='Portland', sizemode="absolute", sizeref=500))
+    fig.update_layout(scene=dict(aspectratio=dict(x=2, y=2, z=1), camera_eye=dict(x=1.2, y=1.2, z=0.6)))
+    
+    # Save the figure?
+    if savefig:
+        fig.write_image(figfolder)
+    
+    # Display the figure?
+    if showfig:
+        fig.show()
+
+
 def plot_surf_dens(X, Y, Z, surf_dens, warp_ids, r, savefig, figfolder, showfig):
     """
     X:            3D array of X coordinates
@@ -416,7 +434,7 @@ def plot_twist_arrows(Lx_avg, Ly_avg, Lz_avg, R, Rwarp, sim_params, title, savef
     # Radially plotting averaged angular momenta (assuming R along X-axis and keeping Y- and Z- axes 0)
     # ax.quiver(Rc/au, 0, 0, Lx_avg, Ly_avg, Lz_avg, arrow_length_ratio=1, length=1, normalize=True, pivot='tip', color="black")          # Workaround to add arrowheads (fuck matplotlib 3D quiver plots)
     q = ax.quiver(Rc/au, 0, 0, Lx_avg, Ly_avg, Lz_avg, length=3, normalize=True, pivot='tip', color="black")
-    q2 = ax.quiver(0, Rc/au/30, 0, Lx_avg, Ly_avg, Lz_avg, length=3, normalize=True, pivot='tip', color="black")
+    # q2 = ax.quiver(0, Rc/au/30, 0, Lx_avg, Ly_avg, Lz_avg, length=3, normalize=True, pivot='tip', color="black")
     # plt.colorbar(q, label=r"Normalized warp precession")
 
     # Overplotting the density as well

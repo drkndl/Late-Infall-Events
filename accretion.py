@@ -147,9 +147,9 @@ def calc_accretion_theoretical(sigma, H, ok, alpha):
 def main():
 
 
-    folder = Path("../cloud_disk_it450_cmass10_Rout30_rotX45/")                    # Folder with the output files
-    # folder = Path("../fargo3d/outputs/cloud_disk_it450_cmass10_Rout30_rotX45")       # Folder with the output files (BinAC2)
-    fig_imgs = Path("cloud_disk_it450_cmass10_Rout30_rotX45/imgs/")                  # Folder to save images
+    folder = Path("../cloud_disk_it450_retro_rotX45/")                    # Folder with the output files
+    # folder = Path("../fargo3d/outputs/cloud_disk_it450_retro_rotX45")       # Folder with the output files (BinAC2)
+    fig_imgs = Path("cloud_disk_it450_retro_rotX45/imgs/")                  # Folder to save images
     it = 450                                                             # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                               # Simulation name (for plot labels)
 
@@ -730,7 +730,7 @@ def main():
     # plt.show()
 
     fig, ax = plt.subplots(1, 1, figsize=(5,4))
-    c3 = ax.imshow(np.sign(Mdot_net_2D) * np.log10(np.abs(Mdot_net_2D)), extent=[np.log10(domains["r"].min()/au), np.log10(domains["r"].max()/au), allit_years.min(), allit_years.max()], origin="lower", cmap=cmaps.BlueRed, aspect='auto')
+    c3 = ax.imshow(np.sign(Mdot_net_2D) * np.log10(np.abs(Mdot_net_2D)), extent=[np.log10(domains["r"].min()/au), np.log10(domains["r"].max()/au), allit_years.min(), allit_years.max()], origin="lower", cmap=cmaps.BlueRed, aspect='auto', vmin=-10, vmax=10)
     cbar = fig.colorbar(c3, ax=ax)
     #Adjusting colorbar tick labels
     exponents = np.arange(-10, -1, 2)   

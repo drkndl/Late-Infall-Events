@@ -4,7 +4,7 @@ import numpy as np
 from pathlib import Path
 from read import get_domain_spherical, get_data, load_par_file, get_param_value
 import matplotlib.pyplot as plt
-from no_thoughts_just_plots import quiver_plot_3d, contours_3D, plot_surf_dens, plot_twist_arrows, plot_total_disks_bonanza, cyl_2D_plot, XY_2D_plot, velocity_streamlines
+from no_thoughts_just_plots import quiver_plot_3d, contours_3D, plot_surf_dens, plot_twist_arrows, plot_total_disks_bonanza, cyl_2D_plot, XY_2D_plot, velocity_streamlines, plotly_quiver3D
 import astropy.constants as c
 import pandas as pd
 # import pyvista as pv 
@@ -612,6 +612,8 @@ def main():
     # azim=-90, elev=-108 (Top-down)
     # quiver_plot_3d(X_c/au, Y_c/au, Z_c/au, vx_c_warp, vy_c_warp, vz_c_warp, stagger=5, length=30, title=f"{sim_name}: velocities {int(calc_simtime(it))} kyr", colorbarlabel="velocities", savefig=True, figfolder=f'{fig_imgs}/warp_vel_thresh{warp_thresh}_it{it}.png', azim=-90, elev=-170, logmag=True, ignorecol=True)
 
+    plotly_quiver3D(X_c[warp_ids][::100]/au, Y_c[warp_ids][::100]/au, Z_c[warp_ids][::100]/au, (vx_c[warp_ids]/vsph.mean())[::100], (vy_c[warp_ids]/vsph.mean())[::100], (vz_c[warp_ids]/vsph.mean())[::100], savefig=False, figfolder=f'{fig_imgs}/plotly_vel_thresh{warp_thresh}_it{it}.png', showfig=True)
+
     # Disk velocity streamline plots at different theta values
     targets = np.array([60, 70, 80, 90, 100, 110])   
     ithetas = [np.abs(np.rad2deg(domains["theta"]) - t).argmin() for t in targets]
@@ -629,13 +631,15 @@ def main():
     Lx_warp_avg, Ly_warp_avg, Lz_warp_avg = calc_L_average(Lx_c_warp, Ly_c_warp, Lz_c_warp, mass)
     inc, twist = calc_inc_twist(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], savefig=False, plot=False)
     print(np.min(twist), np.max(twist), np.mean(twist))
-
-    # Calculating and plotting the radial profile of warp/disk precession as a quiver plot
-    plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, plot_args, title=f"{sim_name}: Disk Twist", savefig=True, figfolder=f'{fig_imgs}/warp_twist_arrows_it{it}_dens{warp_thresh}.png', showfig=True)
-
     # Calculating and plotting the total angular momentum of the warped disk
     Lx_disk, Ly_disk, Lz_disk = calc_total_L(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg)
-    quiver_plot_3d(np.array([Px]), np.array([Py]), np.array([Pz]), np.array([Lx_disk]), np.array([Ly_disk]), np.array([Lz_disk]), stagger=1, length=0.05, title=f"{sim_name} Total disk angular momentum", colorbarlabel="logL", savefig=False, figfolder=f'{fig_imgs}/{sim_name}_totalL.png', logmag=True)
+
+    # Calculating and plotting the radial profile of warp/disk precession as a quiver plot
+    # plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, plot_args, title=f"{sim_name}: Disk Twist", savefig=True, figfolder=f'{fig_imgs}/warp_twist_arrows_it{it}_dens{warp_thresh}.png', showfig=True)
+    print(np.shape(Lx_warp_avg/Lx_disk), r_select.shape)
+    # plotly_quiver3D(np.logspace(1, np.log10(r_select.max()/au), len(Lx_warp_avg)), np.zeros(len(Lx_warp_avg)), np.zeros(len(Lx_warp_avg)), Lx_warp_avg/Lx_disk, Ly_warp_avg/Ly_disk, Lz_warp_avg/Lz_disk, savefig=False, figfolder=f'{fig_imgs}/plotly_vel_thresh{warp_thresh}_it{it}.png', showfig=True)
+
+    # quiver_plot_3d(np.array([Px]), np.array([Py]), np.array([Pz]), np.array([Lx_disk]), np.array([Ly_disk]), np.array([Lz_disk]), stagger=1, length=0.05, title=f"{sim_name} Total disk angular momentum", colorbarlabel="logL", savefig=False, figfolder=f'{fig_imgs}/{sim_name}_totalL.png', logmag=True)
 
     # plot_total_disks_bonanza(X_c/au, Y_c/au, Z_c/au, rho_c_warp, None, Px, Py, Pz, Lx_disk, Ly_disk, Lz_disk, sim_params, length=150, Rwarp=r_select, azim=-106, elev=36, colorbarlabel=r'$\rho_{norm}$', title=rf'{sim_name} Disk $\rho$ and L, t = {int(it * dt * ninterm / stoky)} kyr', savefig=True, figfolder=f'{fig_imgs}/total_bonanza_it{it}_dens{warp_thresh}.png', showfig=True)
 
