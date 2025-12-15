@@ -63,9 +63,9 @@ def main():
     args = parser.parse_args()
 
     folder = Path(args.ifold)                     # Input folder of dat files
-    ofold = "vtk_" + args.ifold
-    ext_folder = Path(ofold)                      # Output folder for new dat and vtk files
-    print(args.ifold, ofold)
+    ext_folder = folder.parent / f"vtk_{folder.name}"    # Output folder for new dat and vtk files                    
+    # print(folder, ext_folder, type(folder), type(ext_folder))
+    
     it = 450                                      # FARGO total snapshots
     N = args.N                                    # Save vtk files for every N files 
 
