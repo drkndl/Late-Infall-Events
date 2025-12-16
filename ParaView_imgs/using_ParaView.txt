@@ -57,3 +57,9 @@ Adding simulation time to animation panels
 ------------------------------------------
 1. To annotate the simulation time onto each iteration loaded state, go to Filters -> Alphabetical -> Annotate Time Filter and click Apply.
 2. To convert iteration time to simulation time, change Format in Properties to "Time: {time:.2f} kyr" and change Scale to 0.1186 where Scale = it * ninterm * dt / stoky based on my FARGO3D simulation parameters where it = iteration number from 0 to 450, dt = timestep = 1.87e7 seconds, ninterm = number of iterations between each output = 200, stoky = 3.156e10 to convert seconds to kilo years.
+
+Adding title
+------------
+1. Go to Sources -> Annotation -> Text
+2. Add the required text in the provided textbox (the default is just "text"). 
+3. Adjust title orientation and size as necessary.

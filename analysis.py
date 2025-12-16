@@ -612,7 +612,10 @@ def main():
     # azim=-90, elev=-108 (Top-down)
     # quiver_plot_3d(X_c/au, Y_c/au, Z_c/au, vx_c_warp, vy_c_warp, vz_c_warp, stagger=5, length=30, title=f"{sim_name}: velocities {int(calc_simtime(it))} kyr", colorbarlabel="velocities", savefig=True, figfolder=f'{fig_imgs}/warp_vel_thresh{warp_thresh}_it{it}.png', azim=-90, elev=-170, logmag=True, ignorecol=True)
 
-    plotly_quiver3D(X_c[warp_ids][::100]/au, Y_c[warp_ids][::100]/au, Z_c[warp_ids][::100]/au, (vx_c[warp_ids]/vsph.mean())[::100], (vy_c[warp_ids]/vsph.mean())[::100], (vz_c[warp_ids]/vsph.mean())[::100], savefig=False, figfolder=f'{fig_imgs}/plotly_vel_thresh{warp_thresh}_it{it}.png', showfig=True)
+    # Nstagger = int(len(X_c[warp_ids])/500)
+    Nstagger = 100
+    stagger_ids = np.linspace(1000, len(X_c[warp_ids])-1, Nstagger, dtype=int)
+    plotly_quiver3D(X_c[warp_ids][stagger_ids]/au, Y_c[warp_ids][stagger_ids]/au, Z_c[warp_ids][stagger_ids]/au, (vx_c[warp_ids]/vsph.mean())[stagger_ids], (vy_c[warp_ids]/vsph.mean())[stagger_ids], (vz_c[warp_ids]/vsph.mean())[stagger_ids], savefig=False, figfolder=f'{fig_imgs}/plotly_vel_thresh{warp_thresh}_it{it}.png', showfig=True)
 
     # Disk velocity streamline plots at different theta values
     targets = np.array([60, 70, 80, 90, 100, 110])   

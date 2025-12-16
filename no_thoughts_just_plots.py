@@ -362,7 +362,8 @@ def plotly_quiver3D(X, Y, Z, dx, dy, dz, savefig, figfolder, showfig=True, ignor
     """
 
     fig = go.Figure(data = go.Cone(x=X, y=Y, z=Z, u=dx, v=dy, w=dz, colorscale='Portland', sizemode="absolute", sizeref=500))
-    fig.update_layout(scene=dict(aspectratio=dict(x=2, y=2, z=1), camera_eye=dict(x=1.2, y=1.2, z=0.6)))
+    fig.update_layout(scene=dict(aspectratio=dict(x=1.2, y=1.2, z=1), camera_eye=dict(x=1.2, y=1.2, z=0.6)))
+    fig.update_traces(colorbar = dict(orientation='h', y = -0.25, x = 0.5))
     
     # Save the figure?
     if savefig:
