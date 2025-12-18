@@ -430,6 +430,37 @@ def calc_L_average(Lx, Ly, Lz, mass):
     return Lx_avg, Ly_avg, Lz_avg
 
 
+def ini_cloudlet_pos(distIni, dens, dens_thresh, r, phi):
+    """
+    Find the initial position of the cloudlet in phi (to calculate nudge/whirl of the disk when the cloudlet hits)
+
+    Inputs:
+    ------
+    distIni:        Initial distance of the cloudlet [cm]
+    dens:           3D array of centered density in g/cm^3 with shape (n_theta-1, n_r-1, n_phi-1)
+    dens_thresh:    Density threshold to identify cloudlet centre in phi at the distIni ring [g/cm^3]
+
+    Outputs:
+    -------
+    ini_cloud_phi:  Initial centre of cloudlet phi position [deg]
+    """
+
+    ir = np.argmin(np.abs(r - distIni))
+    dens_r = dens[:, ir, :]          
+    dens_phi = dens_r.sum(axis=0)
+
+    # Identify cloudlet material
+    mask = dens_phi > dens_thresh
+
+    # Circular (angular) mean weighted by density
+    sin_mean = np.sum(dens_phi[mask] * np.sin(phi[mask])) / np.sum(dens_phi[mask])
+    cos_mean = np.sum(dens_phi[mask] * np.cos(phi[mask])) / np.sum(dens_phi[mask])
+
+    ini_cloud_phi = np.arctan2(sin_mean, cos_mean)  # radians in [-pi, pi]
+    ini_cloud_phi = np.degrees(ini_cloud_phi)
+    
+    return ini_cloud_phi
+
 
 def calc_inc_twist(Lx_avg, Ly_avg, Lz_avg, R, savefig, plot=True):
     """
@@ -455,12 +486,13 @@ def calc_inc_twist(Lx_avg, Ly_avg, Lz_avg, R, savefig, plot=True):
 
     Lavg_mag = np.sqrt(Lx_avg**2 + Ly_avg**2 + Lz_avg**2)
 
-    # Calculating warp twist
+    # Calculating warped disk twist
     # twist_rad = np.arccos(Lx_avg / Lxy_proj)
-    twist_rad = np.arctan2(Ly_avg, Lx_avg)
+    twist_abs = np.arctan2(Ly_avg, Lx_avg)
+    twist_rad = twist_abs - twist_abs[0]
     twist_deg = np.degrees(twist_rad)
 
-    # Calculating warp inclination (Kimmig & Dullemond 2024)
+    # Calculating warped disk inclination (Kimmig & Dullemond 2024)
     inc = np.arccos(Lz_avg / Lavg_mag)
     inc_deg = np.degrees(inc)
 
@@ -477,7 +509,6 @@ def calc_inc_twist(Lx_avg, Ly_avg, Lz_avg, R, savefig, plot=True):
         plt.show()
     
     return inc_deg, twist_deg
-
 
 
 def calc_total_L(Lx_avg, Ly_avg, Lz_avg):
@@ -502,6 +533,23 @@ def calc_total_L(Lx_avg, Ly_avg, Lz_avg):
     Lz_tot = np.sum(Lz_avg)
 
     return Lx_tot, Ly_tot, Lz_tot
+
+
+def calc_whirl(Lx_tot, Ly_tot, Lz_tot, ini_cloud_phi):
+    """
+    
+    """
+
+    # Total disk polar angle
+    disk_polar = np.arctan2(Ly_tot, Lx_tot)
+
+    # Calculating warped disk whirl (how much the disk as a whole turns around in XY plane when the cloudlet hits at an angle)
+    whirl = disk_polar - np.deg2rad(ini_cloud_phi)
+    whirl_deg = np.rad2deg(whirl)
+
+    return whirl_deg
+
+
 
 
 
@@ -613,13 +661,13 @@ def main():
     # quiver_plot_3d(X_c/au, Y_c/au, Z_c/au, vx_c_warp, vy_c_warp, vz_c_warp, stagger=5, length=30, title=f"{sim_name}: velocities {int(calc_simtime(it))} kyr", colorbarlabel="velocities", savefig=True, figfolder=f'{fig_imgs}/warp_vel_thresh{warp_thresh}_it{it}.png', azim=-90, elev=-170, logmag=True, ignorecol=True)
 
     # Nstagger = int(len(X_c[warp_ids])/500)
-    Nstagger = 100
-    stagger_ids = np.linspace(1000, len(X_c[warp_ids])-1, Nstagger, dtype=int)
-    plotly_quiver3D(X_c[warp_ids][stagger_ids]/au, Y_c[warp_ids][stagger_ids]/au, Z_c[warp_ids][stagger_ids]/au, (vx_c[warp_ids]/vsph.mean())[stagger_ids], (vy_c[warp_ids]/vsph.mean())[stagger_ids], (vz_c[warp_ids]/vsph.mean())[stagger_ids], savefig=False, figfolder=f'{fig_imgs}/plotly_vel_thresh{warp_thresh}_it{it}.png', showfig=True)
+    # Nstagger = 100
+    # stagger_ids = np.linspace(1000, len(X_c[warp_ids])-1, Nstagger, dtype=int)
+    # plotly_quiver3D(X_c[warp_ids][stagger_ids]/au, Y_c[warp_ids][stagger_ids]/au, Z_c[warp_ids][stagger_ids]/au, (vx_c[warp_ids]/vsph.mean())[stagger_ids], (vy_c[warp_ids]/vsph.mean())[stagger_ids], (vz_c[warp_ids]/vsph.mean())[stagger_ids], savefig=False, figfolder=f'{fig_imgs}/plotly_vel_thresh{warp_thresh}_it{it}.png', showfig=True)
 
     # Disk velocity streamline plots at different theta values
-    targets = np.array([60, 70, 80, 90, 100, 110])   
-    ithetas = [np.abs(np.rad2deg(domains["theta"]) - t).argmin() for t in targets]
+    # targets = np.array([60, 70, 80, 90, 100, 110])   
+    # ithetas = [np.abs(np.rad2deg(domains["theta"]) - t).argmin() for t in targets]
     # velocity_streamlines(X_c, Y_c, vx_c_warp, vy_c_warp, rho_c_warp, ithetas, irad, savefig=True, figfolder=f'{fig_imgs}/vel_streamlines_thresh{warp_thresh}_it{it}.png', showfig=True)
 
     # quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, vx_c[warp_ids], vy_c[warp_ids], vz_c[warp_ids], stagger=10, length=30, title=f"{sim_name}: velocities {int(calc_simtime(it))} kyr", colorbarlabel="velocities", savefig=False, figfolder=f'../warp_vel_thresh{warp_thresh}_it{it}.png', azim=-90, elev=-178, logmag=True, ignorecol=False)
@@ -634,12 +682,23 @@ def main():
     Lx_warp_avg, Ly_warp_avg, Lz_warp_avg = calc_L_average(Lx_c_warp, Ly_c_warp, Lz_c_warp, mass)
     inc, twist = calc_inc_twist(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], savefig=False, plot=False)
     print(np.min(twist), np.max(twist), np.mean(twist))
+    # print(np.min(inc), np.max(inc), np.mean(inc))
+
     # Calculating and plotting the total angular momentum of the warped disk
     Lx_disk, Ly_disk, Lz_disk = calc_total_L(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg)
 
+    # Initial cloudlet position
+    cloud_dist = get_param_value("DistIni", sim_name)
+    rho0 = get_data(folder, "dens", 0, domains)         # Load 3D array of density values at first iteration
+    cloud_phi = ini_cloudlet_pos(cloud_dist, rho0, 1e-17, domains["r"], domains["phi"])
+    print("CLOUD_PHI:", cloud_phi)
+
+    whirl = calc_whirl(Lx_disk, Ly_disk, Lz_disk, cloud_phi)
+    print("WHIRL: ", whirl)
+
     # Calculating and plotting the radial profile of warp/disk precession as a quiver plot
     # plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, plot_args, title=f"{sim_name}: Disk Twist", savefig=True, figfolder=f'{fig_imgs}/warp_twist_arrows_it{it}_dens{warp_thresh}.png', showfig=True)
-    print(np.shape(Lx_warp_avg/Lx_disk), r_select.shape)
+    # print(np.shape(Lx_warp_avg/Lx_disk), r_select.shape)
     # plotly_quiver3D(np.logspace(1, np.log10(r_select.max()/au), len(Lx_warp_avg)), np.zeros(len(Lx_warp_avg)), np.zeros(len(Lx_warp_avg)), Lx_warp_avg/Lx_disk, Ly_warp_avg/Ly_disk, Lz_warp_avg/Lz_disk, savefig=False, figfolder=f'{fig_imgs}/plotly_vel_thresh{warp_thresh}_it{it}.png', showfig=True)
 
     # quiver_plot_3d(np.array([Px]), np.array([Py]), np.array([Pz]), np.array([Lx_disk]), np.array([Ly_disk]), np.array([Lz_disk]), stagger=1, length=0.05, title=f"{sim_name} Total disk angular momentum", colorbarlabel="logL", savefig=False, figfolder=f'{fig_imgs}/{sim_name}_totalL.png', logmag=True)

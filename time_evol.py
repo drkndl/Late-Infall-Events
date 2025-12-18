@@ -3,7 +3,7 @@
 import numpy as np
 from pathlib import Path
 from read import get_domain_spherical, get_data, load_par_file, get_param_value
-from analysis import sph_to_cart, vel_sph_to_cart, centering, calc_angular_momentum, calc_cell_volume, calc_eccen, calc_LRL, calc_mass, calc_surfdens, isolate_disk, calc_L_average, calc_simtime, calc_inc_twist, calc_total_L
+from analysis import sph_to_cart, vel_sph_to_cart, centering, calc_angular_momentum, calc_cell_volume, calc_eccen, calc_LRL, calc_mass, calc_surfdens, isolate_disk, calc_L_average, calc_simtime, calc_inc_twist, calc_whirl, calc_total_L, ini_cloudlet_pos
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from matplotlib import cm
@@ -32,8 +32,8 @@ plt.rcParams['legend.fontsize'] = 12     # legend font size
 def main():
 
 
-    # folder = Path("../cloud_disk_it450_rotX45/")                        # Folder with the FARGO output files
-    folder = Path("../fargo3d/outputs/cloud_disk_it450_rotX45/")          # Folder with the FARGO output files (Binac2)
+    folder = Path("../cloud_disk_it450_rotX45/")                        # Folder with the FARGO output files
+    # folder = Path("../fargo3d/outputs/cloud_disk_it450_rotX45/")          # Folder with the FARGO output files (Binac2)
     fig_imgs = Path("cloud_disk_it450_rotX45/imgs/")                      # Folder to save images    
     iter_total = 450                                     # FARGO snapshot
 
@@ -45,6 +45,7 @@ def main():
 
     inc_it = []                                               # List to save disk inclination at each iteration
     prec_it = []                                              # List to save disk precession at each iteration
+    whirl_it = []                                             # List to save disk whirl at each iteration
     L_angle_it = []                                           # List to save L angle between primary and companion at each iteration
     surf_dens_iter = []                                       # List to save surface density at each iter_check
     r_surf_dens_iter = []                                     # List to save surface density radii at each iter_check
@@ -58,6 +59,11 @@ def main():
     THETA, R, PHI = np.meshgrid(domains["theta"], domains["r"], domains["phi"], indexing="ij")
     rc = 0.5 * (domains["r"][1:] + domains["r"][:-1])
     X, Y, ZCYL, RCYL = sph_to_cart(THETA, R, PHI)       # Meshgrid of Cartesian coordinates
+
+    # Calculating initial cloudlet position
+    cloud_dist = get_param_value("DistIni", sim_name)
+    rho0 = get_data(folder, "dens", 0, domains)         # Load 3D array of density values at first iteration
+    cloud_phi = ini_cloudlet_pos(cloud_dist, rho0, 1e-17, domains["r"], domains["phi"])
 
     for it in range(first_it, iter_total+1):
     # for it in iter_check:
@@ -100,7 +106,7 @@ def main():
 
         # Note 1: I am using centered densities to isolate the warp to match the indices corresponding to the warp with the angular momenta indices
         # Note 2: The warp_ids itself is a 3D Boolean array, but when applied to another array such as x[warp_ids], the latter array becomes 1D
-        warp_thresh = -16.5   # log of density threshold for which we can see the warp in the primary
+        warp_thresh = -17   # log of density threshold for which we can see the warp in the primary
         warp_buffer = 500     # Isolates a box of 2 * warp_buffer around the star (AU)
         rho_c_warp, vx_c_warp, vy_c_warp, vz_c_warp, Lx_c_warp, Ly_c_warp, Lz_c_warp, warp_ids = isolate_disk(X_c, Y_c, Z_c, Px * au, Py * au, Pz * au, warp_buffer * au, rho_c, vx_c, vy_c, vz_c, Lx, Ly, Lz, warp_thresh) 
 
@@ -133,7 +139,7 @@ def main():
         # cyl_2D_plot(rho_phiavg, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: $\phi$ Averaged Density R-Z Plane t = {int(it * dt * ninterm / stoky)} kyr', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_phiavg_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=False, data_phiavg=True)
 
         # Density RZ plot
-        cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Density R-Z Plane $\phi = $ {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$, t = {int(it * dt * ninterm / stoky)} kyr', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=False, data_phiavg=False)
+        # cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Density R-Z Plane $\phi = $ {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$, t = {int(it * dt * ninterm / stoky)} kyr', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=False, data_phiavg=False)
 
         # XY_2D_plot(rho, X, Y, irad, itheta, title=rf'{sim_name}: Density X-Y Plane $\theta = $ {itheta_deg}$^{{\circ}}$, t = {int(it * dt * ninterm / stoky)} kyr', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=f'{fig_imgs}/dens_xy_theta{itheta}_rad{irad}_it{it}.png', showfig=False)
 
@@ -151,7 +157,9 @@ def main():
 
         # Calculating and plotting the total angular momentum of the warped disk
         Lx_disk, Ly_disk, Lz_disk = calc_total_L(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg)
-        L_prim_mag = np.sqrt(Lx_disk**2 + Ly_disk**2 + Lz_disk**2)
+        whirl = calc_whirl(Lx_disk, Ly_disk, Lz_disk, cloud_phi)
+        whirl_it.append(whirl)
+        # L_prim_mag = np.sqrt(Lx_disk**2 + Ly_disk**2 + Lz_disk**2)
 
         # Calculating and plotting the radial profile of warp precession as a quiver plot
         # plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, plot_args, title=f"Warp twist {sim_name} t={int(calc_simtime(it))} kyr", savefig=True, figfolder=f'{fig_imgs}/warp_twist_arrows_it{it}.png', showfig=False)
@@ -298,9 +306,9 @@ def main():
     # Plot time evolution of warp precession in 3D for all iters 
     fig = plt.figure(figsize=(8, 6))
     ax = fig.add_subplot(111, projection='3d')
-    r_warp_extent = np.sqrt(X_c[warp_ids]**2 +  Y_c[warp_ids]**2 + Z_c[warp_ids]**2) / au
-    mask = (rc/au >= r_warp_extent.min()) & (rc/au <= r_warp_extent.max())
-    for i in range(len(dt_years[100::7])):  # Plot starting from 100th iteration, every 4 iterations
+    # r_warp_extent = np.sqrt(X_c[warp_ids]**2 +  Y_c[warp_ids]**2 + Z_c[warp_ids]**2) / au
+    # mask = (rc/au >= r_warp_extent.min()) & (rc/au <= r_warp_extent.max())
+    for i in range(len(dt_years[100::7])):  # Plot starting from 100th iteration, every 7 iterations
         r_select = rc[mask]
         prec_it_select = prec_it[i][mask]
         ax.plot([dt_years[100::7][i]] * len(r_select), r_select/au, prec_it_select, color=plt.cm.viridis(i/len(dt_years[100::7])))
@@ -320,6 +328,17 @@ def main():
     plt.savefig(f'{fig_imgs}/warp_twist_evol_3D.png')
     plt.show()
 
+
+    # Plot time evolution of warp whirl in 2D for some specific iters in iter_check
+    fig = plt.figure(figsize=(8, 6))
+    plt.plot(dt_years, whirl_it)
+    plt.xlabel("Time [kyr]")
+    plt.ylabel("Warp whirl [°]")
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.title(f"{sim_name}: Time evolution of warp whirl")
+    plt.tight_layout()
+    plt.savefig(f'{fig_imgs}/warp_whirl_evol.png')
+    plt.show()
 
     # Plot time evolution of surface densities
     fig = plt.figure(figsize=(8, 6))
