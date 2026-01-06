@@ -9,6 +9,7 @@ from matplotlib.colors import Normalize
 import xml.etree.ElementTree as ET
 import matplotlib.colors as mcolors
 from scipy.interpolate import griddata
+import colormaps as cmaps
 #from matplotlib.ticker import LinearLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.interpolate import RegularGridInterpolator
@@ -53,6 +54,66 @@ def cyl_2D_plot(data, RCYL, ZCYL, irad, iphi, title, colorbarlabel, savefig, fig
     plt.ylim(-1,1)
     plt.title(title)
     plt.colorbar(label = colorbarlabel)
+
+    # Save the figure?
+    if savefig:
+        plt.savefig(figfolder)
+
+    # Display the figure?
+    if showfig:
+        plt.show()
+    else:
+        plt.close()
+
+
+def vel_cyl_2D(vel, RCYL, ZCYL, irad, iphi, title, colorbarlabel, savefig, figfolder, showfig, data_phiavg=True):
+    """
+    Plot 2D vertical projection of a physical quantity at a particular azimuth angle and range of radii
+    
+    Inputs:
+    ------
+    data:            3D array of physical quantity
+    RCYL, ZCYL:      2D mesh of cylindrical coordinates' R and Z values
+    irad:            Index of final radius to be plotted (int)
+    iphi:            Index of azimuth angle to be plotted
+    title:           Plot title (str)
+    colorbarlabel:   Colour bar label
+    savefig:         if True, image is saved (bool)
+    figfolder:       Path where the image is to be saved (path) 
+    data_phiavg:     True if data is azimuthally averaged (bool) (default=True)
+    
+    Outputs:
+    -------
+    plot
+    """
+
+    fig, ax = plt.subplots(1, 1, figsize=(8,6))
+    if data_phiavg:
+        # np.sign(vel[...,:irad]) * np.log10(vel[...,:irad])
+        c3 = plt.pcolormesh(RCYL[..., :irad, iphi]/au, ZCYL[..., :irad, iphi]/RCYL[..., :irad, iphi], vel[...,:irad], cmap=cmaps.BlueRed)#, vmin=-11, vmax=11, rasterized=True)
+    else:
+        # np.sign(vel[...,:irad, iphi]) * np.log10(vel[...,:irad, iphi])
+        c3 = plt.pcolormesh(RCYL[..., :irad, iphi]/au, ZCYL[..., :irad, iphi]/RCYL[..., :irad, iphi], vel[...,:irad, iphi], cmap=cmaps.BlueRed) #, vmin=-11, vmax=11, rasterized=True)
+
+    cbar = fig.colorbar(c3, ax=ax)
+    #Adjusting colorbar tick labels
+    # exponents = np.arange(-10, -1, 2)   
+    # ticks = np.concatenate([-exponents[::-1], [0], exponents])
+    # # print(ticks)
+    # ticklabels = (
+    #     [fr"$-10^{{{exp}}}$" for exp in exponents[::-1]] +
+    #     ["0"] +
+    #     [fr"$10^{{{exp}}}$" for exp in exponents]
+    # )
+    # cbar.set_ticks(ticks)
+    # cbar.set_ticklabels(ticklabels)
+    cbar.set_label(colorbarlabel)
+    plt.xlabel("rcyl / AU")
+    plt.ylabel("z / r")
+    plt.xscale("log")
+    plt.ylim(-1,1)
+    plt.title(title)
+    plt.tight_layout()
 
     # Save the figure?
     if savefig:

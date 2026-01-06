@@ -85,6 +85,7 @@ def calc_accretion(rho, vr, theta, r0, r0_id, phi, max_height, Msun, min_height=
     phi:          1D array of azimuthal angles (shape: nphi)
     max_height:   Maximum height within which we calculate accretion [cm]
     Msun:         Mass of the Sun [g]
+    min_height:   Minimum height beeyond which we calculate accretion [cm]
 
     Outputs:
     -------
@@ -99,12 +100,12 @@ def calc_accretion(rho, vr, theta, r0, r0_id, phi, max_height, Msun, min_height=
     if min_height == None:
         theta_mask = np.abs(z) <= max_height
         theta_sel = theta[theta_mask]
-        print(np.round(np.degrees(theta_sel), 1))
+        # print(np.round(np.degrees(theta_sel), 1))
 
     elif min_height != None:
         theta_mask = (np.abs(z) >= min_height) & (np.abs(z) <= max_height)
         theta_sel = theta[theta_mask]   
-        print(np.round(np.degrees(theta_sel), 1))
+        # print(np.round(np.degrees(theta_sel), 1))
     
     dtheta_sel = np.gradient(theta_sel)
     dphi = np.gradient(phi)
@@ -147,9 +148,9 @@ def calc_accretion_theoretical(sigma, H, ok, alpha):
 def main():
 
 
-    folder = Path("../cloud_disk_it450_retro_rotX45/")                    # Folder with the output files
-    # folder = Path("../fargo3d/outputs/cloud_disk_it450_retro_rotX45")       # Folder with the output files (BinAC2)
-    fig_imgs = Path("cloud_disk_it450_retro_rotX45/imgs/")                  # Folder to save images
+    folder = Path("../cloud_disk_it450_rotX45/")                    # Folder with the output files
+    # folder = Path("../fargo3d/outputs/cloud_disk_it450_rotX45")       # Folder with the output files (BinAC2)
+    fig_imgs = Path("cloud_disk_it450_rotX45/imgs/")                  # Folder to save images
     it = 450                                                             # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                               # Simulation name (for plot labels)
 
@@ -219,16 +220,16 @@ def main():
     dotM_out_allit = np.asarray(dotM_out_allit)
 
     # Plotting the logarithmic mass fluxes 
-    fig, ax = plt.subplots()
-    # plt.plot(allit_years, np.abs(dotM_tot_allit), label="Total flux")
-    plt.plot(allit_years, np.log10(-dotM_in_allit), label="Log Inward flux")
-    plt.plot(allit_years, dotM_out_allit, label="Outward flux")
-    ax.set_xlabel(r"Time [kyr]")
-    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
-    ax.set_title(fr"{sim_name}: $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
-    plt.legend(loc="lower right")
-    plt.savefig(f'{fig_imgs}/logMdot_vs_t_it{it}.png')
-    plt.show()
+    # fig, ax = plt.subplots()
+    # # plt.plot(allit_years, np.abs(dotM_tot_allit), label="Total flux")
+    # plt.plot(allit_years, np.log10(-dotM_in_allit), label="Log Inward flux")
+    # plt.plot(allit_years, dotM_out_allit, label="Outward flux")
+    # ax.set_xlabel(r"Time [kyr]")
+    # ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
+    # ax.set_title(fr"{sim_name}: $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
+    # plt.legend(loc="lower right")
+    # plt.savefig(f'{fig_imgs}/logMdot_vs_t_it{it}.png')
+    # plt.show()
 
 
     ########################### Check accretion for different max heights #############################
@@ -292,7 +293,7 @@ def main():
     # fig.tight_layout()
     # ax.legend(loc="lower right")   # loc='upper left', 
     # plt.savefig(f'{fig_imgs}/logMoutdot_vs_t_all_zmax.png')
-    plt.show()
+    # plt.show()
 
 
     ################################# Compare theoretical and actual mass accretion ###################################
@@ -697,7 +698,31 @@ def main():
             Mdot_out_2D[i, j] = dotM_out
             Mdot_net_2D[i, j] = dotM_net
 
-    # Plotting heat maps of the 2D accretion values
+
+    # Plotting just the net accretion as a 2D contour plot
+    fig, ax = plt.subplots(1, 1, figsize=(5,4))
+    c3 = ax.imshow(np.sign(Mdot_net_2D) * np.log10(np.abs(Mdot_net_2D)), extent=[np.log10(domains["r"].min()/au), np.log10(domains["r"].max()/au), allit_years.min(), allit_years.max()], origin="lower", cmap=cmaps.BlueRed, aspect='auto', vmin=-10, vmax=10)
+    cbar = fig.colorbar(c3, ax=ax)
+    #Adjusting colorbar tick labels
+    exponents = np.arange(-10, -1, 2)   
+    ticks = np.concatenate([-exponents[::-1], [0], exponents])
+    # print(ticks)
+    ticklabels = (
+        [fr"$-10^{{{exp}}}$" for exp in exponents[::-1]] +
+        ["0"] +
+        [fr"$10^{{{exp}}}$" for exp in exponents]
+    )
+    cbar.set_ticks(ticks)
+    cbar.set_ticklabels(ticklabels)
+    cbar.set_label(r"Accretion rate [$M_\odot/\mathrm{yr}$]")
+    ax.set_title(f"Net accretion: {int(zmax_j/Hc_j)}Hc")
+    ax.set_xlabel("log(R) [AU]")
+    ax.set_ylabel("Time [kyr]")
+    fig.tight_layout()
+    plt.savefig(f'{fig_imgs}/logMnetdot_2D.png', bbox_inches="tight")
+    plt.show()
+
+    # Plotting heat maps of the 2D accretion values for inward, outward and net accretion 
     # fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(5,7), sharex=True)
 
     # c1 = ax1.imshow(np.log10(-Mdot_in_2D), extent=[np.log10(domains["r"].min()/au), np.log10(domains["r"].max()/au), allit_years.min(), allit_years.max()], origin="lower", cmap=cmaps.matter, aspect='auto', vmin=-17.5, vmax=-5)
@@ -729,27 +754,6 @@ def main():
     # plt.savefig(f'{fig_imgs}/logMdot_2D.png', bbox_inches="tight")
     # plt.show()
 
-    fig, ax = plt.subplots(1, 1, figsize=(5,4))
-    c3 = ax.imshow(np.sign(Mdot_net_2D) * np.log10(np.abs(Mdot_net_2D)), extent=[np.log10(domains["r"].min()/au), np.log10(domains["r"].max()/au), allit_years.min(), allit_years.max()], origin="lower", cmap=cmaps.BlueRed, aspect='auto', vmin=-10, vmax=10)
-    cbar = fig.colorbar(c3, ax=ax)
-    #Adjusting colorbar tick labels
-    exponents = np.arange(-10, -1, 2)   
-    ticks = np.concatenate([-exponents[::-1], [0], exponents])
-    print(ticks)
-    ticklabels = (
-        [fr"$-10^{{{exp}}}$" for exp in exponents[::-1]] +
-        ["0"] +
-        [fr"$10^{{{exp}}}$" for exp in exponents]
-    )
-    cbar.set_ticks(ticks)
-    cbar.set_ticklabels(ticklabels)
-    cbar.set_label(r"Accretion rate [$M_\odot/\mathrm{yr}$]")
-    ax.set_title("Net accretion")
-    ax.set_xlabel("log(R) [AU]")
-    ax.set_ylabel("Time [kyr]")
-    fig.tight_layout()
-    plt.savefig(f'{fig_imgs}/logMnetdot_2D.png', bbox_inches="tight")
-    plt.show()
 
     ####################### Compare Mdot for different no disk inclinations ########################
 

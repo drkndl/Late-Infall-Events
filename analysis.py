@@ -4,7 +4,7 @@ import numpy as np
 from pathlib import Path
 from read import get_domain_spherical, get_data, load_par_file, get_param_value
 import matplotlib.pyplot as plt
-from no_thoughts_just_plots import quiver_plot_3d, contours_3D, plot_surf_dens, plot_twist_arrows, plot_total_disks_bonanza, cyl_2D_plot, XY_2D_plot, velocity_streamlines, plotly_quiver3D
+from no_thoughts_just_plots import quiver_plot_3d, contours_3D, plot_surf_dens, plot_twist_arrows, plot_total_disks_bonanza, cyl_2D_plot, XY_2D_plot, velocity_streamlines, plotly_quiver3D, vel_cyl_2D
 import astropy.constants as c
 import pandas as pd
 # import pyvista as pv 
@@ -633,7 +633,7 @@ def main():
 
     # 2D visualizations
     # irad = -1
-    irad = np.where(domains["r"]/au < 150)[0][-1]
+    irad = np.where(domains["r"]/au < 1500)[0][-1]
     iphi = 0
     itheta = int(7*len(domains["theta"])/15)
     # print(itheta)
@@ -646,7 +646,11 @@ def main():
     # cyl_2D_plot(rho_phiavg, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: $\phi$ Averaged Density R-Z Plane', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_phiavg_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, data_phiavg=True)
 
     # Density RZ plot
-    # cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Density R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, data_phiavg=False)
+    cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Density R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, data_phiavg=False)
+
+
+    # Velocities RZ plot
+    vel_cyl_2D(vrad, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Radial Velocities R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$v_{rad} (cm/s)$", savefig=True, figfolder=f'{fig_imgs}/radvel_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, data_phiavg=False)
 
     # XY_2D_plot(rho, X, Y, irad, itheta, title=rf'{sim_name}: Density X-Y Plane $\theta = $ {itheta_deg}$^{{\circ}}$', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=f'{fig_imgs}/dens_xy_theta{itheta}_rad{irad}_it{it}.png', showfig=True)
 
