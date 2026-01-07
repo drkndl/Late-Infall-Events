@@ -462,6 +462,13 @@ def ini_cloudlet_pos(distIni, dens, dens_thresh, r, phi):
     return ini_cloud_phi
 
 
+def isolate_outer_disk():
+    """
+    Docstring for isolate_outer_disk
+    """
+    return 
+
+
 def calc_inc_twist(Lx_avg, Ly_avg, Lz_avg, R, savefig, plot=True):
     """
     Calculates the twist and inclination of the warped disk from the radial profile of angular momenta
@@ -646,11 +653,10 @@ def main():
     # cyl_2D_plot(rho_phiavg, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: $\phi$ Averaged Density R-Z Plane', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_phiavg_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, data_phiavg=True)
 
     # Density RZ plot
-    cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Density R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, data_phiavg=False)
-
+    # cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Density R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, data_phiavg=False)
 
     # Velocities RZ plot
-    vel_cyl_2D(vrad, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Radial Velocities R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$v_{rad} (cm/s)$", savefig=True, figfolder=f'{fig_imgs}/radvel_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, data_phiavg=False)
+    vel_cyl_2D(vrad, rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Radial Velocities R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\rho v_{rad} (g cm/s)$", savefig=True, figfolder=f'{fig_imgs}/rhoradvel_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, acc=True, data_phiavg=False)
 
     # XY_2D_plot(rho, X, Y, irad, itheta, title=rf'{sim_name}: Density X-Y Plane $\theta = $ {itheta_deg}$^{{\circ}}$', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=f'{fig_imgs}/dens_xy_theta{itheta}_rad{irad}_it{it}.png', showfig=True)
 

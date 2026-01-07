@@ -66,13 +66,14 @@ def cyl_2D_plot(data, RCYL, ZCYL, irad, iphi, title, colorbarlabel, savefig, fig
         plt.close()
 
 
-def vel_cyl_2D(vel, RCYL, ZCYL, irad, iphi, title, colorbarlabel, savefig, figfolder, showfig, data_phiavg=True):
+def vel_cyl_2D(vel, rho, RCYL, ZCYL, irad, iphi, title, colorbarlabel, savefig, figfolder, showfig, acc=True, data_phiavg=False):
     """
     Plot 2D vertical projection of a physical quantity at a particular azimuth angle and range of radii
     
     Inputs:
     ------
-    data:            3D array of physical quantity
+    vel:             3D array of radial velocities
+    rho:             3D array of densities
     RCYL, ZCYL:      2D mesh of cylindrical coordinates' R and Z values
     irad:            Index of final radius to be plotted (int)
     iphi:            Index of azimuth angle to be plotted
@@ -80,7 +81,8 @@ def vel_cyl_2D(vel, RCYL, ZCYL, irad, iphi, title, colorbarlabel, savefig, figfo
     colorbarlabel:   Colour bar label
     savefig:         if True, image is saved (bool)
     figfolder:       Path where the image is to be saved (path) 
-    data_phiavg:     True if data is azimuthally averaged (bool) (default=True)
+    acc:             If True, plots density * radial_velocity
+    data_phiavg:     True if data is azimuthally averaged (bool) (default=False)
     
     Outputs:
     -------
@@ -92,21 +94,34 @@ def vel_cyl_2D(vel, RCYL, ZCYL, irad, iphi, title, colorbarlabel, savefig, figfo
         # np.sign(vel[...,:irad]) * np.log10(vel[...,:irad])
         c3 = plt.pcolormesh(RCYL[..., :irad, iphi]/au, ZCYL[..., :irad, iphi]/RCYL[..., :irad, iphi], vel[...,:irad], cmap=cmaps.BlueRed)#, vmin=-11, vmax=11, rasterized=True)
     else:
-        # np.sign(vel[...,:irad, iphi]) * np.log10(vel[...,:irad, iphi])
-        c3 = plt.pcolormesh(RCYL[..., :irad, iphi]/au, ZCYL[..., :irad, iphi]/RCYL[..., :irad, iphi], vel[...,:irad, iphi], cmap=cmaps.BlueRed) #, vmin=-11, vmax=11, rasterized=True)
+        if acc:
+            # plot_data = np.sign(vel[...,:irad, iphi]) * np.log10(np.abs(rho[...,:irad, iphi] * vel[...,:irad, iphi]))
+            plot_data = np.sign(vel[..., :irad, iphi]) * (np.log10(rho[..., :irad, iphi]) + np.log10(np.abs(vel[..., :irad, iphi])))
+            c3 = plt.pcolormesh(RCYL[..., :irad, iphi]/au, ZCYL[..., :irad, iphi]/RCYL[..., :irad, iphi], plot_data, cmap=cmaps.BlueRed, vmin=-15, vmax=15, rasterized=True)
+        else:
+            # np.sign(vel[...,:irad, iphi]) * np.log10(vel[...,:irad, iphi])
+            c3 = plt.pcolormesh(RCYL[..., :irad, iphi]/au, ZCYL[..., :irad, iphi]/RCYL[..., :irad, iphi], np.sign(vel[...,:irad, iphi]) * np.log10(np.abs(vel[...,:irad, iphi])), cmap=cmaps.BlueRed, vmin=-6, vmax=6, rasterized=True)
+
+    # Xtemp, Ytemp = np.meshgrid(RCYL[..., :irad, iphi]/au, ZCYL[..., :irad, iphi]/RCYL[..., :irad, iphi])
+    # U = np.sign(vel[...,:irad, iphi])  # horizontal direction (positive = outward)
+    # V = np.zeros_like(U)      # no vertical component
+    # arrow_cmap = plt.cm.bwr   # blue–white–red
+    # arrow_norm = colors.Normalize(vmin=-1, vmax=1)
+    # step = (slice(None, None, 5), slice(None, None, 10))  # Downsampling to avoid clutter
+    # q1 = ax.quiver(Xtemp[step], Ytemp[step], U[step], V[step], U[step], cmap=arrow_cmap, norm=arrow_norm, scale=20)
 
     cbar = fig.colorbar(c3, ax=ax)
     #Adjusting colorbar tick labels
-    # exponents = np.arange(-10, -1, 2)   
-    # ticks = np.concatenate([-exponents[::-1], [0], exponents])
-    # # print(ticks)
-    # ticklabels = (
-    #     [fr"$-10^{{{exp}}}$" for exp in exponents[::-1]] +
-    #     ["0"] +
-    #     [fr"$10^{{{exp}}}$" for exp in exponents]
-    # )
-    # cbar.set_ticks(ticks)
-    # cbar.set_ticklabels(ticklabels)
+    exponents = np.arange(-15, -1, 2)   
+    ticks = np.concatenate([-exponents[::-1], [0], exponents])
+    # print(ticks)
+    ticklabels = (
+        [fr"$-10^{{{exp}}}$" for exp in exponents[::-1]] +
+        ["0"] +
+        [fr"$10^{{{exp}}}$" for exp in exponents]
+    )
+    cbar.set_ticks(ticks)
+    cbar.set_ticklabels(ticklabels)
     cbar.set_label(colorbarlabel)
     plt.xlabel("rcyl / AU")
     plt.ylabel("z / r")

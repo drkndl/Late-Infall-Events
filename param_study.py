@@ -341,6 +341,7 @@ def main():
             base = key.replace("rotX", "")
             ls = "-"
         elif "rotY" in key:
+            # continue
             base = key.replace("rotY", "")
             ls = "--"
         # Only change color when we encounter a new base (first time we see either X or Y)
@@ -356,7 +357,7 @@ def main():
     ax.set_title(fr"Time Evolution of Mass Accretion Rate onto Star $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
     plt.tight_layout()
-    plt.savefig(f'param_study_Mdot_vs_t_warp{warp_thresh}.png')
+    plt.savefig(f'param_study_clean_Mdot_vs_t_warp{warp_thresh}.png')
     plt.show()
 
 
@@ -420,6 +421,37 @@ def main():
     plt.tight_layout()
     plt.savefig(f'param_study_twist_final_iter_vs_r_warp{warp_thresh}.png')
     plt.show()
+
+
+    # Plotting absolute twist_final vs R
+    fig, ax = plt.subplots(figsize=(11, 6))
+    current_color_index = -1
+    last_base = None
+    for key, value in disk_twist_folder.items():
+
+        # Plotting rotX simulations in solid lines and rotY simulations in dashed lines (but same colour for easy comparison)
+        if "rotX" in key:
+            base = key.replace("rotX", "")
+            ls = "-"
+        elif "rotY" in key:
+            base = key.replace("rotY", "")
+            ls = "--"
+        # Only change color when we encounter a new base (first time we see either X or Y)
+        if base != last_base:
+            current_color_index = (current_color_index + 1) % len(colours)
+            last_base = base
+
+        colour = colours[current_color_index]
+        ax.plot(np.log10(domains["r"]/au)[:-1], np.abs(value[-1, :]), linestyle=ls, color=colour, label=folders_labels[key])   # -1 corresponds to last iteration
+
+    ax.set_xlabel(r"$\log(r)$ [AU]")
+    ax.set_ylabel(r"Absolute Disk Twist $(\vert\degree\vert)$")
+    ax.set_title(fr"Absolute twist vs logr (53 kyr) $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
+    ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
+    plt.tight_layout()
+    plt.savefig(f'param_study_absolute_twist_final_iter_vs_r_warp{warp_thresh}.png')
+    plt.show()
+
 
     # Plotting Mcumsum_final vs R
     fig, ax = plt.subplots(figsize=(11, 6))
