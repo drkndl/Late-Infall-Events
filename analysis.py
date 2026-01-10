@@ -4,7 +4,7 @@ import numpy as np
 from pathlib import Path
 from read import get_domain_spherical, get_data, load_par_file, get_param_value
 import matplotlib.pyplot as plt
-from no_thoughts_just_plots import quiver_plot_3d, contours_3D, plot_surf_dens, plot_twist_arrows, plot_total_disks_bonanza, cyl_2D_plot, XY_2D_plot, velocity_streamlines, plotly_quiver3D, vel_cyl_2D
+from no_thoughts_just_plots import quiver_plot_3d, contours_3D, plot_surf_dens, plot_twist_arrows, plot_total_disks_bonanza, cyl_2D_plot, XY_2D_plot, velocity_streamlines, plotly_quiver3D, vel_cyl_2D, plot_disk_sep
 import astropy.constants as c
 import pandas as pd
 # import pyvista as pv 
@@ -462,13 +462,6 @@ def ini_cloudlet_pos(distIni, dens, dens_thresh, r, phi):
     return ini_cloud_phi
 
 
-def isolate_outer_disk():
-    """
-    Docstring for isolate_outer_disk
-    """
-    return 
-
-
 def calc_inc_twist(Lx_avg, Ly_avg, Lz_avg, R, savefig, plot=True):
     """
     Calculates the twist and inclination of the warped disk from the radial profile of angular momenta
@@ -518,6 +511,70 @@ def calc_inc_twist(Lx_avg, Ly_avg, Lz_avg, R, savefig, plot=True):
     return inc_deg, twist_deg
 
 
+def isolate_outer_disk(X, Y, Z, buffer, dens, vx, vy, vz, Lx, Ly, Lz, threshold):
+    """
+    A crude way to isolate the disk: first isolating the box surrounding the disk of interest (primary or secondary) and then applying a density threshold to capture the highest densities in the simulation output to obtain the disk and reject the background
+
+    Inputs:
+    ------
+    X:            3D meshgrid of Cartesian X values with shape (n_theta-1, n_r-1, n_phi-1)
+    Y:            3D meshgrid of Cartesian Y values with shape (n_theta-1, n_r-1, n_phi-1)
+    Z:            3D meshgrid of Cartesian Z values with shape (n_theta-1, n_r-1, n_phi-1) 
+    cenX:         Stellar X-coordinate (float)
+    cenY:         Stellar Y-coordinate (float)
+    cenZ:         Stellar Z-coordinate (float) 
+    buffer:       Size of the box to be isolated around the star 
+    dens:         3D array of centered density in g/cm^3 with shape (n_theta-1, n_r-1, n_phi-1)
+    vx:           3D meshgrid of Cartesian X velocities with shape (n_theta-1, n_r-1, n_phi-1)
+    vy:           3D meshgrid of Cartesian Y velocities with shape (n_theta-1, n_r-1, n_phi-1)
+    vz:           3D meshgrid of Cartesian Z velocities with shape (n_theta-1, n_r-1, n_phi-1) 
+    Lx:           Angular momentum array in x-direction with size (theta-1, n_r-1, n_phi-1)
+    Ly:           Angular momentum array in y-direction with size (theta-1, n_r-1, n_phi-1)
+    Lz:           Angular momentum array in z-direction with size (theta-1, n_r-1, n_phi-1)        
+    threshold:    Threshold density by which we filter the dens array
+
+    Outputs:
+    -------
+    disk_dens:    3D array of filtered density in g/cm^3 with shape (n_theta-1, n_r-1, n_phi-1)
+    disk_vx:      3D array of filtered x velocities in cm/s with shape (n_theta-1, n_r-1, n_phi-1)
+    disk_vy:      3D array of filtered y velocities in cm/s with shape (n_theta-1, n_r-1, n_phi-1)
+    disk_vz:      3D array of filtered z velocities in cm/s with shape (n_theta-1, n_r-1, n_phi-1)
+    disk_Lx:      3D array of filtered x angular momenta in CGS with shape (n_theta-1, n_r-1, n_phi-1)
+    disk_Ly:      3D array of filtered y angular momenta in CGS with shape (n_theta-1, n_r-1, n_phi-1)
+    disk_Lz:      3D array of filtered z angular momenta in CGS with shape (n_theta-1, n_r-1, n_phi-1)
+    ids:          3D array of indices corresponding to disk_dens
+    """
+
+    # First isolating the box around the disk of interest to avoid capturing points outside disk that meet density threshold
+    box_mask = (
+        (X >= cenX - buffer) & (X <= cenX + buffer) &
+        (Y >= cenY - buffer) & (Y <= cenY + buffer) &
+        (Z >= cenZ - buffer) & (Z <= cenZ + buffer)
+    )
+    box_dens = np.where(box_mask, dens, np.nan)
+    box_vx = np.where(box_mask, vx, np.nan)
+    box_vy = np.where(box_mask, vy, np.nan)
+    box_vz = np.where(box_mask, vz, np.nan)
+    box_Lx = np.where(box_mask, Lx, np.nan)
+    box_Ly = np.where(box_mask, Ly, np.nan)
+    box_Lz = np.where(box_mask, Lz, np.nan)
+
+    # Filtering densities greater than a given threshold; values below the threshold are designated nan
+    dens_mask = dens > 10**threshold
+    outer_dens = np.where(dens_mask, box_dens, np.nan)
+    outer_vx = np.where(dens_mask, box_vx, np.nan)
+    outer_vy = np.where(dens_mask, box_vy, np.nan)
+    outer_vz = np.where(dens_mask, box_vz, np.nan)
+    outer_Lx = np.where(dens_mask, box_Lx, np.nan)
+    outer_Ly = np.where(dens_mask, box_Ly, np.nan)
+    outer_Lz = np.where(dens_mask, box_Lz, np.nan)
+
+    # Also finding the corresponding x, y, z indices of the filtered densities
+    ids = ~np.isnan(outer_dens)
+
+    return outer_dens, outer_vx, outer_vy, outer_vz, outer_Lx, outer_Ly, outer_Lz, ids
+
+
 def calc_total_L(Lx_avg, Ly_avg, Lz_avg):
     """
     Calculates the total angular momentum of the disk with reference to the z-axis by averaging over the radial profile of the angular momenta
@@ -557,14 +614,11 @@ def calc_whirl(Lx_tot, Ly_tot, Lz_tot, ini_cloud_phi):
     return whirl_deg
 
 
-
-
-
 def main():
 
-    folder = Path("../cloud_disk_it450_rotX45/")                        # Folder with the output files
-    # folder = Path("../fargo3d/outputs/cloud_disk_it450_rotX45")         # Folder with the output files (BinAC2)
-    fig_imgs = Path("cloud_disk_it450_rotX45/imgs/")                    # Folder to save images
+    folder = Path("../cloud_disk_it450_Rout30_rotX45/")                        # Folder with the output files
+    # folder = Path("../fargo3d/outputs/cloud_disk_it450_Rout30_rotX45")         # Folder with the output files (BinAC2)
+    fig_imgs = Path("cloud_disk_it450_Rout30_rotX45/imgs/")                    # Folder to save images
     it = 450                                                       # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                         # Simulation name (for plot labels)
     
@@ -655,8 +709,11 @@ def main():
     # Density RZ plot
     # cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Density R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, data_phiavg=False)
 
-    # Velocities RZ plot
-    vel_cyl_2D(vrad, rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Radial Velocities R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\rho v_{rad} (g cm/s)$", savefig=True, figfolder=f'{fig_imgs}/rhoradvel_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, acc=True, data_phiavg=False)
+    # Radial velocity RZ plot
+    vel_cyl_2D(vrad, rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Radial Velocities R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\mathrm{v_{rad} (g cm/s)}$", savefig=True, figfolder=f'{fig_imgs}/rhoradvel_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, acc=False, data_phiavg=False)
+
+    # Rho * Radial velocity RZ plot
+    vel_cyl_2D(vrad, rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: $\rho v_{{rad}}$ R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\mathrm{\rho v_{rad} (g cm/s)}$", savefig=True, figfolder=f'{fig_imgs}/rhoradvel_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, acc=True, data_phiavg=False)
 
     # XY_2D_plot(rho, X, Y, irad, itheta, title=rf'{sim_name}: Density X-Y Plane $\theta = $ {itheta_deg}$^{{\circ}}$', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=f'{fig_imgs}/dens_xy_theta{itheta}_rad{irad}_it{it}.png', showfig=True)
 
@@ -694,6 +751,10 @@ def main():
     print(np.min(twist), np.max(twist), np.mean(twist))
     # print(np.min(inc), np.max(inc), np.mean(inc))
 
+    # Isolating the outer disk by finding discontinuity in d(inc)/dr 
+    r_break = plot_disk_sep(domains["r"], inc, title=rf"{sim_name}: Inclination Gradient", savefig=True, figfolder=f'{fig_imgs}/dinc_dr.png', showfig=True)
+    print("r_break:", r_break/au)
+
     # Calculating and plotting the total angular momentum of the warped disk
     Lx_disk, Ly_disk, Lz_disk = calc_total_L(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg)
 
@@ -701,10 +762,10 @@ def main():
     cloud_dist = get_param_value("DistIni", sim_name)
     rho0 = get_data(folder, "dens", 0, domains)         # Load 3D array of density values at first iteration
     cloud_phi = ini_cloudlet_pos(cloud_dist, rho0, 1e-17, domains["r"], domains["phi"])
-    print("CLOUD_PHI:", cloud_phi)
+    # print("CLOUD_PHI:", cloud_phi)
 
     whirl = calc_whirl(Lx_disk, Ly_disk, Lz_disk, cloud_phi)
-    print("WHIRL: ", whirl)
+    # print("WHIRL: ", whirl)
 
     # Calculating and plotting the radial profile of warp/disk precession as a quiver plot
     # plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, plot_args, title=f"{sim_name}: Disk Twist", savefig=True, figfolder=f'{fig_imgs}/warp_twist_arrows_it{it}_dens{warp_thresh}.png', showfig=True)

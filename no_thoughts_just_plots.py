@@ -90,31 +90,42 @@ def vel_cyl_2D(vel, rho, RCYL, ZCYL, irad, iphi, title, colorbarlabel, savefig, 
     """
 
     fig, ax = plt.subplots(1, 1, figsize=(8,6))
+
+    # Plotting phi averaged vrad or rho * vrad
     if data_phiavg:
-        # np.sign(vel[...,:irad]) * np.log10(vel[...,:irad])
+        
         c3 = plt.pcolormesh(RCYL[..., :irad, iphi]/au, ZCYL[..., :irad, iphi]/RCYL[..., :irad, iphi], vel[...,:irad], cmap=cmaps.BlueRed)#, vmin=-11, vmax=11, rasterized=True)
+
+    # Plotting vrad or rho * vrad without averaging in phi
     else:
+
+        # Plotting rho * vrad
         if acc:
-            # plot_data = np.sign(vel[...,:irad, iphi]) * np.log10(np.abs(rho[...,:irad, iphi] * vel[...,:irad, iphi]))
+
+            vmin = -15
             plot_data = np.sign(vel[..., :irad, iphi]) * (np.log10(rho[..., :irad, iphi]) + np.log10(np.abs(vel[..., :irad, iphi])))
-            c3 = plt.pcolormesh(RCYL[..., :irad, iphi]/au, ZCYL[..., :irad, iphi]/RCYL[..., :irad, iphi], plot_data, cmap=cmaps.BlueRed, vmin=-15, vmax=15, rasterized=True)
+            c3 = plt.pcolormesh(RCYL[..., :irad, iphi]/au, ZCYL[..., :irad, iphi]/RCYL[..., :irad, iphi], plot_data, cmap=cmaps.BlueRed, vmin=vmin, vmax=np.abs(vmin), rasterized=True)
+
+        # Plotting just vrad
         else:
-            # np.sign(vel[...,:irad, iphi]) * np.log10(vel[...,:irad, iphi])
-            c3 = plt.pcolormesh(RCYL[..., :irad, iphi]/au, ZCYL[..., :irad, iphi]/RCYL[..., :irad, iphi], np.sign(vel[...,:irad, iphi]) * np.log10(np.abs(vel[...,:irad, iphi])), cmap=cmaps.BlueRed, vmin=-6, vmax=6, rasterized=True)
 
-    # Xtemp, Ytemp = np.meshgrid(RCYL[..., :irad, iphi]/au, ZCYL[..., :irad, iphi]/RCYL[..., :irad, iphi])
-    # U = np.sign(vel[...,:irad, iphi])  # horizontal direction (positive = outward)
-    # V = np.zeros_like(U)      # no vertical component
-    # arrow_cmap = plt.cm.bwr   # blue–white–red
-    # arrow_norm = colors.Normalize(vmin=-1, vmax=1)
-    # step = (slice(None, None, 5), slice(None, None, 10))  # Downsampling to avoid clutter
-    # q1 = ax.quiver(Xtemp[step], Ytemp[step], U[step], V[step], U[step], cmap=arrow_cmap, norm=arrow_norm, scale=20)
+            vmin = -6
+            c3 = plt.pcolormesh(RCYL[..., :irad, iphi]/au, ZCYL[..., :irad, iphi]/RCYL[..., :irad, iphi], np.sign(vel[...,:irad, iphi]) * np.log10(np.abs(vel[...,:irad, iphi])), cmap=cmaps.BlueRed, vmin=vmin, vmax=np.abs(vmin), rasterized=True)
 
+    # Plotting arrows of vrad (or rho * vrad) to check
+    step = 10
+    R = RCYL[..., :irad, iphi]
+    Z = ZCYL[..., :irad, iphi]
+    Xq = R[::step, ::step] / au
+    Yq = Z[::step, ::step] / R[::step, ::step]
+    U = vel[..., :irad, iphi][::step, ::step] / np.abs(vel[..., :irad, iphi][::step, ::step])
+    V = np.zeros_like(U)
+    plt.quiver(Xq, Yq, U, V, color='k', pivot="tip", angles='xy', scale_units='xy', scale=1e-1, alpha=0.8)
+
+    # Colourbar formatting
     cbar = fig.colorbar(c3, ax=ax)
-    #Adjusting colorbar tick labels
-    exponents = np.arange(-15, -1, 2)   
+    exponents = np.arange(vmin, -1, 2)   # Colourbar tick labels
     ticks = np.concatenate([-exponents[::-1], [0], exponents])
-    # print(ticks)
     ticklabels = (
         [fr"$-10^{{{exp}}}$" for exp in exponents[::-1]] +
         ["0"] +
@@ -123,6 +134,8 @@ def vel_cyl_2D(vel, rho, RCYL, ZCYL, irad, iphi, title, colorbarlabel, savefig, 
     cbar.set_ticks(ticks)
     cbar.set_ticklabels(ticklabels)
     cbar.set_label(colorbarlabel)
+
+    # Plot formatting
     plt.xlabel("rcyl / AU")
     plt.ylabel("z / r")
     plt.xscale("log")
@@ -801,3 +814,40 @@ def velocity_streamlines(X_c, Y_c, vx_c_warp, vy_c_warp, rho_c_warp, ithetas, ir
         plt.show()
     else:
         plt.close()
+
+
+def plot_disk_sep(R, inc, title, savefig, figfolder, showfig=True):
+    """
+    Plots r_break, the radius to separate the inner and outer disk based on a discontinuity in d(inc)/dr and returns r_break
+    """
+
+    rc = 0.5 * (R[:-1] + R[1:])
+    di_dr = np.gradient(inc, rc)
+    r_break = rc[np.nanargmax(np.abs(di_dr))]
+
+    colours = cmaps.discrete_Bg.discrete(3)
+    colours = colours(np.linspace(0, 1, 3))
+
+    # Plot d(inc)/dr
+    plt.plot(rc/au, di_dr, color=colours[0], linewidth=3)
+    plt.axvline(r_break/au, color='black', linestyle='--', linewidth=2.5)         # Label separation between inner and outer disks
+    plt.axvspan(10, r_break/au, color=colours[1], alpha=0.3)                      # Shading area corresponding to the inner disk
+    plt.axvspan(r_break/au, 300, color=colours[2], alpha=0.3)                     # Shading area corresponding to the outer disk
+    plt.text(25, np.nanmax(di_dr) * 0.6, "Inner disk", color=colours[1], ha='center', va="center", rotation="vertical")        # Labelling inner disk
+    plt.text(150, np.nanmax(di_dr) * 0.6, "Outer disk", color=colours[2], ha='center')  # Labelling outer disk
+
+    plt.xlabel("R [AU]")
+    plt.ylabel(r"$\frac{d(inc)}{dr}$")
+    plt.title(title)
+    
+    # Save the figure?
+    if savefig == True:
+        plt.savefig(figfolder)
+
+    # Display the figure?
+    if showfig:
+        plt.show()
+    else:
+        plt.close()
+
+    return r_break
