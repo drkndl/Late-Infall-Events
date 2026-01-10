@@ -248,9 +248,10 @@ def contours_3D(X, Y, Z, data, Rwarp, sim_params, colorbarlabel, title, savefig,
     plt.colorbar(p, pad=0.08, label=colorbarlabel) #, shrink=0.85), fraction=0.046)
 
     # Adding a textbox to show simulation parameters
-    param_text = '\n'.join(f'{key}: {value}' for key, value in sim_params.items())
-    props = dict(boxstyle='round', facecolor='white', pad=0.6, alpha=0.3)   
-    ax.text2D(0.9, 0.1, param_text, transform=ax.transAxes, fontsize=9, horizontalalignment='center', verticalalignment='center', bbox=props)
+    if sim_params != None:
+        param_text = '\n'.join(f'{key}: {value}' for key, value in sim_params.items())
+        props = dict(boxstyle='round', facecolor='white', pad=0.6, alpha=0.3)   
+        ax.text2D(0.9, 0.1, param_text, transform=ax.transAxes, fontsize=9, horizontalalignment='center', verticalalignment='center', bbox=props)
 
     # Plot formatting
     ax.set_xlabel("X [AU]")
@@ -534,9 +535,10 @@ def plot_twist_arrows(Lx_avg, Ly_avg, Lz_avg, R, Rwarp, sim_params, title, savef
     #     plt.colorbar(p, pad=0.08, label=r'$\rho [g/cm^3]$') #, shrink=0.85), fraction=0.046)
 
     # Adding a textbox to show simulation parameters
-    param_text = '\n'.join(f'{key}: {value}' for key, value in sim_params.items())
-    props = dict(boxstyle='round', facecolor='white', pad=0.6, alpha=0.3)   
-    ax.text2D(0.9, 0.9, param_text, transform=ax.transAxes, fontsize=9, horizontalalignment='center', verticalalignment='center', bbox=props)
+    if sim_params != None:
+        param_text = '\n'.join(f'{key}: {value}' for key, value in sim_params.items())
+        props = dict(boxstyle='round', facecolor='white', pad=0.6, alpha=0.3)   
+        ax.text2D(0.9, 0.9, param_text, transform=ax.transAxes, fontsize=9, horizontalalignment='center', verticalalignment='center', bbox=props)
 
     ax.set_xlabel('X [AU]')
     ax.set_ylabel('Y [AU]')
@@ -833,8 +835,8 @@ def plot_disk_sep(R, inc, title, savefig, figfolder, showfig=True):
     plt.axvline(r_break/au, color='black', linestyle='--', linewidth=2.5)         # Label separation between inner and outer disks
     plt.axvspan(10, r_break/au, color=colours[1], alpha=0.3)                      # Shading area corresponding to the inner disk
     plt.axvspan(r_break/au, 300, color=colours[2], alpha=0.3)                     # Shading area corresponding to the outer disk
-    plt.text(25, np.nanmax(di_dr) * 0.6, "Inner disk", color=colours[1], ha='center', va="center", rotation="vertical")        # Labelling inner disk
-    plt.text(150, np.nanmax(di_dr) * 0.6, "Outer disk", color=colours[2], ha='center')  # Labelling outer disk
+    plt.text(50, np.nanmax(di_dr) * 0.6, "Inner disk", color=colours[1], ha='center', va="center", rotation="vertical")        # Labelling inner disk
+    plt.text(220, np.nanmax(di_dr) * 0.6, "Outer disk", color=colours[2], ha='center')  # Labelling outer disk
 
     plt.xlabel("R [AU]")
     plt.ylabel(r"$\frac{d(inc)}{dr}$")

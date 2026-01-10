@@ -3,15 +3,17 @@
 import numpy as np
 from pathlib import Path
 from read import get_domain_spherical, get_data, load_par_file, get_param_value
-from analysis import sph_to_cart, vel_sph_to_cart, centering, calc_angular_momentum, calc_cell_volume, calc_eccen, calc_LRL, calc_mass, calc_surfdens, isolate_disk, calc_L_average, calc_simtime, calc_inc_twist, calc_whirl, calc_total_L, ini_cloudlet_pos
+from analysis import sph_to_cart, vel_sph_to_cart, centering, calc_angular_momentum, calc_cell_volume, calc_eccen, calc_LRL, calc_mass, calc_surfdens, isolate_disk, calc_L_average, calc_simtime, calc_inc_twist, calc_whirl, calc_total_L, ini_cloudlet_pos, isolate_outer_disk
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from matplotlib import cm
+import matplotlib.colors as colors
+import colormaps as cmaps
 from mpl_toolkits.mplot3d import Axes3D
 from PIL import Image
 import pandas as pd
 import os
-from no_thoughts_just_plots import XY_2D_plot, cyl_2D_plot, quiver_plot_3d, contours_3D, plot_surf_dens, plot_twist_arrows, make_evol_GIF, plot_total_disks_bonanza
+from no_thoughts_just_plots import XY_2D_plot, cyl_2D_plot, quiver_plot_3d, contours_3D, plot_surf_dens, plot_twist_arrows, make_evol_GIF, plot_total_disks_bonanza, plot_disk_sep
 import astropy.constants as c
 au = c.au.cgs.value
 G = 6.67e-8               # Gravitational constant in cgs units
@@ -46,6 +48,8 @@ def main():
     inc_it = []                                               # List to save disk inclination at each iteration
     prec_it = []                                              # List to save disk precession at each iteration
     whirl_it = []                                             # List to save disk whirl at each iteration
+    outer_whirl_it = []                                       # List to save outer disk whirl at each iteration
+    di_dr_it = []                                             # List to save d(inc)/dr at each iteration
     L_angle_it = []                                           # List to save L angle between primary and companion at each iteration
     surf_dens_iter = []                                       # List to save surface density at each iter_check
     r_surf_dens_iter = []                                     # List to save surface density radii at each iter_check
@@ -163,6 +167,35 @@ def main():
 
         # Calculating and plotting the radial profile of warp precession as a quiver plot
         # plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, plot_args, title=f"Warp twist {sim_name} t={int(calc_simtime(it))} kyr", savefig=True, figfolder=f'{fig_imgs}/warp_twist_arrows_it{it}.png', showfig=False)
+
+
+        ###################################### Isolating the outer disk ############################################
+    
+
+        # Finding the radial separation between the inner and outer disks at the discontinuity of dinc/dr
+        di_dr = np.gradient(inc, rc)
+        di_dr_it.append(di_dr)
+        r_break = rc[np.nanargmax(np.abs(di_dr))]
+        print("r_break:", r_break/au)
+
+        # Isolating the outer disk using r_break and a density threshold
+        R_c = centering(R)
+        RCYL_c = centering(RCYL)
+        outer_thresh = -17
+        outer_rho, Lx_outer, Ly_outer, Lz_outer, outer_ids = isolate_outer_disk(R_c, RCYL_c, Z_c, r_break, rho_c, Lx, Ly, Lz, threshold=outer_thresh)
+        r_outer_extent = np.sqrt(X_c[outer_ids]**2 +  Y_c[outer_ids]**2 + Z_c[outer_ids]**2) / au
+        mask = (domains["r"]/au >= r_outer_extent.min()) & (domains["r"]/au <= r_outer_extent.max())
+        r_outer = domains["r"][mask]
+
+        # Radially averaged outer disk momenta
+        Lx_outer_avg, Ly_outer_avg, Lz_outer_avg = calc_L_average(Lx_outer, Ly_outer, Lz_outer, mass)
+        # plot_twist_arrows(Lx_outer_avg, Ly_outer_avg, Lz_outer_avg, domains["r"], r_outer, sim_params=None, title=f"{sim_name}: Outer Disk Twist", savefig=True, figfolder=f'{fig_imgs}/outer_twist_arrows_it{it}_dens{outer_thresh}.png', showfig=True)
+
+        # Total outer disk momenta
+        Lx_outer_disk, Ly_outer_disk, Lz_outer_disk = calc_total_L(Lx_outer_avg, Ly_outer_avg, Lz_outer_avg)
+        outer_whirl = calc_whirl(Lx_outer_disk, Ly_outer_disk, Lz_outer_disk, cloud_phi)
+        print("OUTER DISK WHIRL: ", outer_whirl)
+        outer_whirl_it.append(outer_whirl)
 
         # Calculating warp surface density
         if it in iter_check:
@@ -329,16 +362,37 @@ def main():
     plt.show()
 
 
-    # Plot time evolution of warp whirl in 2D for some specific iters in iter_check
+    # Plot time evolution of total disk whirl and outer disk whirl  
     fig = plt.figure(figsize=(8, 6))
-    plt.plot(dt_years, whirl_it)
+    plt.plot(dt_years, whirl_it, label="Total disk")
+    plt.plot(dt_years, outer_whirl_it, label="Outer disk")
     plt.xlabel("Time [kyr]")
     plt.ylabel("Warp whirl [°]")
-    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.legend(loc='upper left')
     plt.title(f"{sim_name}: Time evolution of warp whirl")
     plt.tight_layout()
     plt.savefig(f'{fig_imgs}/warp_whirl_evol.png')
     plt.show()
+
+
+    # Plot time evolution of d(inc)/dr
+    cols = cmaps.hawaii.discrete(len(dt_years))
+    cols = cols(np.linspace(0, 1, 4))
+    fig, ax = plt.subplots()
+    for i in range(len(dt_years)):
+        plt.plot(domains["r"][:-1]/au, di_dr_it[i], color=cols[i])
+    ax.set_xlabel("R [AU]")
+    ax.set_ylabel(r"$\frac{d(inc)}{dr}$")
+    ax.set_title(fr"{sim_name}: Inclination Gradient Time Evol")
+
+    norm = colors.Normalize(vmin=0, vmax=len(dt_years)-1)
+    sm = cm.ScalarMappable(cmap=cols, norm=norm)
+    sm.set_array([])
+    cbar = fig.colorbar(sm, ax=ax)
+    cbar.set_label("Time [kyr]")
+    plt.savefig(f'{fig_imgs}/dinc_dr_timeevol.png')
+    plt.show()
+
 
     # Plot time evolution of surface densities
     fig = plt.figure(figsize=(8, 6))
@@ -367,7 +421,7 @@ def main():
     # make_evol_GIF(fig_imgs, "warp_dens_thresh", "warp_dens_movie")
     # make_evol_GIF(fig_imgs, "warp_twist_arrows", "warp_twist_movie")
     # make_evol_GIF(fig_imgs, "dens_phiavg_cyl_phi", "dens_phiavg_cyl_movie")
-    make_evol_GIF(fig_imgs, "dens_cyl_phi", "dens_cyl_movie")
+    # make_evol_GIF(fig_imgs, "dens_cyl_phi", "dens_cyl_movie")
     # make_evol_GIF(fig_imgs, "dens_xy_theta", "dens_xy_movie")
     # make_evol_GIF(fig_imgs, "total_bonanza", "total_bonanza_movie")
 
