@@ -5,7 +5,7 @@ from pathlib import Path
 from read import get_domain_spherical, get_data, load_par_file, get_param_value
 import matplotlib.pyplot as plt
 import colormaps as cmaps
-from analysis import calc_cell_volume, calc_mass, sph_to_cart, calc_simtime, vel_sph_to_cart, centering, calc_angular_momentum, isolate_disk, calc_L_average, calc_inc_twist, calc_whirl, calc_total_L, ini_cloudlet_pos
+from analysis import calc_cell_volume, calc_mass, sph_to_cart, calc_simtime, vel_sph_to_cart, centering, calc_angular_momentum, isolate_disk, calc_L_average, calc_inc_twist, calc_whirl, calc_total_L, ini_cloudlet_pos, isolate_outer_disk
 from accretion import scale_height, calc_accretion
 from no_thoughts_just_plots import param_study_plot, make_evol_GIF, load_sciviscolor_colormaps
 import astropy.constants as c
@@ -78,7 +78,9 @@ def main():
 
         # Load simulation domains and create spherical and Cartesian meshgrids
         THETA, R, PHI = np.meshgrid(domains["theta"], domains["r"], domains["phi"], indexing="ij")
-        X, Y, ZCYL, RCYL = sph_to_cart(THETA, R, PHI)                               # Meshgrid of Cartesian coordinates  
+        X, Y, ZCYL, RCYL = sph_to_cart(THETA, R, PHI)                               # Meshgrid of Cartesian coordinates 
+        RCYL_c = centering(RCYL)
+        ZCYL_c = centering(ZCYL) 
         cell_volume = calc_cell_volume(domains["theta"], domains["r"], domains["phi"])   # Cell volumes 
         X_c = centering(X)
         Y_c = centering(Y)
@@ -87,6 +89,8 @@ def main():
         cloud_dist = get_param_value("DistIni", f_sim_name)
         rho0 = get_data(f, "dens", 0, domains)         # Load 3D array of density values at first iteration
         cloud_phi = ini_cloudlet_pos(cloud_dist, rho0, 1e-17, domains["r"], domains["phi"])
+
+        rc = 0.5 * (domains["r"][1:] + domains["r"][:-1])
         
         # Save density, mass, vrad, average inclination, average twist at multiple iterations 
         rho_allit = []
@@ -96,6 +100,7 @@ def main():
         twist_avg_allit = []
         inc_allit =[]
         twist_allit = []
+        di_dr_allit = []
         whirl_allit = []
 
 
@@ -138,12 +143,38 @@ def main():
             inc_allit.append(inc_i)
             twist_allit.append(twist_i)
             inc_avg_allit.append(np.nanmean(inc_i))
-            twist_avg_allit.append(np.nanmean(twist_i))        
+            twist_avg_allit.append(np.nanmean(twist_i))    
+
+            # Finding the radial separation between the inner and outer disks at the discontinuity of dinc/dr
+            print(inc_i.shape, rc.shape)
+            di_dr = np.gradient(inc_i, rc)
+            di_dr_allit.append(di_dr)
+            r_break_i = rc[np.nanargmax(np.abs(di_dr))]
+            print("r_break:", r_break_i/au)
+
+            # Isolating the outer disk using r_break and a density threshold
+            R_c = centering(R)
+            RCYL_c = centering(RCYL)
+            outer_thresh = -17
+            outer_rho_i, Lx_outer_i, Ly_outer_i, Lz_outer_i, outer_ids = isolate_outer_disk(R_c, RCYL_c, Z_c, r_break_i, rho_c_i, Lx_i, Ly_i, Lz_i, threshold=outer_thresh)
+            r_outer_extent = np.sqrt(X_c[outer_ids]**2 +  Y_c[outer_ids]**2 + Z_c[outer_ids]**2) / au
+            mask = (domains["r"]/au >= r_outer_extent.min()) & (domains["r"]/au <= r_outer_extent.max())
+            r_outer = domains["r"][mask]
+
+            # Radially averaged outer disk momenta
+            Lx_outer_avg_i, Ly_outer_avg_i, Lz_outer_avg_i = calc_L_average(Lx_outer_i, Ly_outer_i, Lz_outer_i, mass_i)
+            # plot_twist_arrows(Lx_outer_avg, Ly_outer_avg, Lz_outer_avg, domains["r"], r_outer, sim_params=None, title=f"{sim_name}: Outer Disk Twist", savefig=True, figfolder=f'{fig_imgs}/outer_twist_arrows_it{it}_dens{outer_thresh}.png', showfig=True)
+
+            # Total outer disk momenta
+            Lx_outer_disk_i, Ly_outer_disk_i, Lz_outer_disk_i = calc_total_L(Lx_outer_avg_i, Ly_outer_avg_i, Lz_outer_avg_i)
+            outer_whirl = calc_whirl(Lx_outer_disk_i, Ly_outer_disk_i, Lz_outer_disk_i, cloud_phi)
+            print("OUTER DISK WHIRL: ", outer_whirl)
+            whirl_allit.append(outer_whirl)    
 
             # Calculating and plotting the total angular momentum of the warped disk
-            Lx_disk_i, Ly_disk_i, Lz_disk_i = calc_total_L(Lx_warp_avg_i, Ly_warp_avg_i, Lz_warp_avg_i)
-            whirl = calc_whirl(Lx_disk_i, Ly_disk_i, Lz_disk_i, cloud_phi)
-            whirl_allit.append(whirl)    
+            # Lx_disk_i, Ly_disk_i, Lz_disk_i = calc_total_L(Lx_warp_avg_i, Ly_warp_avg_i, Lz_warp_avg_i)
+            # whirl = calc_whirl(Lx_disk_i, Ly_disk_i, Lz_disk_i, cloud_phi)
+            # whirl_allit.append(whirl)    
 
         vrad_allit = np.asarray(vrad_allit)
         rho_allit = np.asarray(rho_allit)

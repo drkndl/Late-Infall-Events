@@ -34,15 +34,15 @@ plt.rcParams['legend.fontsize'] = 12     # legend font size
 def main():
 
 
-    folder = Path("../cloud_disk_it450_rotX45/")                        # Folder with the FARGO output files
-    # folder = Path("../fargo3d/outputs/cloud_disk_it450_rotX45/")          # Folder with the FARGO output files (Binac2)
-    fig_imgs = Path("cloud_disk_it450_rotX45/imgs/")                      # Folder to save images    
+    folder = Path("../cloud_disk_it450_cmass10_rotX45/")                        # Folder with the FARGO output files
+    # folder = Path("../fargo3d/outputs/cloud_disk_it450_cmass10_rotX45/")          # Folder with the FARGO output files (Binac2)
+    fig_imgs = Path("cloud_disk_it450_cmass10_rotX45/imgs/")                      # Folder to save images    
     iter_total = 450                                     # FARGO snapshot
 
-    first_it = 100
+    first_it = 50
     iter_check = np.arange(first_it, iter_total+1, 50)                       # Some iterations to plot
     sim_name = str(fig_imgs).split('/')[0]                                     # Simulation name (for plot labels)
-    dt_years = calc_simtime(np.asarray(range(first_it, iter_total+1)))       # Convert iterations to kyrs
+    dt_years = calc_simtime(np.asarray(range(first_it, iter_total+1, 10)))       # Convert iterations to kyrs
     dtkyrs_check = calc_simtime(iter_check)                                  # Convert iterations into kyrs
 
     inc_it = []                                               # List to save disk inclination at each iteration
@@ -69,7 +69,7 @@ def main():
     rho0 = get_data(folder, "dens", 0, domains)         # Load 3D array of density values at first iteration
     cloud_phi = ini_cloudlet_pos(cloud_dist, rho0, 1e-17, domains["r"], domains["phi"])
 
-    for it in range(first_it, iter_total+1):
+    for it in range(first_it, iter_total+1, 10):
     # for it in iter_check:
 
         ###################### Load data for each iteration #############################
@@ -301,14 +301,14 @@ def main():
     ax = fig.add_subplot(111, projection='3d')
     r_warp_extent = np.sqrt(X_c[warp_ids]**2 +  Y_c[warp_ids]**2 + Z_c[warp_ids]**2) / au
     mask = (rc/au >= r_warp_extent.min()) & (rc/au <= r_warp_extent.max())
-    for i in range(len(dt_years[100::7])):  # Plot starting from 100th iteration, every 4 iterations
+    for i in range(len(dt_years)):  # Plot starting from 100th iteration, every 4 iterations
         r_select = rc[mask]
         inc_it_select = inc_it[i][mask]
-        ax.plot([dt_years[100::7][i]] * len(r_select), r_select/au, inc_it_select, color=plt.cm.viridis(i/len(dt_years[100::7])))
+        ax.plot([dt_years[i]] * len(r_select), r_select/au, inc_it_select, color=plt.cm.viridis(i/len(dt_years)))
 
         # Adding a shadow effect
-        verts = [list(zip([dt_years[100::7][i]] * len(r_select) + [dt_years[100::7][i]] * len(r_select), np.concatenate((r_select/au, r_select[::-1]/au)), np.concatenate((np.zeros_like(inc_it_select), inc_it_select[::-1]))))]
-        poly = Poly3DCollection(verts, color=plt.cm.viridis(i / len(dt_years[100::7])), alpha=0.15, edgecolor='none')
+        verts = [list(zip([dt_years[i]] * len(r_select) + [dt_years[i]] * len(r_select), np.concatenate((r_select/au, r_select[::-1]/au)), np.concatenate((np.zeros_like(inc_it_select), inc_it_select[::-1]))))]
+        poly = Poly3DCollection(verts, color=plt.cm.viridis(i / len(dt_years)), alpha=0.15, edgecolor='none')
         ax.add_collection3d(poly)
 
     ax.view_init(elev=35, azim=-31)
@@ -341,13 +341,13 @@ def main():
     ax = fig.add_subplot(111, projection='3d')
     # r_warp_extent = np.sqrt(X_c[warp_ids]**2 +  Y_c[warp_ids]**2 + Z_c[warp_ids]**2) / au
     # mask = (rc/au >= r_warp_extent.min()) & (rc/au <= r_warp_extent.max())
-    for i in range(len(dt_years[100::7])):  # Plot starting from 100th iteration, every 7 iterations
+    for i in range(len(dt_years)):  # Plot starting from 100th iteration, every 7 iterations
         r_select = rc[mask]
         prec_it_select = prec_it[i][mask]
-        ax.plot([dt_years[100::7][i]] * len(r_select), r_select/au, prec_it_select, color=plt.cm.viridis(i/len(dt_years[100::7])))
+        ax.plot([dt_years[i]] * len(r_select), r_select/au, prec_it_select, color=plt.cm.viridis(i/len(dt_years)))
         # Adding a shadow effect
-        verts = [list(zip([dt_years[100::7][i]] * len(r_select) + [dt_years[100::7][i]] * len(r_select), np.concatenate((r_select/au, r_select[::-1]/au)), np.concatenate((np.full(len(prec_it_select), np.min(prec_it_select)), prec_it_select[::-1]))))]
-        poly = Poly3DCollection(verts, color=plt.cm.viridis(i / len(dt_years[100::7])), alpha=0.15, edgecolor='none')
+        verts = [list(zip([dt_years[i]] * len(r_select) + [dt_years[i]] * len(r_select), np.concatenate((r_select/au, r_select[::-1]/au)), np.concatenate((np.full(len(prec_it_select), np.min(prec_it_select)), prec_it_select[::-1]))))]
+        poly = Poly3DCollection(verts, color=plt.cm.viridis(i / len(dt_years)), alpha=0.15, edgecolor='none')
         ax.add_collection3d(poly)
 
     ax.view_init(elev=31, azim=32)
@@ -377,7 +377,7 @@ def main():
 
     # Plot time evolution of d(inc)/dr
     cols = cmaps.hawaii.discrete(len(dt_years))
-    cols = cols(np.linspace(0, 1, 4))
+    cols = cols(np.linspace(0, 1, len(dt_years)))
     fig, ax = plt.subplots()
     for i in range(len(dt_years)):
         plt.plot(domains["r"][:-1]/au, di_dr_it[i], color=cols[i])
