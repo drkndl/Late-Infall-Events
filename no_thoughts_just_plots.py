@@ -655,7 +655,7 @@ def make_evol_GIF(directory, fname, gif_name, delete_files=True):
     print(filenames)
 
     # Create GIF
-    with imageio.get_writer(f'{directory}/{gif_name}.gif', mode='I') as writer:
+    with imageio.get_writer(f'{directory}/{gif_name}.gif', mode='I', fps=2) as writer:
         for filename in filenames:
             image = imageio.imread(f'{directory}/{filename}')
             writer.append_data(image)
