@@ -295,6 +295,44 @@ def calc_eccen(Ax, Ay, Az, mass, Mstar):
     return ex, ey, ez
 
 
+def scale_height(r, h0, R0, f):
+    """
+    Calculates the scale height of the disk at a given radius r0
+
+    Inputs:
+    ------
+    r:            Radius at which pressure scale height is calcualted [cm] (float)
+    h0:           Aspect ratio (float)
+    R0:           Radius at which aspect ratio is defined (FARGO3D standard) [cm] (float)
+    f:            Disk flaring index (float)
+
+    Outputs:
+    -------
+    Hc:           Scale height at given radius r0 [cm]
+    """
+
+    Hc = h0 * r * np.power(r / R0, f)             
+    return Hc 
+
+
+def omega_kepler(Mstar, r):
+    """
+    Calculates the Keplerian velocities for an array of radii
+    
+    Inputs:
+    ------
+    Mstar:   Mass of the star [g]
+    r:       1D array of radii [cm]
+
+    Outputs:
+    -------
+    omega_k: 1D array of Keplerian velocities [/s]
+    """
+
+    omega_k = np.sqrt(G * Mstar / r**3)
+    return omega_k
+
+
 def calc_surfdens(dens, theta, r, phi):
     """
     Calculates surface density
@@ -588,9 +626,9 @@ def calc_whirl(Lx_tot, Ly_tot, Lz_tot, ini_cloud_phi):
 
 def main():
 
-    folder = Path("../cloud_disk_it450_rotX45/")                        # Folder with the output files
-    # folder = Path("../fargo3d/outputs/cloud_disk_it450_rotX45")         # Folder with the output files (BinAC2)
-    fig_imgs = Path("cloud_disk_it450_rotX45/imgs/")                    # Folder to save images
+    folder = Path("../cloud_disk_it450_Rout30_rotY45/")                        # Folder with the output files
+    # folder = Path("../fargo3d/outputs/cloud_disk_it450_Rout30_rotY45")         # Folder with the output files (BinAC2)
+    fig_imgs = Path("cloud_disk_it450_Rout30_rotY45/imgs/")                    # Folder to save images
     it = 450                                                       # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                         # Simulation name (for plot labels)
     
@@ -609,6 +647,9 @@ def main():
     vphi = get_data(folder, "vx", it, domains)          # Load 3D array of azimuthal velocities v_phi
     vrad = get_data(folder, "vy", it, domains)          # Load 3D array of radial velocities v_rad
     vthe = get_data(folder, "vz", it, domains)          # Load 3D array of colatitude velocities v_theta
+
+    # all_positive = np.all(rho > 0)
+    # print(all_positive)
 
     vsph = np.sqrt(vphi**2 + vrad**2 + vthe**2)         # Total velocities in spherical coordinates
 
@@ -681,16 +722,32 @@ def main():
     # Density RZ plot
     # cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Density R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, data_phiavg=False)
 
-    # Radial velocity RZ plot
-    vel_cyl_2D(vrad, rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Radial Velocities R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\mathrm{v_{rad} (g cm/s)}$", savefig=True, figfolder=f'{fig_imgs}/rhoradvel_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, acc=False, data_phiavg=False)
+    # Radial velocity RZ plot (multiplying vrad by 1e-5 to convert cm/s to km/s)
+    vel_cyl_2D(vrad * 1e-5, rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Radial Velocities R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\mathrm{v_{rad} (\rm km/s)}$", savefig=True, figfolder=f'{fig_imgs}/radvel_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, acc=False, data_phiavg=False)
+ 
+    # Rho * Radial velocity RZ plot (multiplying vrad by 1e-5 to convert cm/s to km/s)
+    vel_cyl_2D(vrad * 1e-5, rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: $\rho v_{{rad}}$ R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\mathrm{\rho v_{rad} (\rm g \rm km/s)}$", savefig=True, figfolder=f'{fig_imgs}/rhoradvel_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, acc=True, data_phiavg=False)
 
-    # Rho * Radial velocity RZ plot
-    vel_cyl_2D(vrad, rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: $\rho v_{{rad}}$ R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\mathrm{\rho v_{rad} (g cm/s)}$", savefig=True, figfolder=f'{fig_imgs}/rhoradvel_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, acc=True, data_phiavg=False)
+    # Comparing subsonic vs supersonic regions in meridional flows
+    h0 = get_param_value("AspectRatio", sim_name)      # Aspect ratio
+    f = get_param_value("FlaringIndex", sim_name)      # Flaring index
+    R0 = 5.2 * au                                      # As defined in FARGO3D [cm]
+
+    omega_k = omega_kepler(Mstar, RCYL)             # Array of Keplerian velocities (s^-1)
+    Hc_arr = scale_height(RCYL, h0, R0, f)          # Array of pressure scale heights (cm)
+    cs = omega_k * Hc_arr                             # Array of local isothermal speed of sound (cm/s)
+    print(np.mean(cs), np.mean(omega_k), np.mean(Hc_arr))
+    print(np.shape(omega_k), np.shape(Hc_arr))
+    print(np.max(vrad / cs), np.min(vrad / cs), np.mean(vrad / cs))
+    print(vrad / cs)
+
+    # vrad / cs RZ plot 
+    vel_cyl_2D(vrad / cs, rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: $v_{{rad}} / c_s$ R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\mathrm{v_{rad} / c_s}$", savefig=True, figfolder=f'{fig_imgs}/radvelbycs_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, acc=False, data_phiavg=False)
 
     # XY_2D_plot(rho, X, Y, irad, itheta, title=rf'{sim_name}: Density X-Y Plane $\theta = $ {itheta_deg}$^{{\circ}}$', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=f'{fig_imgs}/dens_xy_theta{itheta}_rad{irad}_it{it}.png', showfig=True)
 
     # Plotting the 3D warp/disk densities 
-    contours_3D(X_c/au, Y_c/au, Z_c/au, np.log10(rho_c_warp), r_select, plot_args, colorbarlabel=r'$\log(\rho) [g/cm^3]$', title=rf'{sim_name}: Initial & Outer Disks: $\log(\rho)$', savefig=True, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=True)
+    # contours_3D(X_c/au, Y_c/au, Z_c/au, np.log10(rho_c_warp), r_select, plot_args, colorbarlabel=r'$\log(\rho) [g/cm^3]$', title=rf'{sim_name}: Initial & Outer Disks: $\log(\rho)$', savefig=True, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=True)
     
     # Another way to plot the warp/disk densities
     # contours_3D(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, rho_c[warp_ids], fig, colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$')
@@ -728,7 +785,7 @@ def main():
     
 
     # Finding the radial separation between the inner and outer disks at the discontinuity of dinc/dr
-    r_break = plot_disk_sep(domains["r"], inc, title=rf"{sim_name}: Inclination Gradient", savefig=True, figfolder=f'{fig_imgs}/dinc_dr.png', showfig=True)
+    r_break = plot_disk_sep(domains["r"], inc, title=rf"{sim_name}: Inclination Gradient", savefig=True, figfolder=f'{fig_imgs}/dinc_dr.png', showfig=False)
     print("r_break:", r_break/au)
 
     # Isolating the outer disk using r_break and a density threshold
@@ -741,7 +798,7 @@ def main():
     r_outer = domains["r"][mask]
 
     # Plotting outer disk in 3D
-    contours_3D(X_c/au, Y_c/au, Z_c/au, np.log10(outer_rho), r_outer, sim_params=None, colorbarlabel=r'$\log(\rho) [g/cm^3]$', title=rf'{sim_name}: Outer Disk: $\log(\rho)$', savefig=True, figfolder=f'{fig_imgs}/outer_dens_thresh{outer_thresh}_it{it}.png', showfig=True)
+    # contours_3D(X_c/au, Y_c/au, Z_c/au, np.log10(outer_rho), r_outer, sim_params=None, colorbarlabel=r'$\log(\rho) [g/cm^3]$', title=rf'{sim_name}: Outer Disk: $\log(\rho)$', savefig=True, figfolder=f'{fig_imgs}/outer_dens_thresh{outer_thresh}_it{it}.png', showfig=True)
 
 
     ###################### Disk morphology properties separating inner and outer disks #############################
@@ -762,13 +819,13 @@ def main():
     print("TOTAL DISK WHIRL: ", whirl)
 
     # Calculating and plotting the radial profile of warp/disk precession as a quiver plot
-    plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, plot_args, title=f"{sim_name}: Disk Twist", savefig=True, figfolder=f'{fig_imgs}/warp_twist_arrows_it{it}_dens{warp_thresh}.png', showfig=True)
+    # plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, plot_args, title=f"{sim_name}: Disk Twist", savefig=True, figfolder=f'{fig_imgs}/warp_twist_arrows_it{it}_dens{warp_thresh}.png', showfig=True)
     
     ######### Outer disk properties 
 
     # Radially averaged outer disk momenta
     Lx_outer_avg, Ly_outer_avg, Lz_outer_avg = calc_L_average(Lx_outer, Ly_outer, Lz_outer, mass)
-    plot_twist_arrows(Lx_outer_avg, Ly_outer_avg, Lz_outer_avg, domains["r"], r_outer, sim_params=None, title=f"{sim_name}: Outer Disk Twist", savefig=True, figfolder=f'{fig_imgs}/outer_twist_arrows_it{it}_dens{outer_thresh}.png', showfig=True)
+    # plot_twist_arrows(Lx_outer_avg, Ly_outer_avg, Lz_outer_avg, domains["r"], r_outer, sim_params=None, title=f"{sim_name}: Outer Disk Twist", savefig=True, figfolder=f'{fig_imgs}/outer_twist_arrows_it{it}_dens{outer_thresh}.png', showfig=True)
 
     # Total outer disk momenta
     Lx_outer_disk, Ly_outer_disk, Lz_outer_disk = calc_total_L(Lx_outer_avg, Ly_outer_avg, Lz_outer_avg)

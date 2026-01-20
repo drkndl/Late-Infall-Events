@@ -5,7 +5,7 @@ import matplotlib.colors as mcolors
 from pathlib import Path
 import colormaps as cmaps
 from read import get_domain_spherical, get_data, load_par_file, get_param_value
-from analysis import calc_cell_volume, calc_mass, sph_to_cart, calc_simtime
+from analysis import calc_cell_volume, calc_mass, sph_to_cart, calc_simtime, scale_height, omega_kepler
 from check_mass import surf_dens_profile
 from no_thoughts_just_plots import load_sciviscolor_colormaps
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes, mark_inset
@@ -31,44 +31,6 @@ plt.rcParams['legend.fontsize'] = 11     # legend font size
 # cmap1 = load_sciviscolor_colormaps("colourmaps/discrete-2-5-discrete-gr-ye-rd-dark.xml")
 # cmap1 = list(cmap1.values())[0]
 cmap1 = cmaps.agsunset
-
-
-def scale_height(r, h0, R0, f):
-    """
-    Calculates the scale height of the disk at a given radius r0
-
-    Inputs:
-    ------
-    r:            Radius at which pressure scale height is calcualted [cm] (float)
-    h0:           Aspect ratio (float)
-    R0:           Radius at which aspect ratio is defined (FARGO3D standard) [cm] (float)
-    f:            Disk flaring index (float)
-
-    Outputs:
-    -------
-    Hc:           Scale height at given radius r0 [cm]
-    """
-
-    Hc = h0 * r * np.power(r / R0, f)             
-    return Hc 
-
-
-def omega_kepler(Mstar, r):
-    """
-    Calculates the Keplerian velocities for an array of radii
-    
-    Inputs:
-    ------
-    Mstar:   Mass of the star [g]
-    r:       1D array of radii [cm]
-
-    Outputs:
-    -------
-    omega_k: 1D array of Keplerian velocities [/s]
-    """
-
-    omega_k = np.sqrt(G * Mstar / r**3)
-    return omega_k
 
 
 def calc_accretion(rho, vr, theta, r0, r0_id, phi, max_height, Msun, min_height=None):
@@ -220,16 +182,17 @@ def main():
     dotM_out_allit = np.asarray(dotM_out_allit)
 
     # Plotting the logarithmic mass fluxes 
-    # fig, ax = plt.subplots()
-    # # plt.plot(allit_years, np.abs(dotM_tot_allit), label="Total flux")
-    # plt.plot(allit_years, np.log10(-dotM_in_allit), label="Log Inward flux")
-    # plt.plot(allit_years, dotM_out_allit, label="Outward flux")
-    # ax.set_xlabel(r"Time [kyr]")
-    # ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
-    # ax.set_title(fr"{sim_name}: $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
-    # plt.legend(loc="lower right")
-    # plt.savefig(f'{fig_imgs}/logMdot_vs_t_it{it}.png')
-    # plt.show()
+    fig, ax = plt.subplots()
+    # plt.plot(allit_years, np.abs(dotM_tot_allit), label="Total flux")
+    plt.plot(allit_years, np.log10(-dotM_in_allit), label="Log Inward flux")
+    plt.plot(allit_years, dotM_out_allit, label="Outward flux")
+    ax.set_xlabel(r"Time [kyr]")
+    ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
+    ax.set_title(fr"{sim_name}: $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
+    plt.legend(loc="center right")
+    plt.savefig(f'{fig_imgs}/logMdot_vs_t_it{it}.png')
+    plt.show()
+
 
 
     ########################### Check accretion for different max heights #############################

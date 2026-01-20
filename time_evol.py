@@ -13,7 +13,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from PIL import Image
 import pandas as pd
 import os
-from no_thoughts_just_plots import XY_2D_plot, cyl_2D_plot, quiver_plot_3d, contours_3D, plot_surf_dens, plot_twist_arrows, make_evol_GIF, plot_total_disks_bonanza, plot_disk_sep
+from no_thoughts_just_plots import XY_2D_plot, cyl_2D_plot, quiver_plot_3d, contours_3D, plot_surf_dens, plot_twist_arrows, make_evol_GIF, plot_total_disks_bonanza, plot_disk_sep, vel_cyl_2D
 import astropy.constants as c
 au = c.au.cgs.value
 G = 6.67e-8               # Gravitational constant in cgs units
@@ -34,12 +34,12 @@ plt.rcParams['legend.fontsize'] = 12     # legend font size
 def main():
 
 
-    folder = Path("../cloud_disk_it450_cmass10_rotX45/")                        # Folder with the FARGO output files
-    # folder = Path("../fargo3d/outputs/cloud_disk_it450_cmass10_rotX45/")          # Folder with the FARGO output files (Binac2)
-    fig_imgs = Path("cloud_disk_it450_cmass10_rotX45/imgs/")                      # Folder to save images    
+    folder = Path("../cloud_disk_it450_rotX45/")                        # Folder with the FARGO output files
+    # folder = Path("../fargo3d/outputs/cloud_disk_it450_rotX45/")          # Folder with the FARGO output files (Binac2)
+    fig_imgs = Path("cloud_disk_it450_rotX45/imgs/")                      # Folder to save images    
     iter_total = 450                                     # FARGO snapshot
 
-    first_it = 50
+    first_it = 100
     iter_check = np.arange(first_it, iter_total+1, 50)                       # Some iterations to plot
     sim_name = str(fig_imgs).split('/')[0]                                     # Simulation name (for plot labels)
     dt_years = calc_simtime(np.asarray(range(first_it, iter_total+1, 10)))       # Convert iterations to kyrs
@@ -152,6 +152,8 @@ def main():
 
         # Plotting the Cartesian warp angular momenta
         # quiver_plot_3d(X_c/au, Y_c/au, Z_c/au, Lx_c_warp, Ly_c_warp, Lz_c_warp, stagger=100, length=3, title="Warp Angular Momenta", colorbarlabel="logL", savefig=False, figfolder=f'{fig_imgs}/warp_L_thresh{warp_thresh}_it{it}.png', logmag=True, ignorecol=True, showfig=False)
+
+        vel_cyl_2D(vrad, rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Radial Velocities R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\mathrm{v_{rad} (g cm/s)}$", savefig=True, figfolder=f'{fig_imgs}/rhoradvel_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=False, acc=False, data_phiavg=False)
 
         # Calculating the radial profile of warp inclination and twist
         Lx_warp_avg, Ly_warp_avg, Lz_warp_avg = calc_L_average(Lx_c_warp, Ly_c_warp, Lz_c_warp, mass)
@@ -377,10 +379,11 @@ def main():
 
     # Plot time evolution of d(inc)/dr
     cols = cmaps.hawaii.discrete(len(dt_years))
-    cols = cols(np.linspace(0, 1, len(dt_years)))
+    # cols = cols(np.linspace(0, 1, len(dt_years)))
     fig, ax = plt.subplots()
+    print(di_dr_it[0])
     for i in range(len(dt_years)):
-        plt.plot(domains["r"][:-1]/au, di_dr_it[i], color=cols[i])
+        plt.plot(domains["r"][:-1]/au, di_dr_it[i], color=cols(i))
     ax.set_xlabel("R [AU]")
     ax.set_ylabel(r"$\frac{d(inc)}{dr}$")
     ax.set_title(fr"{sim_name}: Inclination Gradient Time Evol")
@@ -396,6 +399,7 @@ def main():
 
     # Plot time evolution of surface densities
     fig = plt.figure(figsize=(8, 6))
+    cols = cm.get_cmap('viridis', len(iter_check))
     for i in range(len(surf_dens_iter)):
         plt.plot(r_surf_dens_iter[i]/au, surf_dens_iter[i], color=cols(i), label=f"{int(dtkyrs_check[i])} kyr")
     plt.xlabel("R [AU]")
@@ -424,6 +428,7 @@ def main():
     # make_evol_GIF(fig_imgs, "dens_cyl_phi", "dens_cyl_movie")
     # make_evol_GIF(fig_imgs, "dens_xy_theta", "dens_xy_movie")
     # make_evol_GIF(fig_imgs, "total_bonanza", "total_bonanza_movie")
+    make_evol_GIF(fig_imgs, "rhoradvel_cyl", "rhoradvel_cyl_movie")
 
 
 if __name__ == "__main__":

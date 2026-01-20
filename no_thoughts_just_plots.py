@@ -13,6 +13,7 @@ import colormaps as cmaps
 #from matplotlib.ticker import LinearLocator
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.interpolate import RegularGridInterpolator
+from matplotlib.ticker import FuncFormatter
 import plotly.graph_objects as go
 import astropy.constants as c
 import imageio
@@ -66,9 +67,9 @@ def cyl_2D_plot(data, RCYL, ZCYL, irad, iphi, title, colorbarlabel, savefig, fig
         plt.close()
 
 
-def vel_cyl_2D(vel, rho, RCYL, ZCYL, irad, iphi, title, colorbarlabel, savefig, figfolder, showfig, acc=True, data_phiavg=False):
+def vel_cyl_2D(vel, rho, RCYL, ZCYL, irad, iphi, title, colorbarlabel, savefig, figfolder, showfig, acc=False, data_phiavg=False):
     """
-    Plot 2D vertical projection of a physical quantity at a particular azimuth angle and range of radii
+    Plot 2D vertical projection of radial velocities (or density * radial velocity) at a particular azimuth angle and range of radii
     
     Inputs:
     ------
@@ -99,39 +100,36 @@ def vel_cyl_2D(vel, rho, RCYL, ZCYL, irad, iphi, title, colorbarlabel, savefig, 
     # Plotting vrad or rho * vrad without averaging in phi
     else:
 
-        # Plotting rho * vrad
+        # Plotting rho * vrad (g km/s)
         if acc:
 
-            vmin = -15
-            plot_data = np.sign(vel[..., :irad, iphi]) * (np.log10(rho[..., :irad, iphi]) + np.log10(np.abs(vel[..., :irad, iphi])))
+            vmin = -25
+            ticks = np.arange(vmin, np.abs(vmin)+1, 4)
+            plot_data = np.sign(vel[..., :irad, iphi] * rho[..., :irad, iphi]) * (np.log10(rho[..., :irad, iphi]) + np.log10(np.abs(vel[..., :irad, iphi])))
             c3 = plt.pcolormesh(RCYL[..., :irad, iphi]/au, ZCYL[..., :irad, iphi]/RCYL[..., :irad, iphi], plot_data, cmap=cmaps.BlueRed, vmin=vmin, vmax=np.abs(vmin), rasterized=True)
 
-        # Plotting just vrad
+        # Plotting just vrad (km/s)
         else:
 
-            vmin = -6
+            vmin = -2
+            ticks = np.arange(vmin, np.abs(vmin)+1, 1)
             c3 = plt.pcolormesh(RCYL[..., :irad, iphi]/au, ZCYL[..., :irad, iphi]/RCYL[..., :irad, iphi], np.sign(vel[...,:irad, iphi]) * np.log10(np.abs(vel[...,:irad, iphi])), cmap=cmaps.BlueRed, vmin=vmin, vmax=np.abs(vmin), rasterized=True)
+            # c3 = plt.pcolormesh(RCYL[..., :irad, iphi]/au, ZCYL[..., :irad, iphi]/RCYL[..., :irad, iphi], vel[...,:irad, iphi], cmap=cmaps.BlueRed, vmin=vmin, vmax=np.abs(vmin), rasterized=True)
 
     # Plotting arrows of vrad (or rho * vrad) to check
-    step = 10
-    R = RCYL[..., :irad, iphi]
-    Z = ZCYL[..., :irad, iphi]
-    Xq = R[::step, ::step] / au
-    Yq = Z[::step, ::step] / R[::step, ::step]
-    U = vel[..., :irad, iphi][::step, ::step] / np.abs(vel[..., :irad, iphi][::step, ::step])
-    V = np.zeros_like(U)
-    plt.quiver(Xq, Yq, U, V, color='k', pivot="tip", angles='xy', scale_units='xy', scale=1e-1, alpha=0.8)
+    # Xtemp, Ytemp = RCYL[..., :irad, iphi]/au, ZCYL[..., :irad, iphi]/RCYL[..., :irad, iphi]
+    # if acc:
+    #     U = np.sign(vel[..., :irad, iphi] * rho[..., :irad, iphi])
+    # else:
+    #     U = np.sign(vel[..., :irad, iphi])  # horizontal direction (positive = outward)
+    # V = np.zeros_like(U)      # no vertical component
+    # step = (slice(None, None, 5), slice(None, None, 10))   # Downsampling to avoid clutter
+    # q1 = plt.quiver(Xtemp[step], Ytemp[step], U[step], V[step], color='black', scale=20)
 
     # Colourbar formatting
     cbar = fig.colorbar(c3, ax=ax)
-    exponents = np.arange(vmin, -1, 2)   # Colourbar tick labels
-    ticks = np.concatenate([-exponents[::-1], [0], exponents])
-    ticklabels = (
-        [fr"$-10^{{{exp}}}$" for exp in exponents[::-1]] +
-        ["0"] +
-        [fr"$10^{{{exp}}}$" for exp in exponents]
-    )
     cbar.set_ticks(ticks)
+    ticklabels = np.sign(ticks) * 10**np.abs(ticks)
     cbar.set_ticklabels(ticklabels)
     cbar.set_label(colorbarlabel)
 
