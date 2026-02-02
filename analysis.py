@@ -626,9 +626,9 @@ def calc_whirl(Lx_tot, Ly_tot, Lz_tot, ini_cloud_phi):
 
 def main():
 
-    folder = Path("../cloud_disk_it450_Rout30_rotY45/")                        # Folder with the output files
-    # folder = Path("../fargo3d/outputs/cloud_disk_it450_Rout30_rotY45")         # Folder with the output files (BinAC2)
-    fig_imgs = Path("cloud_disk_it450_Rout30_rotY45/imgs/")                    # Folder to save images
+    folder = Path("../cloud_disk_it450_rotX45/")                        # Folder with the output files
+    # folder = Path("../fargo3d/outputs/cloud_disk_it450_rotX45")         # Folder with the output files (BinAC2)
+    fig_imgs = Path("cloud_disk_it450_rotX45/imgs/")                    # Folder to save images
     it = 450                                                       # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                         # Simulation name (for plot labels)
     
@@ -682,6 +682,7 @@ def main():
     Ax, Ay, Az = calc_LRL(mass, Mstar, vx_c, vy_c, vz_c, Lx, Ly, Lz, X_c, Y_c, Z_c)
     ex, ey, ez = calc_eccen(Ax, Ay, Az, mass, Mstar)
     e = np.sqrt(ex**2 + ey**2 + ez**2)
+    # print(e)
 
 
     ########################### Isolating the warp in the primary disk ###############################
@@ -707,7 +708,7 @@ def main():
 
     # 2D visualizations
     # irad = -1
-    irad = np.where(domains["r"]/au < 1500)[0][-1]
+    irad = np.where(domains["r"]/au < 200)[0][-1]
     iphi = 0
     itheta = int(7*len(domains["theta"])/15)
     # print(itheta)
@@ -722,11 +723,14 @@ def main():
     # Density RZ plot
     # cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Density R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, data_phiavg=False)
 
+    XY_2D_plot(vrad * 1e-5, X, Y, irad, itheta, vmin=-0.5, vmax=0.5, title=rf'{sim_name}: X-Y Radial Velocity $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$v_{rad} (km/s)$", savefig=True, figfolder=f'{fig_imgs}/vrad_xy_phi{iphi}_rad{irad}_it{it}.png', showfig=True)
+
     # Radial velocity RZ plot (multiplying vrad by 1e-5 to convert cm/s to km/s)
-    vel_cyl_2D(vrad * 1e-5, rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Radial Velocities R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\mathrm{v_{rad} (\rm km/s)}$", savefig=True, figfolder=f'{fig_imgs}/radvel_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, acc=False, data_phiavg=False)
+    # vel_cyl_2D(vrad * 1e-5, rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Radial Velocities R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\mathrm{v_{rad} (\rm km/s)}$", savefig=True, figfolder=f'{fig_imgs}/radvel_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, acc=False, data_phiavg=False)
+    edjwfk
  
     # Rho * Radial velocity RZ plot (multiplying vrad by 1e-5 to convert cm/s to km/s)
-    vel_cyl_2D(vrad * 1e-5, rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: $\rho v_{{rad}}$ R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\mathrm{\rho v_{rad} (\rm g \rm km/s)}$", savefig=True, figfolder=f'{fig_imgs}/rhoradvel_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, acc=True, data_phiavg=False)
+    # vel_cyl_2D(vrad, rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: $\rho v_{{rad}}$ R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\mathrm{\rho v_{rad} (\rm g \rm km/s)}$", savefig=True, figfolder=f'{fig_imgs}/rhoradvel_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, acc=True, data_phiavg=False)
 
     # Comparing subsonic vs supersonic regions in meridional flows
     h0 = get_param_value("AspectRatio", sim_name)      # Aspect ratio
@@ -742,7 +746,7 @@ def main():
     print(vrad / cs)
 
     # vrad / cs RZ plot 
-    vel_cyl_2D(vrad / cs, rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: $v_{{rad}} / c_s$ R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\mathrm{v_{rad} / c_s}$", savefig=True, figfolder=f'{fig_imgs}/radvelbycs_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, acc=False, data_phiavg=False)
+    # vel_cyl_2D(vrad / cs, rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: $v_{{rad}} / c_s$ R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\mathrm{v_{rad} / c_s}$", savefig=True, figfolder=f'{fig_imgs}/radvelbycs_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, acc=False, data_phiavg=False)
 
     # XY_2D_plot(rho, X, Y, irad, itheta, title=rf'{sim_name}: Density X-Y Plane $\theta = $ {itheta_deg}$^{{\circ}}$', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=f'{fig_imgs}/dens_xy_theta{itheta}_rad{irad}_it{it}.png', showfig=True)
 
@@ -846,6 +850,11 @@ def main():
 
     # Plotting warp eccentricity
     # quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, ex[warp_ids], ey[warp_ids], ez[warp_ids], stagger=70, length=3, title=rf'Warp Eccentricity', colorbarlabel=r'$e$', savefig=True, figfolder=f'../warp_{it}_ecc.png', logmag=False)
+
+    # print(X)
+    XY_2D_plot(e, X_c, Y_c, irad, itheta, vmin=0, vmax=1, title=rf'{sim_name}: X-Y Eccentricity $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$e$", savefig=True, figfolder=f'{fig_imgs}/e_xy_phi{iphi}_rad{irad}_it{it}.png', showfig=True)
+
+    cyl_2D_plot(e, R_c, Z_c, irad, iphi, vmin=0, vmax=1, title=rf'{sim_name}: Eccentricity R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$e$", savefig=True, figfolder=f'{fig_imgs}/e_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, data_phiavg=False)
 
     # Characterizing warp eccentricity 
     # print("Min Warp eccentricity: ", np.min(e[warp_ids]))

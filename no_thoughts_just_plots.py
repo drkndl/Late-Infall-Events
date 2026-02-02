@@ -23,7 +23,7 @@ import os
 au = c.au.cgs.value
 
 
-def cyl_2D_plot(data, RCYL, ZCYL, irad, iphi, title, colorbarlabel, savefig, figfolder, showfig, data_phiavg=True):
+def cyl_2D_plot(data, RCYL, ZCYL, irad, iphi, vmin, vmax, title, colorbarlabel, savefig, figfolder, showfig, data_phiavg=True):
     """
     Plot 2D vertical projection of a physical quantity at a particular azimuth angle and range of radii
     
@@ -46,9 +46,9 @@ def cyl_2D_plot(data, RCYL, ZCYL, irad, iphi, title, colorbarlabel, savefig, fig
 
     plt.figure()
     if data_phiavg:
-        plt.pcolormesh(RCYL[..., :irad, iphi]/au, ZCYL[..., :irad, iphi]/RCYL[..., :irad, iphi], np.log10(data[...,:irad]), cmap="Spectral_r", vmin=-19, vmax=-11, rasterized=True)
+        plt.pcolormesh(RCYL[..., :irad, iphi]/au, ZCYL[..., :irad, iphi]/RCYL[..., :irad, iphi], np.log10(data[...,:irad]), cmap="Spectral_r", vmin=vmin, vmax=vmax, rasterized=True)
     else:
-        plt.pcolormesh(RCYL[..., :irad, iphi]/au, ZCYL[..., :irad, iphi]/RCYL[..., :irad, iphi], np.log10(data[...,:irad, iphi]), cmap="Spectral_r", vmin=-19, vmax=-11, rasterized=True)
+        plt.pcolormesh(RCYL[..., :irad, iphi]/au, ZCYL[..., :irad, iphi]/RCYL[..., :irad, iphi], np.log10(data[...,:irad, iphi]), cmap="Spectral_r", vmin=vmin, vmax=vmax, rasterized=True)
     plt.xlabel("rcyl / AU")
     plt.ylabel("z / r")
     plt.xscale("log")
@@ -153,7 +153,7 @@ def vel_cyl_2D(vel, rho, RCYL, ZCYL, irad, iphi, title, colorbarlabel, savefig, 
 
 
 # 2D X-Y plot along the midplane
-def XY_2D_plot(data, X, Y, irad, itheta, title, colorbarlabel, savefig, figfolder, showfig):
+def XY_2D_plot(data, X, Y, irad, itheta, vmin, vmax, title, colorbarlabel, savefig, figfolder, showfig):
     """
     Plot 2D colormesh of a physical quantity along the X-Y plane for given polar angle theta and range of radii
     
@@ -174,7 +174,7 @@ def XY_2D_plot(data, X, Y, irad, itheta, title, colorbarlabel, savefig, figfolde
     """
 
     plt.figure()
-    plt.pcolormesh(X[itheta, :irad, ...]/au, Y[itheta, :irad, ...]/au, np.log10(data[itheta, :irad, ...]), cmap="Spectral_r", vmin=-19, vmax=-11, rasterized=True)
+    plt.pcolormesh(X[itheta, :irad, ...]/au, Y[itheta, :irad, ...]/au, data[itheta, :irad, ...], cmap="Spectral_r", vmin=vmin, vmax=vmax)#, rasterized=True)
     plt.gca().set_aspect("equal")
     plt.xlabel("x / AU")
     plt.ylabel("y / AU")
@@ -193,7 +193,7 @@ def XY_2D_plot(data, X, Y, irad, itheta, title, colorbarlabel, savefig, figfolde
         plt.close()
 
 
-def interactive_2D(data, parnames, indices, x, y, idxnames, title, vmin=-19):
+def interactive_2D(data, parnames, indices, x, y, idxnames, title, vmin, vmax):
     """
     Plots a 2D interactive slice from a 3D array using the slicearr() func from viewarr.py
 
@@ -206,7 +206,7 @@ def interactive_2D(data, parnames, indices, x, y, idxnames, title, vmin=-19):
     idxnames:     List of plot labels of each index of data
     """
 
-    slicearr(data,parnames=parnames,title=title,indices=indices,x=x,y=y,zmin=vmin,zmax=None,idxnames=idxnames,idxvals=None,idxformat='')
+    slicearr(data,parnames=parnames,title=title,indices=indices,x=x,y=y,zmin=vmin,zmax=vmax,idxnames=idxnames,idxvals=None,idxformat='')
     plt.ioff()   # Added because interactive plot does not work properly otherwise
     plt.show()
 
@@ -684,6 +684,7 @@ def param_study_plot(fig, ax, param_dict, x_arr, folders_labels, colours, xlabel
         elif "rotY" in key:
             base = key.replace("rotY", "")
             ls = "--"
+            continue
         # Only change color when we encounter a new base (first time we see either X or Y)
         if base != last_base:
             current_color_index = (current_color_index + 1) % len(colours)

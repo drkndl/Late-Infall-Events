@@ -19,14 +19,14 @@ ninterm = 200             # Total number of timesteps between outputs in FARGO s
 stoky = 3.156e7 * 1e3     # 1 kyr in sec
 
 # Global plot formatting 
-plt.rcParams['lines.linewidth'] = 3
-plt.rcParams['axes.labelsize'] = 14     # x/y label size
+plt.rcParams['lines.linewidth'] = 3.5
+plt.rcParams['axes.labelsize'] = 15     # x/y label size
 plt.rcParams['xtick.labelsize'] = 12     # x-tick label size
 plt.rcParams['ytick.labelsize'] = 12     # y-tick label size
-plt.rcParams['legend.fontsize'] = 11     # legend font size
+plt.rcParams['legend.fontsize'] = 15     # legend font size
 
 # colormaps = load_sciviscolor_colormaps("discrete-5-4-section-blue-orange.xml")
-colours = cmaps.drought_severity.discrete(4)
+colours = cmaps.tropical.discrete(4)
 colours = colours(np.linspace(0, 1, 4))
 
 
@@ -41,13 +41,24 @@ def main():
     # Simulation data locally (prograde vs retrograde comparison)
     # folders = [Path("../cloud_disk_it450_rotX45"), Path("../cloud_disk_it450_rotY45"), Path("../cloud_disk_it450_retro_rotX45"), Path("../cloud_disk_it450_retro_rotY45")]
 
-    folders_labels = {"cloud_disk_it450_rotX45": r"$\mathrm{X_{45}, M_{c} / M_{d}=0.45, R_{out} = 100}$", "cloud_disk_it450_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=0.45, R_{out} = 100}$", 
-    "cloud_disk_it450_Rout30_rotX45": r"$\mathrm{X_{45}, M_{c} / M_{d}=0.45, R_{out} = 30}$",
-    "cloud_disk_it450_Rout30_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=0.45, R_{out} = 30}$",
-    "cloud_disk_it450_cmass10_rotX45": r"$\mathrm{X_{45}, M_{c} / M_{d}=4.5, R_{out} = 100}$",
-    "cloud_disk_it450_cmass10_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=4.5, R_{out} = 100}$",
-    "cloud_disk_it450_cmass10_Rout30_rotX45": r"$\mathrm{X_{45}, M_{c} / M_{d}=4.5, R_{out} = 30}$",
-    "cloud_disk_it450_cmass10_Rout30_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=4.5, R_{out} = 30}$"} #,
+    # folders_labels = {"cloud_disk_it450_rotX45": r"$\mathrm{X_{45}, M_{c} / M_{d}=0.45, R_{out} = 100}$", "cloud_disk_it450_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=0.45, R_{out} = 100}$", 
+    # "cloud_disk_it450_Rout30_rotX45": r"$\mathrm{X_{45}, M_{c} / M_{d}=0.45, R_{out} = 30}$",
+    # "cloud_disk_it450_Rout30_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=0.45, R_{out} = 30}$",
+    # "cloud_disk_it450_cmass10_rotX45": r"$\mathrm{X_{45}, M_{c} / M_{d}=4.5, R_{out} = 100}$",
+    # "cloud_disk_it450_cmass10_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=4.5, R_{out} = 100}$",
+    # "cloud_disk_it450_cmass10_Rout30_rotX45": r"$\mathrm{X_{45}, M_{c} / M_{d}=4.5, R_{out} = 30}$",
+    # "cloud_disk_it450_cmass10_Rout30_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=4.5, R_{out} = 30}$"} #,
+    # "cloud_disk_it450_retro_rotX45": r"$\mathrm{X_{45, retro}, M_{c} / M_{d}=0.45, R_{out} = 100}$",
+    # "cloud_disk_it450_retro_rotY45": r"$\mathrm{Y_{45, retro}, M_{c} / M_{d}=0.45, R_{out} = 100}$"}
+
+    ############# NICE PLOTS LABELS ###############
+    folders_labels = {"cloud_disk_it450_rotX45": r"$M_{c} / M_{d}=0.45, R_{out} = \mathrm{100 AU}}$", "cloud_disk_it450_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=0.45, R_{out} = 100}$", 
+    "cloud_disk_it450_Rout30_rotX45": r"$M_{c} / M_{d}=0.45, R_{out} = \mathrm{30 AU}}$",
+    "cloud_disk_it450_Rout30_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=0.45, R_{out} = \mathrm{30 AU}}$",
+    "cloud_disk_it450_cmass10_rotX45": r"$M_{c} / M_{d}=4.5, R_{out} = \mathrm{100 AU}}$",
+    "cloud_disk_it450_cmass10_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=4.5, R_{out} = \mathrm{100 AU}}$",
+    "cloud_disk_it450_cmass10_Rout30_rotX45": r"$M_{c} / M_{d}=4.5, R_{out} = \mathrm{30 AU}}$",
+    "cloud_disk_it450_cmass10_Rout30_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=4.5, R_{out} = \mathrm{30 AU}}$"} #,
     # "cloud_disk_it450_retro_rotX45": r"$\mathrm{X_{45, retro}, M_{c} / M_{d}=0.45, R_{out} = 100}$",
     # "cloud_disk_it450_retro_rotY45": r"$\mathrm{Y_{45, retro}, M_{c} / M_{d}=0.45, R_{out} = 100}$"}
 
@@ -237,15 +248,15 @@ def main():
 
     # Plotting inc_avg vs time 
     fig, ax = plt.subplots(figsize=(11, 6))
-    param_study_plot(fig, ax, disk_inc_avg_folder, allit_years, folders_labels, colours, xlabel=r"Time [kyr]", ylabel=r"$\mathrm{inc_{avg} [deg]}$", title=fr"Time Evolution of Average Inclinations $(\mathrm{{\rho \geq 10^{warp_thresh}}})$", figfolder=f'param_study_inc_avg_vs_t_warp{warp_thresh}.png', savefig=True, showfig=True)
+    param_study_plot(fig, ax, disk_inc_avg_folder, allit_years, folders_labels, colours, xlabel=r"Time [kyr]", ylabel=r"$\mathrm{inc_{avg} [deg]}$", title=fr"Time Evolution of Average Inclinations $(\mathrm{{\rho \geq 10^{warp_thresh}}})$", figfolder=f'nice_plots/param_study_inc_avg_vs_t_warp{warp_thresh}.png', savefig=True, showfig=True)
 
     # Plotting twist_avg vs time 
     fig, ax = plt.subplots(figsize=(11, 6))
-    param_study_plot(fig, ax, disk_twist_avg_folder, allit_years, folders_labels, colours, xlabel=r"Time [kyr]", ylabel=r"$\mathrm{twist_{avg} [deg]}$", title=fr"Time Evolution of Average Twist $(\mathrm{{\rho \geq 10^{warp_thresh}}})$", figfolder=f'param_study_twist_avg_vs_t_warp{warp_thresh}.png', savefig=True, showfig=True)
+    param_study_plot(fig, ax, disk_twist_avg_folder, allit_years, folders_labels, colours, xlabel=r"Time [kyr]", ylabel=r"$\mathrm{twist_{avg} [deg]}$", title=fr"Time Evolution of Average Twist $(\mathrm{{\rho \geq 10^{warp_thresh}}})$", figfolder=f'nice_plots/param_study_twist_avg_vs_t_warp{warp_thresh}.png', savefig=True, showfig=True)
 
     # Plotting twist_avg vs time 
     # fig, ax = plt.subplots(figsize=(11, 6))
-    # param_study_plot(fig, ax, disk_whirl_folder, allit_years, folders_labels, colours, xlabel=r"Time [kyr]", ylabel=r"$\mathrm{whirl_{avg} [deg]}$", title=fr"Time Evolution of Disk Whirl $(\mathrm{{\rho \geq 10^{warp_thresh}}})$", figfolder=f'param_study_whirl_vs_t_warp{warp_thresh}.png', savefig=True, showfig=True)
+    # param_study_plot(fig, ax, disk_whirl_folder, allit_years, folders_labels, colours, xlabel=r"Time [kyr]", ylabel=r"$\mathrm{whirl_{avg} [deg]}$", title=fr"Time Evolution of Disk Whirl $(\mathrm{{\rho \geq 10^{warp_thresh}}})$", figfolder=f'nice_plots/param_study_whirl_vs_t_warp{warp_thresh}.png', savefig=True, showfig=True)
     fig, ax = plt.subplots(figsize=(11, 6))
     current_color_index = -1
     last_base = None
@@ -258,6 +269,7 @@ def main():
         elif "rotY" in key:
             base = key.replace("rotY", "")
             ls = "--"
+            continue
         # Only change color when we encounter a new base (first time we see either X or Y)
         if base != last_base:
             current_color_index = (current_color_index + 1) % len(colours)
@@ -271,7 +283,7 @@ def main():
     ax.set_title(fr"Time Evolution of Whirl $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left',
     plt.tight_layout() 
-    plt.savefig(f'param_study_whirl_vs_t_warp{warp_thresh}.png')
+    plt.savefig(f'nice_plots/param_study_whirl_vs_t_warp{warp_thresh}.png')
     plt.show()
 
     # Plotting absolute values of twist_avg vs time 
@@ -287,6 +299,7 @@ def main():
         elif "rotY" in key:
             base = key.replace("rotY", "")
             ls = "--"
+            continue
         # Only change color when we encounter a new base (first time we see either X or Y)
         if base != last_base:
             current_color_index = (current_color_index + 1) % len(colours)
@@ -300,7 +313,7 @@ def main():
     ax.set_title(fr"Time Evolution of Absolute Values of Average Twist $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left',
     plt.tight_layout() 
-    plt.savefig(f'param_study_absolute_twist_avg_vs_t_warp{warp_thresh}.png')
+    plt.savefig(f'nice_plots/param_study_absolute_twist_avg_vs_t_warp{warp_thresh}.png')
     plt.show()
 
     # # Plotting time evolution of cumulative mass at 100 AU
@@ -316,6 +329,7 @@ def main():
     #     elif "rotY" in key:
     #         base = key.replace("rotY", "")
     #         ls = "--"
+                # continue
     #     # Only change color when we encounter a new base (first time we see either X or Y)
     #     if base != last_base:
     #         current_color_index = (current_color_index + 1) % len(colours)
@@ -345,6 +359,7 @@ def main():
     #     elif "rotY" in key:
     #         base = key.replace("rotY", "")
     #         ls = "--"
+            #   continue
     #     # Only change color when we encounter a new base (first time we see either X or Y)
     #     if base != last_base:
     #         current_color_index = (current_color_index + 1) % len(colours)
@@ -375,6 +390,7 @@ def main():
             # continue
             base = key.replace("rotY", "")
             ls = "--"
+            continue
         # Only change color when we encounter a new base (first time we see either X or Y)
         if base != last_base:
             current_color_index = (current_color_index + 1) % len(colours)
@@ -388,7 +404,7 @@ def main():
     ax.set_title(fr"Time Evolution of Mass Accretion Rate onto Star $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
     plt.tight_layout()
-    plt.savefig(f'param_study_clean_Mdot_vs_t_warp{warp_thresh}.png')
+    plt.savefig(f'nice_plots/param_study_clean_Mdot_vs_t_warp{warp_thresh}.png')
     plt.show()
 
 
@@ -408,6 +424,7 @@ def main():
         elif "rotY" in key:
             base = key.replace("rotY", "")
             ls = "--"
+            continue
         # Only change color when we encounter a new base (first time we see either X or Y)
         if base != last_base:
             current_color_index = (current_color_index + 1) % len(colours)
@@ -421,7 +438,7 @@ def main():
     ax.set_title(fr"Disk Inclination vs logr (53 kyr) $(\mathrm{{\rho \geq 10^{{{warp_thresh}}}}})$")
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
     plt.tight_layout()
-    plt.savefig(f'param_study_inc_final_iter_vs_r_warp{warp_thresh}.png')
+    plt.savefig(f'nice_plots/param_study_inc_final_iter_vs_r_warp{warp_thresh}.png')
     plt.show()
 
     # Plotting twist_final vs R
@@ -437,6 +454,7 @@ def main():
         elif "rotY" in key:
             base = key.replace("rotY", "")
             ls = "--"
+            continue
         # Only change color when we encounter a new base (first time we see either X or Y)
         if base != last_base:
             current_color_index = (current_color_index + 1) % len(colours)
@@ -450,7 +468,7 @@ def main():
     ax.set_title(fr"Twist vs logr (53 kyr) $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
     plt.tight_layout()
-    plt.savefig(f'param_study_twist_final_iter_vs_r_warp{warp_thresh}.png')
+    plt.savefig(f'nice_plots/param_study_twist_final_iter_vs_r_warp{warp_thresh}.png')
     plt.show()
 
 
@@ -467,6 +485,7 @@ def main():
         elif "rotY" in key:
             base = key.replace("rotY", "")
             ls = "--"
+            continue
         # Only change color when we encounter a new base (first time we see either X or Y)
         if base != last_base:
             current_color_index = (current_color_index + 1) % len(colours)
@@ -480,7 +499,7 @@ def main():
     ax.set_title(fr"Absolute twist vs logr (53 kyr) $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
     plt.tight_layout()
-    plt.savefig(f'param_study_absolute_twist_final_iter_vs_r_warp{warp_thresh}.png')
+    plt.savefig(f'nice_plots/param_study_absolute_twist_final_iter_vs_r_warp{warp_thresh}.png')
     plt.show()
 
 
@@ -497,6 +516,7 @@ def main():
         elif "rotY" in key:
             base = key.replace("rotY", "")
             ls = "--"
+            continue
         # Only change color when we encounter a new base (first time we see either X or Y)
         if base != last_base:
             current_color_index = (current_color_index + 1) % len(colours)
@@ -510,7 +530,7 @@ def main():
     ax.set_title(fr"$\mathrm{{\log(M_{{cum}}(r))}}$ vs logr (53 kyr) $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
     plt.tight_layout()
-    plt.savefig(f'param_study_Mcumsum_final_iter_vs_r_warp{warp_thresh}.png')
+    plt.savefig(f'nice_plots/param_study_Mcumsum_final_iter_vs_r_warp{warp_thresh}.png')
     plt.show()
 
     # Plotting dMcumdlogr_final vs R
@@ -526,6 +546,7 @@ def main():
         elif "rotY" in key:
             base = key.replace("rotY", "")
             ls = "--"
+            continue
         # Only change color when we encounter a new base (first time we see either X or Y)
         if base != last_base:
             current_color_index = (current_color_index + 1) % len(colours)
@@ -539,7 +560,7 @@ def main():
     ax.set_title(fr"$\mathrm{{\log(dM_{{cum}}(r)/d\log(r))}}$ vs logr (53 kyr) $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
     plt.tight_layout()
-    plt.savefig(f'param_study_dMcumdlogr_final_iter_vs_r_warp{warp_thresh}.png')
+    plt.savefig(f'nice_plots/param_study_dMcumdlogr_final_iter_vs_r_warp{warp_thresh}.png')
     plt.show()
 
     # Making a GIF to show time evolution of dMcumdlogr vs logR
@@ -556,6 +577,7 @@ def main():
     #         elif "rotY" in key:
     #             base = key.replace("rotY", "")
     #             ls = "--"
+                # continue
     #         # Only change color when we encounter a new base (first time we see either X or Y)
     #         if base != last_base:
     #             current_color_index = (current_color_index + 1) % len(colours)
@@ -570,7 +592,7 @@ def main():
     #     ax.set_ylim(26, 33)
     #     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
     #     plt.tight_layout()
-    #     plt.savefig(f'param_study_dMcumdlogr_it{t}.png')
+    #     plt.savefig(f'nice_plots/param_study_dMcumdlogr_it{t}.png')
     #     plt.close()
 
     # make_evol_GIF(".", "param_study_dMcumdlogr_it", f"param_study_dMcumdlogr_warp{warp_thresh}_movie")
