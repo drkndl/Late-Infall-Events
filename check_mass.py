@@ -1,7 +1,7 @@
 import numpy as np 
 import matplotlib.pyplot as plt 
 from pathlib import Path
-from read import get_domain_spherical, get_data, load_par_file
+from read import get_domain_spherical, get_data, load_par_file, get_param_value
 from analysis import calc_cell_volume, calc_mass, calc_surfdens
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes, mark_inset
 import astropy.constants as c
@@ -58,7 +58,7 @@ def dens_profile(sigma, h0, r0, rc, f, zc, plot=True):
     return rho
 
 
-def sph_cell_area_2D(r, theta):
+def sph_cell_area_2D(r, theta, phi):
     """
     Calculating the 2D cell volume: Note: Formula WRONG (02.09)
     """
@@ -66,28 +66,28 @@ def sph_cell_area_2D(r, theta):
     # Finding dr, dphi, dtheta and making them 3D arrays
     dr = np.diff(r)
     dtheta = np.diff(theta)
-    # dphi = np.diff(phi)
-    dR = dr[None, :]
-    dTheta = dtheta[:, None]
-    # dR = dr[None, :, None]
-    # dTheta = dtheta[:, None, None]
-    # dPhi = dphi[None, None, :]
+    dphi = np.diff(phi)
+    # dR = dr[None, :]
+    # dTheta = dtheta[:, None]
+    dR = dr[None, :, None]
+    dTheta = dtheta[:, None, None]
+    dPhi = dphi[None, None, :]
 
     # We are finding the volume at the centre, so centering the cells
     r_c = 0.5 * (r[:-1] + r[1:])
     theta_c = 0.5 * (theta[:-1] + theta[1:])
-    # phi_c = 0.5 * (phi[:-1] + phi[1:])
+    phi_c = 0.5 * (phi[:-1] + phi[1:])
 
     # Creating a meshgrid of the centered cells
-    Theta_c, R_c = np.meshgrid(theta_c, r_c, indexing='ij')
-    # Theta_c, R_c, Phi_c = np.meshgrid(theta_c, r_c, phi_c, indexing='ij')
+    # Theta_c, R_c = np.meshgrid(theta_c, r_c, indexing='ij')
+    Theta_c, R_c, Phi_c = np.meshgrid(theta_c, r_c, phi_c, indexing='ij')
 
     # Finding cell surface elements
-    # cell_vol = (R_c**2) * np.sin(Theta_c) * dR * dTheta * dPhi
-    cell_area = 2 * np.pi * np.sin(Theta_c) * R_c * dR 
+    cell_vol = (R_c**2) * np.sin(Theta_c) * dR * dTheta * dPhi
+    # cell_area = 2 * np.pi * np.sin(Theta_c) * R_c * dR 
 
-    return cell_area
-    # return cell_vol
+    # return cell_area
+    return cell_vol
 
 
 ###################################### Numerically integrating for the disk mass ##########################################
@@ -96,25 +96,27 @@ def sph_cell_area_2D(r, theta):
 def main():
     
     # Disk parameters from corresponding nocloud_nocomp par file
-    folder = Path("nocloud_nocomp_it10/")                                  # Folder with the output files
-    it = 10                                                                # FARGO snapshot of interest
-    sim_params = load_par_file(f"{folder}/{folder}.par")                   # Loading simulation parameters from the .par file
+    folder = Path("../cloud_disk_it450_rotX45/")                                  # Folder with the output files
+    fig_imgs = Path("cloud_disk_it450_rotX45/imgs/")                      # Folder to save images  
+    sim_name = str(fig_imgs).split('/')[0]                                     # Simulation name (for plot labels)
+    it = 1                                                                # FARGO snapshot of interest
+    b = get_param_value('ImpactParameter', sim_name)
 
     R0 = 5.2 * au                         # As defined in FARGO3D [cm]
     Rin = 10. * au                        # Disk inner radius in cm (corresponds to Ymin in mesh parameters) 
     Rout = 100. * au                      # Disk outer radius in cm (corresponds to Rout in disk parameters)
-    sigma0 = sim_params['Sigma0']         # Surface density at R0 in g/cm^2
-    p = sim_params['SigmaSlope']          # Negative surface density power law slope
-    f = sim_params['FlaringIndex']        # Flaring index
-    h0 = sim_params['AspectRatio']        # Aspect ratio 
+    sigma0 = get_param_value('Sigma0', sim_name)         # Surface density at R0 in g/cm^2
+    p = get_param_value('SigmaSlope', sim_name)          # Negative surface density power law slope
+    f = get_param_value('FlaringIndex', sim_name)        # Flaring index
+    h0 = get_param_value('AspectRatio', sim_name)        # Aspect ratio 
     theta_min = 0.17453292519943          # Theta lower limit (corresponds to Zmin in mesh params, 10 deg)
     theta_max = 2.96705972839036          # Theta upper limit (corresponds to Zmax in mesh params, 170 deg)
-    # phi_min = - np.pi                     # Phi lower limit (corresponds to Xmin in mesh params)
-    # phi_max = np.pi                       # Phi lower limit (corresponds to Xmax in mesh params)
+    phi_min = - np.pi                     # Phi lower limit (corresponds to Xmin in mesh params)
+    phi_max = np.pi                       # Phi lower limit (corresponds to Xmax in mesh params)
 
-    theta = np.linspace(theta_min, theta_max, sim_params['Nz'])                           # Theta array
-    r = np.logspace(np.log10(Rin / au), np.log10(Rout / au), sim_params['Ny']) * au       # Radius array
-    # phi = np.linspace(phi_min, phi_max, sim_params['Nx'])
+    theta = np.linspace(theta_min, theta_max, get_param_value('Nz', sim_name))                           # Theta array
+    r = np.logspace(np.log10(Rin / au), np.log10(Rout / au), get_param_value('Ny', sim_name)) * au       # Radius array
+    phi = np.linspace(phi_min, phi_max, get_param_value('Nx', sim_name))
 
     # Centering the cells
     r_c = 0.5 * (r[:-1] + r[1:])
@@ -138,16 +140,16 @@ def main():
     rho_r = dens_profile(sigma_r, h0, R0, RCYL, f, ZCYL, plot=False)
 
     # Calculating total disk mass
-    S = sph_cell_area_2D(r, theta)
-    disk_mass_theoretical = np.sum(sigma_r * S)
-    # disk_mass_theoretical = np.sum(rho_r * S)
+    S = sph_cell_area_2D(r, theta, phi)
+    # disk_mass_theoretical = np.sum(sigma_r * S)
+    disk_mass_theoretical = np.sum(rho_r * S)
 
 
 #################################### Adding up mass from the simulation ######################################
 
 
-    disk_folder = Path("../nocloud_nocomp_it10/")                      # Folder with the output files
-    disk_fig_imgs = Path("nocloud_nocomp_it10/imgs/")                  # Folder to save images
+    disk_folder = Path("../cloud_disk_it450_rotX45/")                      # Folder with the output files
+    disk_fig_imgs = Path("cloud_disk_it450_rotX45/imgs/")                  # Folder to save images
     disk_it = 10                                                       # FARGO snapshot of interest
 
     domains = get_domain_spherical(disk_folder)
@@ -208,7 +210,7 @@ def main():
 
     print(f"Theoretical disk mass: {disk_mass_theoretical:.2e} g or {(disk_mass_theoretical / Msun):.3f} Msun")
     print(f"Simulation disk mass: {disk_mass_simulation:.2e} g or {(disk_mass_simulation / Msun):.3f} Msun")
-
+    ejedshj
 
     ################################## Now calculating cloudlet mass from the simulation ###################################
 

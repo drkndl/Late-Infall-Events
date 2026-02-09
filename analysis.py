@@ -4,7 +4,7 @@ import numpy as np
 from pathlib import Path
 from read import get_domain_spherical, get_data, load_par_file, get_param_value
 import matplotlib.pyplot as plt
-from no_thoughts_just_plots import quiver_plot_3d, contours_3D, plot_surf_dens, plot_twist_arrows, plot_total_disks_bonanza, cyl_2D_plot, XY_2D_plot, velocity_streamlines, plotly_quiver3D, vel_cyl_2D, plot_disk_sep
+from no_thoughts_just_plots import quiver_plot_3d, contours_3D, plot_surf_dens, plot_twist_arrows, plot_total_disks_bonanza, cyl_2D_plot, XY_2D_plot, velocity_streamlines, plotly_quiver3D, vel_cyl_2D, plot_disk_sep, interactive_2D
 import astropy.constants as c
 import pandas as pd
 # import pyvista as pv 
@@ -708,7 +708,7 @@ def main():
 
     # 2D visualizations
     # irad = -1
-    irad = np.where(domains["r"]/au < 200)[0][-1]
+    irad = np.where(domains["r"]/au < 350)[0][-1]
     iphi = 0
     itheta = int(7*len(domains["theta"])/15)
     # print(itheta)
@@ -723,11 +723,11 @@ def main():
     # Density RZ plot
     # cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Density R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, data_phiavg=False)
 
-    XY_2D_plot(vrad * 1e-5, X, Y, irad, itheta, vmin=-0.5, vmax=0.5, title=rf'{sim_name}: X-Y Radial Velocity $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$v_{rad} (km/s)$", savefig=True, figfolder=f'{fig_imgs}/vrad_xy_phi{iphi}_rad{irad}_it{it}.png', showfig=True)
+    # XY_2D_plot(vrad * 1e-5, X, Y, irad, itheta, vmin=-0.5, vmax=0.5, title=rf'{sim_name}: X-Y Radial Velocity $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$v_{rad} (km/s)$", savefig=True, figfolder=f'{fig_imgs}/vrad_xy_phi{iphi}_rad{irad}_it{it}.png', showfig=True)
 
     # Radial velocity RZ plot (multiplying vrad by 1e-5 to convert cm/s to km/s)
     # vel_cyl_2D(vrad * 1e-5, rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Radial Velocities R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\mathrm{v_{rad} (\rm km/s)}$", savefig=True, figfolder=f'{fig_imgs}/radvel_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, acc=False, data_phiavg=False)
-    edjwfk
+    # edjwfk
  
     # Rho * Radial velocity RZ plot (multiplying vrad by 1e-5 to convert cm/s to km/s)
     # vel_cyl_2D(vrad, rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: $\rho v_{{rad}}$ R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\mathrm{\rho v_{rad} (\rm g \rm km/s)}$", savefig=True, figfolder=f'{fig_imgs}/rhoradvel_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, acc=True, data_phiavg=False)
@@ -846,15 +846,21 @@ def main():
     # plot_surf_dens(X_c, Y_c, Z_c, surf_dens, warp_ids, domains["r"], savefig=False, figfolder=f'../warp_L_thresh{warp_thresh}_it{it}.png', showfig=True)
 
     # Plotting warp Laplace-Runge-Lenz vector
-    # quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Ax[warp_ids], Ay[warp_ids], Az[warp_ids], stagger=70, length=3, title=rf'Warp LRL', colorbarlabel=r'$\log(A [g^2cm^3/s^2])$', savefig=True, figfolder=f'../warp_{it}_LRL.png', logmag=True)
+    quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Ax[warp_ids], Ay[warp_ids], Az[warp_ids], stagger=500, length=10, title=rf'Warp LRL', colorbarlabel=r'$\log(A [g^2cm^3/s^2])$', savefig=True, figfolder=f'../warp_{it}_LRL.png', logmag=True)
 
     # Plotting warp eccentricity
-    # quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, ex[warp_ids], ey[warp_ids], ez[warp_ids], stagger=70, length=3, title=rf'Warp Eccentricity', colorbarlabel=r'$e$', savefig=True, figfolder=f'../warp_{it}_ecc.png', logmag=False)
+    # quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, ex[warp_ids], ey[warp_ids], ez[warp_ids], stagger=70, length=30, title=rf'Warp Eccentricity', colorbarlabel=r'$e$', savefig=True, figfolder=f'../warp_{it}_ecc.png', logmag=False)
 
     # print(X)
-    XY_2D_plot(e, X_c, Y_c, irad, itheta, vmin=0, vmax=1, title=rf'{sim_name}: X-Y Eccentricity $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$e$", savefig=True, figfolder=f'{fig_imgs}/e_xy_phi{iphi}_rad{irad}_it{it}.png', showfig=True)
+    XY_2D_plot(e, X_c, Y_c, irad, itheta, vmin=0, vmax=0.2, title=rf'{sim_name}: X-Y Eccentricity $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$e$", savefig=True, figfolder=f'{fig_imgs}/e_xy_phi{iphi}_rad{irad}_it{it}.png', showfig=True)
 
-    cyl_2D_plot(e, R_c, Z_c, irad, iphi, vmin=0, vmax=1, title=rf'{sim_name}: Eccentricity R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$e$", savefig=True, figfolder=f'{fig_imgs}/e_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, data_phiavg=False)
+    labels = [r'$\pi - \theta$ [deg]',r'$\log r$ [AU]',r'$\phi$ [deg]']
+    # labels_allit = [r"Time"] + labels
+
+    interactive_2D(e[::-1,:,:], [r'$\phi$ [deg]'], (1,0), np.log10(domains['r'][:-1] / au), np.rad2deg(domains['theta'][:-1]), labels, title=rf"{sim_name}: $e$ $(r, \theta)$ it={it}", vmin=0, vmax=1)
+
+    # iphi = 50
+    # cyl_2D_plot(10**e, R_c, Z_c, irad, iphi, vmin=0, vmax=1, title=rf'{sim_name}: Eccentricity R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$e$", savefig=True, figfolder=f'{fig_imgs}/e_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, data_phiavg=False)
 
     # Characterizing warp eccentricity 
     # print("Min Warp eccentricity: ", np.min(e[warp_ids]))
