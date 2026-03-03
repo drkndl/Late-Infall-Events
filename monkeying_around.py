@@ -4,6 +4,33 @@ from mpl_toolkits.mplot3d import Axes3D
 import plotly.graph_objects as go
 import pandas as pd
 
+print("Working on the orbit now (new version)...")
+# Define masks
+data_mask = domain_grids["r_m"] < 500*au
+data_mask_H = (domain_grids["r_m"] < 500*au)&(domain_grids["zcyl_m"] < H_r)
+# First, calculate the angular momentum vector in cartesian coordinates for each cell
+vxcar, vycar, vzcar = sph2cart_vel(loaded_dict["vy"], loaded_dict["vz"], loaded_dict["vx"], domain_grids["theta_m"], domain_grids["phi_m"])
+Lx = (domain_grids["y_m"][None,...] * vzcar - domain_grids["z_m"][None,...] * vycar)*loaded_dict["dens"]*dV[None,...]
+Ly = (domain_grids["z_m"][None,...] * vxcar - domain_grids["x_m"][None,...] * vzcar)*loaded_dict["dens"]*dV[None,...]
+Lz = (domain_grids["x_m"][None,...] * vycar - domain_grids["y_m"][None,...] * vxcar)*loaded_dict["dens"]*dV[None,...]
+L = np.stack((Lx,Ly,Lz), axis=-1)
+v_car = np.stack((vxcar, vycar, vzcar), axis=-1)
+del Lx, Ly, Lz
+del vxcar, vycar, vzcar
+# Calculate the position vector
+r_vec = np.stack((domain_grids["x_m"], domain_grids["y_m"], domain_grids["z_m"]), axis=-1)
+# "Partical" mass
+m = loaded_dict["dens"]*dV[None,...]
+# Use the angular momentum to calculate the LRL vector
+A = np.cross(m[...,None]*v_car, L)-m[...,None]**2*G*MSTAR*(r_vec/domain_grids["r_m"][...,None])[None,...]
+# Calculate the eccentricity vector from A
+e_vec = A/(m[...,None]**2*G*MSTAR)
+# Calculate the semi-major axis from the angular momentum vector and eccentricity vector
+e_abs = np.sqrt(np.sum(e_vec**2, axis=-1))
+sma = np.sum(L**2, axis=-1)/m**2 / (G*MSTAR*(1-e_abs**2))
+# Perform volume (v) and mass (m) averaging for the whole eccentricity vector
+sma_bins = np.logspace(np.log10(5*au), np.log10(100*au), 100)
+
 df = pd.read_csv("https://raw.githubusercontent.com/plotly/datasets/master/vortex.csv")
 
 fig = go.Figure(data = go.Cone(

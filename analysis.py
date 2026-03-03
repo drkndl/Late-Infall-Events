@@ -675,14 +675,16 @@ def main():
     vy_c = centering(vy)
     vz_c = centering(vz)
 
-    cell_volume = calc_cell_volume(domains["theta"], domains["r"], domains["phi"])
-    mass = calc_mass(rho, cell_volume)
-    surf_dens = calc_surfdens(rho, domains["theta"], domains["r"], domains["phi"])
-    Lx, Ly, Lz = calc_angular_momentum(mass, X, Y, ZCYL, vx, vy, vz)
-    Ax, Ay, Az = calc_LRL(mass, Mstar, vx_c, vy_c, vz_c, Lx, Ly, Lz, X_c, Y_c, Z_c)
-    ex, ey, ez = calc_eccen(Ax, Ay, Az, mass, Mstar)
-    e = np.sqrt(ex**2 + ey**2 + ez**2)
-    # print(e)
+    cell_volume = calc_cell_volume(domains["theta"], domains["r"], domains["phi"])          # Volume 3D
+    mass = calc_mass(rho, cell_volume)                                                      # Mass 3D
+    surf_dens = calc_surfdens(rho, domains["theta"], domains["r"], domains["phi"])          # Surface density 3D
+    Lx, Ly, Lz = calc_angular_momentum(mass, X, Y, ZCYL, vx, vy, vz)                        # Angular momentum 3D
+    Ax, Ay, Az = calc_LRL(mass, Mstar, vx_c, vy_c, vz_c, Lx, Ly, Lz, X_c, Y_c, Z_c)         # Laplace-Runge-Lenz vector 3D
+    ex, ey, ez = calc_eccen(Ax, Ay, Az, mass, Mstar)                                        # Eccentricity 3D
+    e = np.sqrt(ex**2 + ey**2 + ez**2)                                                      # Absolute eccentricity 3D 
+
+    print(Lx.shape, Ly.shape, Lz.shape)
+    print(e.shape)
 
 
     ########################### Isolating the warp in the primary disk ###############################
