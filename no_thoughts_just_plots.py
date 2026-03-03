@@ -658,7 +658,7 @@ def make_evol_GIF(directory, fname, gif_name, delete_files=True):
     print(filenames)
 
     # Create GIF
-    with imageio.get_writer(f'{directory}/{gif_name}.gif', mode='I', fps=2) as writer:
+    with imageio.get_writer(f'{directory}/{gif_name}.gif', mode='I', fps=15) as writer:
         for filename in filenames:
             image = imageio.imread(f'{directory}/{filename}')
             writer.append_data(image)
@@ -825,14 +825,15 @@ def plot_disk_sep(R, inc, title, savefig, figfolder, showfig=True):
     """
 
     rc = 0.5 * (R[:-1] + R[1:])
-    di_dr = np.gradient(inc, rc)
+    di_dr = np.gradient(inc[2:], rc[2:])
     r_break = rc[np.nanargmax(np.abs(di_dr))]
+    print(f"r_break: {(r_break/au):.2f}")
 
     colours = cmaps.discrete_Bg.discrete(3)
     colours = colours(np.linspace(0, 1, 3))
 
     # Plot d(inc)/dr
-    plt.plot(rc/au, di_dr, color=colours[0], linewidth=3)
+    plt.plot(rc[2:]/au, di_dr, color=colours[0], linewidth=3)
     plt.axvline(r_break/au, color='black', linestyle='--', linewidth=2.5)         # Label separation between inner and outer disks
     plt.axvspan(10, r_break/au, color=colours[1], alpha=0.3)                      # Shading area corresponding to the inner disk
     plt.axvspan(r_break/au, 300, color=colours[2], alpha=0.3)                     # Shading area corresponding to the outer disk

@@ -34,9 +34,9 @@ plt.rcParams['legend.fontsize'] = 12     # legend font size
 def main():
 
 
-    folder = Path("../cloud_disk_it450_cmass10_rotX45/")                        # Folder with the FARGO output files
-    # folder = Path("../fargo3d/outputs/cloud_disk_it450_cmass10_rotX45/")          # Folder with the FARGO output files (Binac2)
-    fig_imgs = Path("cloud_disk_it450_cmass10_rotX45/imgs/")                      # Folder to save images    
+    folder = Path("../cloud_disk_it450_b01_rotX45/")                        # Folder with the FARGO output files
+    # folder = Path("../fargo3d/outputs/cloud_disk_it450_b01_rotX45/")          # Folder with the FARGO output files (Binac2)
+    fig_imgs = Path("cloud_disk_it450_b01_rotX45/imgs/")                      # Folder to save images    
     iter_total = 450                                     # FARGO snapshot
 
     first_it = 100
@@ -143,12 +143,12 @@ def main():
         # cyl_2D_plot(rho_phiavg, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: $\phi$ Averaged Density R-Z Plane t = {int(it * dt * ninterm / stoky)} kyr', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_phiavg_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=False, data_phiavg=True)
 
         # Density RZ plot
-        # cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Density R-Z Plane $\phi = $ {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$, t = {int(it * dt * ninterm / stoky)} kyr', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_cyl_it{it}.png', showfig=False, data_phiavg=False)
+        cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, vmin=-19, vmax=-11, title=rf'{sim_name}: Density R-Z Plane $\phi = $ {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$, t = {int(it * dt * ninterm / stoky)} kyr', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_cyl_it{it}.png', showfig=False, data_phiavg=False)
 
-        # XY_2D_plot(rho, X, Y, irad, itheta, title=rf'{sim_name}: Density X-Y Plane $\theta = $ {itheta_deg}$^{{\circ}}$, t = {int(it * dt * ninterm / stoky)} kyr', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=f'{fig_imgs}/dens_xy_theta{itheta}_rad{irad}_it{it}.png', showfig=False)
+        XY_2D_plot(rho, X, Y, irad, itheta, vmin=-19, vmax=-11, title=rf'{sim_name}: Density X-Y Plane $\theta = $ {itheta_deg}$^{{\circ}}$, t = {int(it * dt * ninterm / stoky)} kyr', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=f'{fig_imgs}/dens_xy_theta{itheta}_rad{irad}_it{it}.png', showfig=False)
 
         # Plotting the warp densities 
-        # contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_warp, r_select, plot_args, colorbarlabel=r'$\rho [g/cm^3]$', title=rf'{sim_name} $\log(\rho)$ above $\rho = 10^{{{warp_thresh}}} g/cm^3$, t = {int(it * dt * ninterm / stoky)} kyr', savefig=True, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=False)
+        contours_3D(X_c/au, Y_c/au, Z_c/au, rho_c_warp, r_select, plot_args, colorbarlabel=r'$\rho [g/cm^3]$', title=rf'{sim_name} $\log(\rho)$ above $\rho = 10^{{{warp_thresh}}} g/cm^3$, t = {int(it * dt * ninterm / stoky)} kyr', savefig=True, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=False)
 
         # Plotting the Cartesian warp angular momenta
         # quiver_plot_3d(X_c/au, Y_c/au, Z_c/au, Lx_c_warp, Ly_c_warp, Lz_c_warp, stagger=100, length=3, title="Warp Angular Momenta", colorbarlabel="logL", savefig=False, figfolder=f'{fig_imgs}/warp_L_thresh{warp_thresh}_it{it}.png', logmag=True, ignorecol=True, showfig=False)
@@ -168,7 +168,7 @@ def main():
         # L_prim_mag = np.sqrt(Lx_disk**2 + Ly_disk**2 + Lz_disk**2)
 
         # Calculating and plotting the radial profile of warp precession as a quiver plot
-        # plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, plot_args, title=f"Warp twist {sim_name} t={int(calc_simtime(it))} kyr", savefig=True, figfolder=f'{fig_imgs}/warp_twist_arrows_it{it}.png', showfig=False)
+        plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, plot_args, title=f"Warp twist {sim_name} t={int(calc_simtime(it))} kyr", savefig=True, figfolder=f'{fig_imgs}/warp_twist_arrows_it{it}.png', showfig=False)
 
 
         ###################################### Isolating the outer disk ############################################
@@ -422,11 +422,11 @@ def main():
 
 
     # Make a time evolution GIF out of the 3D surface density and twist plots
-    # make_evol_GIF(fig_imgs, "warp_dens_thresh", "warp_dens_movie")
-    # make_evol_GIF(fig_imgs, "warp_twist_arrows", "warp_twist_movie")
+    make_evol_GIF(fig_imgs, "warp_dens_thresh", "warp_dens_movie")
+    make_evol_GIF(fig_imgs, "warp_twist_arrows", "warp_twist_movie")
     # make_evol_GIF(fig_imgs, "dens_phiavg_cyl_phi", "dens_phiavg_cyl_movie")
-    # make_evol_GIF(fig_imgs, "dens_cyl_it", "dens_cyl_movie")
-    # make_evol_GIF(fig_imgs, "dens_xy_theta", "dens_xy_movie")
+    make_evol_GIF(fig_imgs, "dens_cyl_it", "dens_cyl_movie")
+    make_evol_GIF(fig_imgs, "dens_xy_theta", "dens_xy_movie")
     # make_evol_GIF(fig_imgs, "total_bonanza", "total_bonanza_movie")
     # make_evol_GIF(fig_imgs, "radvel_cyl_it", "radvel_cyl_movie")
 

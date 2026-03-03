@@ -21,9 +21,9 @@ stoky = 3.156e7 * 1e3     # 1 kyr in sec
 
 def main():
 
-    folder = Path("../cloud_disk_it450_cmass10_Rout30_rotY45/")                        # Folder with the FARGO output files
-    # folder = Path("../fargo3d/outputs/cloud_disk_it450_cmass10_Rout30_rotY45/")      # Folder with the FARGO output files (Binac2)
-    fig_imgs = Path("cloud_disk_it450_cmass10_Rout30_rotY45/imgs/")                    # Folder to save images    
+    folder = Path("../cloud_disk_it450_b01_rotX45/")                        # Folder with the FARGO output files
+    # folder = Path("../fargo3d/outputs/cloud_disk_it450_b01_rotX45/")      # Folder with the FARGO output files (Binac2)
+    fig_imgs = Path("cloud_disk_it450_b01_rotX45/imgs/")                    # Folder to save images    
     iter_total = 450                                     # FARGO snapshot
 
     first_it = 0
@@ -98,7 +98,10 @@ def main():
         # plt.plot(np.log10(domains["r"][:-1]/au), np.log10(disk_mass_radial_it))
         # plt.show()        
         disk_mass_it = np.sum(disk_mass_radial_it)
+        print((it))
         print(f"Disk mass: {disk_mass_it/Msun:.4f} Msun, {disk_mass_it:.2e} g")
+        print(f"Cloud mass: {cloud_mass_ini/Msun:.4f} Msun, {cloud_mass_ini:.2e} g")
+        print(f"Rout 30 AU Mc/Md ratio: {cloud_mass_ini/disk_mass_it:.4f}")
         disk_mass_allit.append(disk_mass_it)
 
 
@@ -116,6 +119,7 @@ def main():
     ax.set_xlabel(r"Time t [kyr]")
     ax.set_ylabel(r"$\log(M_{cloud,acc})$ [$M_\odot$]")
     # ax.set_title("Disk surface density profile")
+    fig.tight_layout()
     plt.savefig(f'{fig_imgs}/cloud_mass_accreted.png')
     plt.show()
 
@@ -124,6 +128,7 @@ def main():
     ax.set_xlabel(r"$Time [kyr]$")
     ax.set_ylabel(r"Cloud Accretion Efficiency [%] $\frac{M_{cloud,acc}}{M_{cloud}}$")
     # ax.set_title("Disk surface density profile")
+    fig.tight_layout()
     plt.savefig(f'{fig_imgs}/cloud_accretion_efficiency.png')
     plt.show()
 

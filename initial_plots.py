@@ -8,7 +8,7 @@ import astropy.constants as c
 au = c.au.cgs.value
 
 
-folder = Path("../cloud_disk_it450_rotX45/")         # Folder with the output files
+folder = Path("../cloud_disk_it450_b01_rotX45/")         # Folder with the output files
 sim_name = str(folder).split('/')[1]                 # Simulation name (for plot labelling)
 it = 450                                             # FARGO snapshot
 
@@ -75,7 +75,7 @@ print(iphi_deg9)
 # interactive_2D(np.log10(mass[::-1,:,:]), [r'$\phi$ [deg]'], (1,0), np.log10(domains['r'] / au)[:-1], np.rad2deg(domains['theta'])[:-1], labels, vmin=20, title=rf"{sim_name}: $M$ $(r, \theta)$ it={it}")
 
 # rho plot at all iterations
-# interactive_2D(np.log10(rho_allit[:,::-1,:,:]), [r"Time", r'$\phi$ [deg]'], (2,1), np.log10(domains['r'] / au), np.rad2deg(domains['theta']), labels_allit, title=rf"{sim_name}: $\rho$ $(r, \theta)$ Time Evolution")
+interactive_2D(np.log10(rho_allit[:,::-1,:,:]), [r"Time", r'$\phi$ [deg]'], (2,1), np.log10(domains['r'] / au), np.rad2deg(domains['theta']), labels_allit, title=rf"{sim_name}: $\rho$ $(r, \theta)$ Time Evolution", vmin=-19, vmax=-11)
 
 # mass plot at all iterations
 # interactive_2D(np.log10(mass_allit[:,::-1,:,:]), [r"Time", r'$\phi$ [deg]'], (2,1), np.log10(domains['r'] / au)[:-1], np.rad2deg(domains['theta'])[:-1], labels_allit, vmin=20, title=rf"{sim_name}: $M$ $(r, \theta)$ Time Evolution")
@@ -84,7 +84,7 @@ print(iphi_deg9)
 # interactive_2D(vrad[::-1,:,:], [r'$\phi$ [deg]'], (1,0), np.log10(domains['r'] / au), np.rad2deg(domains['theta']), labels, title=rf"{sim_name}: $v_{{rad}}$ $(r, \theta)$ it={it}", vmin=-1e4, vmax=1e4)
 
 # velocity plot at all iterations
-interactive_2D(vrad_allit[:,::-1,:,:] * 1e-5, [r"Time", r'$\phi$ [deg]'], (2,1), np.log10(domains['r'] / au), np.rad2deg(domains['theta']), labels_allit, title=rf"{sim_name}: $v_{{rad}}$ $(r, \theta)$ it={it}", vmin=-1e4 * 1e-5, vmax=1e4 * 1e-5)
+# interactive_2D(vrad_allit[:,::-1,:,:] * 1e-5, [r"Time", r'$\phi$ [deg]'], (2,1), np.log10(domains['r'] / au), np.rad2deg(domains['theta']), labels_allit, title=rf"{sim_name}: $v_{{rad}}$ $(r, \theta)$ it={it}", vmin=-1e4 * 1e-5, vmax=1e4 * 1e-5)
 
 # rho plot at all iterations
 # interactive_2D(np.log10(rho_allit[:,::-1,:,:]), [r"Time", r'$\phi$ [deg]'], (2,1), np.log10(domains['r'] / au), np.rad2deg(domains['theta']), labels_allit, title=rf"{sim_name}: $\rho$ $(r, \theta)$ Time Evolution")

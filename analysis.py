@@ -626,9 +626,9 @@ def calc_whirl(Lx_tot, Ly_tot, Lz_tot, ini_cloud_phi):
 
 def main():
 
-    folder = Path("../cloud_disk_it450_rotX45/")                        # Folder with the output files
-    # folder = Path("../fargo3d/outputs/cloud_disk_it450_rotX45")         # Folder with the output files (BinAC2)
-    fig_imgs = Path("cloud_disk_it450_rotX45/imgs/")                    # Folder to save images
+    folder = Path("../cloud_disk_it450_b01_rotX45/")                        # Folder with the output files
+    # folder = Path("../fargo3d/outputs/cloud_disk_it450_b01_rotX45")         # Folder with the output files (BinAC2)
+    fig_imgs = Path("cloud_disk_it450_b01_rotX45/imgs/")                    # Folder to save images
     it = 450                                                       # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                         # Simulation name (for plot labels)
     
@@ -721,12 +721,12 @@ def main():
     # cyl_2D_plot(rho_phiavg, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: $\phi$ Averaged Density R-Z Plane', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_phiavg_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, data_phiavg=True)
 
     # Density RZ plot
-    # cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Density R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, data_phiavg=False)
+    cyl_2D_plot(rho, RCYL, ZCYL, irad, iphi, vmin=-17, vmax=-11, title=rf'{sim_name}: Density R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\rho (g/cm^{3})$", savefig=True, figfolder=f'{fig_imgs}/dens_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, data_phiavg=False)
 
     # XY_2D_plot(vrad * 1e-5, X, Y, irad, itheta, vmin=-0.5, vmax=0.5, title=rf'{sim_name}: X-Y Radial Velocity $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$v_{rad} (km/s)$", savefig=True, figfolder=f'{fig_imgs}/vrad_xy_phi{iphi}_rad{irad}_it{it}.png', showfig=True)
 
     # Radial velocity RZ plot (multiplying vrad by 1e-5 to convert cm/s to km/s)
-    # vel_cyl_2D(vrad * 1e-5, rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Radial Velocities R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\mathrm{v_{rad} (\rm km/s)}$", savefig=True, figfolder=f'{fig_imgs}/radvel_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, acc=False, data_phiavg=False)
+    vel_cyl_2D(vrad * 1e-5, rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Radial Velocities R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\mathrm{v_{rad} (\rm km/s)}$", savefig=True, figfolder=f'{fig_imgs}/radvel_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, acc=False, data_phiavg=False)
     # edjwfk
  
     # Rho * Radial velocity RZ plot (multiplying vrad by 1e-5 to convert cm/s to km/s)
@@ -751,7 +751,7 @@ def main():
     # XY_2D_plot(rho, X, Y, irad, itheta, title=rf'{sim_name}: Density X-Y Plane $\theta = $ {itheta_deg}$^{{\circ}}$', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=f'{fig_imgs}/dens_xy_theta{itheta}_rad{irad}_it{it}.png', showfig=True)
 
     # Plotting the 3D warp/disk densities 
-    # contours_3D(X_c/au, Y_c/au, Z_c/au, np.log10(rho_c_warp), r_select, plot_args, colorbarlabel=r'$\log(\rho) [g/cm^3]$', title=rf'{sim_name}: Initial & Outer Disks: $\log(\rho)$', savefig=True, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=True)
+    contours_3D(X_c/au, Y_c/au, Z_c/au, np.log10(rho_c_warp), r_select, plot_args, colorbarlabel=r'$\log(\rho) [g/cm^3]$', title=rf'{sim_name}: Initial & Outer Disks: $\log(\rho)$', savefig=True, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=True)
     
     # Another way to plot the warp/disk densities
     # contours_3D(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, rho_c[warp_ids], fig, colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$')
@@ -789,7 +789,7 @@ def main():
     
 
     # Finding the radial separation between the inner and outer disks at the discontinuity of dinc/dr
-    r_break = plot_disk_sep(domains["r"], inc, title=rf"{sim_name}: Inclination Gradient", savefig=True, figfolder=f'{fig_imgs}/dinc_dr.png', showfig=False)
+    r_break = plot_disk_sep(domains["r"], inc, title=rf"{sim_name}: Inclination Gradient", savefig=True, figfolder=f'{fig_imgs}/dinc_dr.png', showfig=True)
     print("r_break:", r_break/au)
 
     # Isolating the outer disk using r_break and a density threshold
@@ -846,7 +846,7 @@ def main():
     # plot_surf_dens(X_c, Y_c, Z_c, surf_dens, warp_ids, domains["r"], savefig=False, figfolder=f'../warp_L_thresh{warp_thresh}_it{it}.png', showfig=True)
 
     # Plotting warp Laplace-Runge-Lenz vector
-    quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Ax[warp_ids], Ay[warp_ids], Az[warp_ids], stagger=500, length=10, title=rf'Warp LRL', colorbarlabel=r'$\log(A [g^2cm^3/s^2])$', savefig=True, figfolder=f'../warp_{it}_LRL.png', logmag=True)
+    quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Ax[warp_ids], Ay[warp_ids], Az[warp_ids], stagger=500, length=10, title=rf'Warp LRL', colorbarlabel=r'$\log(A [g^2cm^3/s^2])$', savefig=True, figfolder=f'{fig_imgs}/warp_{it}_LRL.png', logmag=True)
 
     # Plotting warp eccentricity
     # quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, ex[warp_ids], ey[warp_ids], ez[warp_ids], stagger=70, length=30, title=rf'Warp Eccentricity', colorbarlabel=r'$e$', savefig=True, figfolder=f'../warp_{it}_ecc.png', logmag=False)
@@ -856,8 +856,6 @@ def main():
 
     labels = [r'$\pi - \theta$ [deg]',r'$\log r$ [AU]',r'$\phi$ [deg]']
     # labels_allit = [r"Time"] + labels
-
-    interactive_2D(e[::-1,:,:], [r'$\phi$ [deg]'], (1,0), np.log10(domains['r'][:-1] / au), np.rad2deg(domains['theta'][:-1]), labels, title=rf"{sim_name}: $e$ $(r, \theta)$ it={it}", vmin=0, vmax=1)
 
     # iphi = 50
     # cyl_2D_plot(10**e, R_c, Z_c, irad, iphi, vmin=0, vmax=1, title=rf'{sim_name}: Eccentricity R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$e$", savefig=True, figfolder=f'{fig_imgs}/e_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, data_phiavg=False)

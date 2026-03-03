@@ -20,9 +20,9 @@ stoky = 3.156e7 * 1e3     # 1 kyr in sec
 def main():
 
 
-    folder = Path("../cloud_disk_it450_cmass10_rotX45/")                        # Folder with the output files
-    # folder = Path("../fargo3d/outputs/cloud_disk_it450_cmass10_rotX45")     # Folder with the output files (BinAC2)
-    fig_imgs = Path("cloud_disk_it450_cmass10_rotX45/imgs/")                  # Folder to save images
+    folder = Path("../cloud_disk_it450_b01_rotX45/")                        # Folder with the output files
+    # folder = Path("../fargo3d/outputs/cloud_disk_it450_b01_rotX45")     # Folder with the output files (BinAC2)
+    fig_imgs = Path("cloud_disk_it450_b01_rotX45/imgs/")                  # Folder to save images
     it = 450                                                             # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                               # Simulation name (for plot labels)
 
