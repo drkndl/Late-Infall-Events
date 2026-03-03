@@ -21,9 +21,9 @@ stoky = 3.156e7 * 1e3     # 1 kyr in sec
 
 def main():
 
-    folder = Path("../cloud_disk_it450_b09_rotX45/")                        # Folder with the FARGO output files
-    # folder = Path("../fargo3d/outputs/cloud_disk_it450_b09_rotX45/")      # Folder with the FARGO output files (Binac2)
-    fig_imgs = Path("cloud_disk_it450_b09_rotX45/imgs/")                    # Folder to save images    
+    folder = Path("../cloud_disk_it450_b09_cmass10_rotX45/")                        # Folder with the FARGO output files
+    # folder = Path("../fargo3d/outputs/cloud_disk_it450_b09_cmass10_rotX45/")      # Folder with the FARGO output files (Binac2)
+    fig_imgs = Path("cloud_disk_it450_b09_cmass10_rotX45/imgs/")                    # Folder to save images    
     iter_total = 450                                     # FARGO snapshot
 
     first_it = 0
