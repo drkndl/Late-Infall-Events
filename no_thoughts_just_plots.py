@@ -687,7 +687,6 @@ def param_study_plot(fig, ax, param_dict, x_arr, folders_labels, colours, xlabel
         elif "rotY" in key:
             base = key.replace("rotY", "")
             ls = "--"
-            continue
         # Only change color when we encounter a new base (first time we see either X or Y)
         if base != last_base:
             current_color_index = (current_color_index + 1) % len(colours)

@@ -20,9 +20,9 @@ stoky = 3.156e7 * 1e3     # 1 kyr in sec
 def main():
 
 
-    folder = Path("../cloud_disk_it450_cmass10_Rout30_rotX45/")                        # Folder with the output files
-    # folder = Path("../fargo3d/outputs/cloud_disk_it450_cmass10_Rout30_rotX45")     # Folder with the output files (BinAC2)
-    fig_imgs = Path("cloud_disk_it450_cmass10_Rout30_rotX45/imgs/")                  # Folder to save images
+    folder = Path("../cloud_disk_it450_cmass10_rotX45/")                        # Folder with the output files
+    # folder = Path("../fargo3d/outputs/cloud_disk_it450_cmass10_rotX45")     # Folder with the output files (BinAC2)
+    fig_imgs = Path("cloud_disk_it450_cmass10_rotX45/imgs/")                  # Folder to save images
     it = 450                                                             # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                               # Simulation name (for plot labels)
 
@@ -142,7 +142,8 @@ def main():
     plt.text(1.9, 29, "disk edge", rotation=90, verticalalignment='center')
     ax.set_xlabel(r"$\log(r)$ [AU]")
     ax.set_ylabel(r"$\mathrm{\log(M_{cum}(r))}$")
-    ax.set_title(fr"{sim_name}: $\mathrm{{\log(M_{{cum}}(r))}}$ vs logr")
+    # ax.set_title(fr"{sim_name}: $\mathrm{{\log(M_{{cum}}(r))}}$ vs logr")
+    fig.tight_layout()
     plt.savefig(f'{fig_imgs}/cumlogM_vs_logr_it{it}.png')
     plt.show()
 
@@ -155,13 +156,14 @@ def main():
     ax.set_ylabel(r'$\mathrm{{\log(M_{{cum}}(r))}}$')
     plt.axvline(2, linestyle=":", color="black")
     plt.text(1.9, 29, "disk edge", rotation=90, verticalalignment='center')
-    ax.set_title(fr"{sim_name}: $\mathrm{{\log(M_{{cum}}(r))}}$ vs logr time evol")
+    # ax.set_title(fr"{sim_name}: $\mathrm{{\log(M_{{cum}}(r))}}$ vs logr time evol")
 
     norm = mcolors.Normalize(vmin=min(dtkyrs), vmax=max(dtkyrs))     # Colorbar formatting
     sm = cm.ScalarMappable(cmap=cols, norm=norm)
     sm.set_array([])  
     cbar = plt.colorbar(sm, ax=ax, pad=0.02)
     cbar.set_label("Time [kyr]")
+    fig.tight_layout()
     plt.savefig(f'{fig_imgs}/cumlogM_vs_logr_timeevol.png')
     plt.show()
 
@@ -209,10 +211,11 @@ def main():
     fig, ax = plt.subplots()
     ax.plot(np.log10(domains["r"]/au)[:-2], np.log10(dM_cum/dlogR))
     plt.axvline(2, linestyle=":", color="black")
-    plt.text(1.9, 30, "disk edge", rotation=90, verticalalignment='center')
+    plt.text(1.9, 31, "disk edge", rotation=90, verticalalignment='center')
     ax.set_xlabel(r"$\log(r)$ [AU]")
     ax.set_ylabel(r"$\mathrm{\log(dM_{cum}(r)/d\log(r))}$")
-    ax.set_title(fr"{sim_name}: $\mathrm{{\log(dM_{{cum}}(r)/d\log(r))}}$ vs logr")
+    # ax.set_title(fr"{sim_name}: $\mathrm{{\log(dM_{{cum}}(r)/d\log(r))}}$ vs logr")
+    fig.tight_layout()
     plt.savefig(f'{fig_imgs}/dMcumdlogr_vs_logr_it{it}.png')
     plt.show()
     
@@ -222,14 +225,15 @@ def main():
     ax.set_xlabel(r"$\log(r)$ [AU]")
     ax.set_ylabel(r"$\mathrm{\log(dM_{cum}(r)/d\log(r))}$")
     plt.axvline(2, linestyle=":", color="black")
-    plt.text(1.9, 26, "disk edge", rotation=90, verticalalignment='center')
-    ax.set_title(fr"{sim_name}: $\mathrm{{\log(dM_{{cum}}(r)/d\log(r))}}$ vs logr time evol")
+    plt.text(1.9, 29, "disk edge", rotation=90, verticalalignment='center')
+    # ax.set_title(fr"{sim_name}: $\mathrm{{\log(dM_{{cum}}(r)/d\log(r))}}$ vs logr time evol")
 
     norm = mcolors.Normalize(vmin=min(dtkyrs), vmax=max(dtkyrs))     # Colorbar formatting
     sm = cm.ScalarMappable(cmap=cols, norm=norm)
     sm.set_array([])  
     cbar = plt.colorbar(sm, ax=ax, pad=0.02)
     cbar.set_label("Time [kyr]")
+    fig.tight_layout()
     plt.savefig(f'{fig_imgs}/dMcumdlogr_vs_logr_timeevol.png')
     plt.show()
 

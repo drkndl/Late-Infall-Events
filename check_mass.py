@@ -142,7 +142,7 @@ def main():
     # Calculating total disk mass
     S = sph_cell_area_2D(r, theta, phi)
     # disk_mass_theoretical = np.sum(sigma_r * S)
-    disk_mass_theoretical = np.sum(rho_r * S)
+    # disk_mass_theoretical = np.sum(rho_r * S)
 
 
 #################################### Adding up mass from the simulation ######################################
@@ -150,7 +150,7 @@ def main():
 
     disk_folder = Path("../cloud_disk_it450_rotX45/")                      # Folder with the output files
     disk_fig_imgs = Path("cloud_disk_it450_rotX45/imgs/")                  # Folder to save images
-    disk_it = 10                                                       # FARGO snapshot of interest
+    disk_it = 1                                                       # FARGO snapshot of interest
 
     domains = get_domain_spherical(disk_folder)
     disk_rho = get_data(disk_folder, "dens", disk_it, domains)         # Load 3D array of density values            
@@ -161,6 +161,10 @@ def main():
     disk_mass = calc_mass(disk_rho, cell_volume)
     disk_surf_dens = calc_surfdens(disk_rho, domains["theta"], domains["r"], domains["phi"])
     disk_mass_simulation = np.sum(disk_mass)
+
+    disk_mass_sim_radial = np.sum(disk_mass, axis=(0,2))
+    plt.plot(np.log10(domains["r"][:-1]), np.log10(disk_mass_sim_radial))
+    plt.show()
 
 
     ################################################ Comparison plots ##############################################
@@ -208,9 +212,9 @@ def main():
     # plt.savefig(f'{disk_fig_imgs}/checkmass_massdens_it{it}.png')
     # plt.show()
 
-    print(f"Theoretical disk mass: {disk_mass_theoretical:.2e} g or {(disk_mass_theoretical / Msun):.3f} Msun")
+    # print(f"Theoretical disk mass: {disk_mass_theoretical:.2e} g or {(disk_mass_theoretical / Msun):.3f} Msun")
     print(f"Simulation disk mass: {disk_mass_simulation:.2e} g or {(disk_mass_simulation / Msun):.3f} Msun")
-    ejedshj
+    # ejedshj
 
     ################################## Now calculating cloudlet mass from the simulation ###################################
 
@@ -219,9 +223,9 @@ def main():
     # Assumption: All of the cloudlet mass is accreted onto primary star at the end of the simulation
 
     # Disk parameters from corresponding iras04125_lowres_it450_nocomp.par file
-    cloud_folder = Path("../iras04125_lowres_it450_nocomp/")                         # Folder with the output files
-    cloud_fig_imgs = Path("iras04125_lowres_it450_nocomp/imgs/")                     # Folder to save images
-    cloud_it = 10                                                                    # FARGO snapshot of interest
+    cloud_folder = Path("../cloud_disk_it450_rotX45/")                         # Folder with the output files
+    cloud_fig_imgs = Path("cloud_disk_it450_rotX45/imgs/")                     # Folder to save images
+    cloud_it = 1                                                                    # FARGO snapshot of interest
     cloud_sim_name = str(cloud_fig_imgs).split('/')[0]                               # Simulation name (for plot labels)
     cloud_sim_params = load_par_file(f"{cloud_sim_name}/{cloud_sim_name}.par")       # Loading simulation parameters from the .par file
     # print(cloud_sim_params)

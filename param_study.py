@@ -26,8 +26,13 @@ plt.rcParams['ytick.labelsize'] = 12     # y-tick label size
 plt.rcParams['legend.fontsize'] = 15     # legend font size
 
 # colormaps = load_sciviscolor_colormaps("discrete-5-4-section-blue-orange.xml")
-colours = cmaps.tropical.discrete(4)
-colours = colours(np.linspace(0, 1, 4))
+cmap1 = cmaps.agsunset
+colorset1 = cmap1(np.linspace(0, 1, cmap1.N))[:2]
+cmap2 = cmaps.sunsetdark
+colorset2 = cmap2(np.linspace(0, 1, cmap2.N))[:2]
+colours = np.concatenate((colorset1, colorset2), axis=0)
+# colours = cmaps.tropical.discrete(4)
+# colours = colours(np.linspace(0, 1, 4))
 
 
 def main():
@@ -41,24 +46,24 @@ def main():
     # Simulation data locally (prograde vs retrograde comparison)
     # folders = [Path("../cloud_disk_it450_rotX45"), Path("../cloud_disk_it450_rotY45"), Path("../cloud_disk_it450_retro_rotX45"), Path("../cloud_disk_it450_retro_rotY45")]
 
-    # folders_labels = {"cloud_disk_it450_rotX45": r"$\mathrm{X_{45}, M_{c} / M_{d}=0.45, R_{out} = 100}$", "cloud_disk_it450_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=0.45, R_{out} = 100}$", 
-    # "cloud_disk_it450_Rout30_rotX45": r"$\mathrm{X_{45}, M_{c} / M_{d}=0.45, R_{out} = 30}$",
-    # "cloud_disk_it450_Rout30_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=0.45, R_{out} = 30}$",
-    # "cloud_disk_it450_cmass10_rotX45": r"$\mathrm{X_{45}, M_{c} / M_{d}=4.5, R_{out} = 100}$",
-    # "cloud_disk_it450_cmass10_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=4.5, R_{out} = 100}$",
-    # "cloud_disk_it450_cmass10_Rout30_rotX45": r"$\mathrm{X_{45}, M_{c} / M_{d}=4.5, R_{out} = 30}$",
-    # "cloud_disk_it450_cmass10_Rout30_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=4.5, R_{out} = 30}$"} #,
+    folders_labels = {"cloud_disk_it450_rotX45": r"$\mathrm{X_{45}, M_{c} / M_{d}=0.45, R_{out} = 100}$", "cloud_disk_it450_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=0.45, R_{out} = 100}$", 
+    "cloud_disk_it450_Rout30_rotX45": r"$\mathrm{X_{45}, M_{c} / M_{d}=0.45, R_{out} = 30}$",
+    "cloud_disk_it450_Rout30_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=0.45, R_{out} = 30}$",
+    "cloud_disk_it450_cmass10_rotX45": r"$\mathrm{X_{45}, M_{c} / M_{d}=4.5, R_{out} = 100}$",
+    "cloud_disk_it450_cmass10_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=4.5, R_{out} = 100}$",
+    "cloud_disk_it450_cmass10_Rout30_rotX45": r"$\mathrm{X_{45}, M_{c} / M_{d}=4.5, R_{out} = 30}$",
+    "cloud_disk_it450_cmass10_Rout30_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=4.5, R_{out} = 30}$"} #,
     # "cloud_disk_it450_retro_rotX45": r"$\mathrm{X_{45, retro}, M_{c} / M_{d}=0.45, R_{out} = 100}$",
     # "cloud_disk_it450_retro_rotY45": r"$\mathrm{Y_{45, retro}, M_{c} / M_{d}=0.45, R_{out} = 100}$"}
 
     ############# NICE PLOTS LABELS ###############
-    folders_labels = {"cloud_disk_it450_rotX45": r"$M_{c} / M_{d}=0.45, R_{out} = \mathrm{100 AU}}$", "cloud_disk_it450_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=0.45, R_{out} = 100}$", 
-    "cloud_disk_it450_Rout30_rotX45": r"$M_{c} / M_{d}=0.45, R_{out} = \mathrm{30 AU}}$",
-    "cloud_disk_it450_Rout30_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=0.45, R_{out} = \mathrm{30 AU}}$",
-    "cloud_disk_it450_cmass10_rotX45": r"$M_{c} / M_{d}=4.5, R_{out} = \mathrm{100 AU}}$",
-    "cloud_disk_it450_cmass10_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=4.5, R_{out} = \mathrm{100 AU}}$",
-    "cloud_disk_it450_cmass10_Rout30_rotX45": r"$M_{c} / M_{d}=4.5, R_{out} = \mathrm{30 AU}}$",
-    "cloud_disk_it450_cmass10_Rout30_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=4.5, R_{out} = \mathrm{30 AU}}$"} #,
+    # folders_labels = {"cloud_disk_it450_rotX45": r"$M_{c} / M_{d}=0.45, R_{out} = \mathrm{100 AU}}$", "cloud_disk_it450_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=0.45, R_{out} = 100}$", 
+    # "cloud_disk_it450_Rout30_rotX45": r"$M_{c} / M_{d}=0.45, R_{out} = \mathrm{30 AU}}$",
+    # "cloud_disk_it450_Rout30_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=0.45, R_{out} = \mathrm{30 AU}}$",
+    # "cloud_disk_it450_cmass10_rotX45": r"$M_{c} / M_{d}=4.5, R_{out} = \mathrm{100 AU}}$",
+    # "cloud_disk_it450_cmass10_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=4.5, R_{out} = \mathrm{100 AU}}$",
+    # "cloud_disk_it450_cmass10_Rout30_rotX45": r"$M_{c} / M_{d}=4.5, R_{out} = \mathrm{30 AU}}$",
+    # "cloud_disk_it450_cmass10_Rout30_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=4.5, R_{out} = \mathrm{30 AU}}$"} #,
     # "cloud_disk_it450_retro_rotX45": r"$\mathrm{X_{45, retro}, M_{c} / M_{d}=0.45, R_{out} = 100}$",
     # "cloud_disk_it450_retro_rotY45": r"$\mathrm{Y_{45, retro}, M_{c} / M_{d}=0.45, R_{out} = 100}$"}
 
@@ -74,6 +79,8 @@ def main():
     disk_whirl_folder = {}             # Disk whirl at each timestep for all sims
     Mcumsum_folder ={}                 # Cumulative mass values M_cumsum(r, t) for all sims
     dMcumdlogr_folder ={}              # log(dM_cumsum/dlogr)(r, t) for all sims
+    Mcloud_acc_folder = {}             # M_cloud,acc(t) for all sims
+    cloud_acc_eff_folder = {}          # Cloud accretion efficiency(t) for all sims
 
     N = 10                                             # Load data for every N iterations
 
@@ -101,6 +108,10 @@ def main():
         rho0 = get_data(f, "dens", 0, domains)         # Load 3D array of density values at first iteration
         cloud_phi = ini_cloudlet_pos(cloud_dist, rho0, 1e-17, domains["r"], domains["phi"])
 
+        # Calculating cloudlet mass
+        cloud_mass_ini = get_param_value('CloudletMass', f_sim_name)
+        print(f"Cloudlet mass: {cloud_mass_ini/Msun:.4f} Msun, {cloud_mass_ini:.2e} g")
+
         rc = 0.5 * (domains["r"][1:] + domains["r"][:-1])
         
         # Save density, mass, vrad, average inclination, average twist at multiple iterations 
@@ -113,6 +124,7 @@ def main():
         twist_allit = []
         di_dr_allit = []
         whirl_allit = []
+        disk_mass_allit = []                             
 
 
         ######################## Calculating mass, inc, twist values ####################################
@@ -146,7 +158,15 @@ def main():
             # Isolating the warped/broken disk
             warp_thresh = -17   # log of density threshold for which we can see the warp in the primary
             warp_buffer = 500   # Isolates a box of 2 * warp_buffer around the star (AU)
-            _, _, _, _, Lx_c_warp_i, Ly_c_warp_i, Lz_c_warp_i, _ = isolate_disk(X_c, Y_c, Z_c, Px * au, Py * au, Pz * au, warp_buffer * au, rho_c_i, vx_c_i, vy_c_i, vz_c_i, Lx_i, Ly_i, Lz_i, warp_thresh) 
+            rho_c_warp_i, _, _, _, Lx_c_warp_i, Ly_c_warp_i, Lz_c_warp_i, _ = isolate_disk(X_c, Y_c, Z_c, Px * au, Py * au, Pz * au, warp_buffer * au, rho_c_i, vx_c_i, vy_c_i, vz_c_i, Lx_i, Ly_i, Lz_i, warp_thresh) 
+
+            # Calculating the warped/broken disk mass 
+            disk_mass_radial_i = np.nansum(rho_c_warp_i * cell_volume, axis=(0,2))
+            # plt.plot(np.log10(domains["r"][:-1]/au), np.log10(disk_mass_radial_it))
+            # plt.show()        
+            disk_mass_i = np.sum(disk_mass_radial_i)
+            # print(f"Disk mass: {disk_mass_i/Msun:.4f} Msun, {disk_mass_i:.2e} g")
+            disk_mass_allit.append(disk_mass_i)
 
             # Calculating inclination, twist in the disk and saving the radial averages
             Lx_warp_avg_i, Ly_warp_avg_i, Lz_warp_avg_i = calc_L_average(Lx_c_warp_i, Ly_c_warp_i, Lz_c_warp_i, mass_i)
@@ -195,6 +215,11 @@ def main():
         inc_allit = np.asarray(inc_allit)
         twist_allit = np.asarray(twist_allit)
         whirl_allit = np.asarray(whirl_allit)
+        disk_mass_allit = np.asarray(disk_mass_allit)
+
+        disk_mass_initial = disk_mass_allit[0]
+        cloud_mass_accreted = disk_mass_allit - disk_mass_initial
+        cloud_acc_eff = cloud_mass_accreted / cloud_mass_ini * 100
 
         disk_mass_folder[f_sim_name] = mass_allit
         disk_inc_avg_folder[f_sim_name] = inc_avg_allit
@@ -202,6 +227,8 @@ def main():
         disk_inc_folder[f_sim_name] = inc_allit
         disk_twist_folder[f_sim_name] = twist_allit
         disk_whirl_folder[f_sim_name] = whirl_allit
+        Mcloud_acc_folder[f_sim_name] = cloud_mass_accreted/Msun
+        cloud_acc_eff_folder[f_sim_name] = cloud_acc_eff
 
         allit_years = calc_simtime(np.asarray(range(0, it+1, N)))       # Convert iterations to kyrs
 
@@ -254,6 +281,14 @@ def main():
     fig, ax = plt.subplots(figsize=(11, 6))
     param_study_plot(fig, ax, disk_twist_avg_folder, allit_years, folders_labels, colours, xlabel=r"Time [kyr]", ylabel=r"$\mathrm{twist_{avg} [deg]}$", title=fr"Time Evolution of Average Twist $(\mathrm{{\rho \geq 10^{warp_thresh}}})$", figfolder=f'nice_plots/param_study_twist_avg_vs_t_warp{warp_thresh}.png', savefig=True, showfig=True)
 
+    # Plotting Mcloud,acc vs time
+    fig, ax = plt.subplots(figsize=(11, 6))
+    param_study_plot(fig, ax, Mcloud_acc_folder, allit_years, folders_labels, colours, xlabel=r"Time [kyr]", ylabel=r"$\log(M_{cloud,acc})$ [$M_\odot$]", title=fr"Cloud mass accreted $(\mathrm{{\rho \geq 10^{warp_thresh}}})$", figfolder=f'nice_plots/param_study_Mcloudacc_vs_t_warp{warp_thresh}.png', savefig=True, showfig=True)
+
+    # Plotting Mcloud,acc vs time
+    fig, ax = plt.subplots(figsize=(11, 6))
+    param_study_plot(fig, ax, cloud_acc_eff_folder, allit_years, folders_labels, colours, xlabel=r"Time [kyr]", ylabel=r"$\frac{M_{cloud,acc}}{M_{cloud}}$", title=fr"Cloud accretion efficiency $(\mathrm{{\rho \geq 10^{warp_thresh}}})$", figfolder=f'nice_plots/param_study_cloudacceff_vs_t_warp{warp_thresh}.png', savefig=True, showfig=True)
+
     # Plotting twist_avg vs time 
     # fig, ax = plt.subplots(figsize=(11, 6))
     # param_study_plot(fig, ax, disk_whirl_folder, allit_years, folders_labels, colours, xlabel=r"Time [kyr]", ylabel=r"$\mathrm{whirl_{avg} [deg]}$", title=fr"Time Evolution of Disk Whirl $(\mathrm{{\rho \geq 10^{warp_thresh}}})$", figfolder=f'nice_plots/param_study_whirl_vs_t_warp{warp_thresh}.png', savefig=True, showfig=True)
@@ -268,8 +303,7 @@ def main():
             ls = "-"
         elif "rotY" in key:
             base = key.replace("rotY", "")
-            ls = "--"
-            continue
+            ls = "--"        
         # Only change color when we encounter a new base (first time we see either X or Y)
         if base != last_base:
             current_color_index = (current_color_index + 1) % len(colours)
@@ -298,8 +332,7 @@ def main():
             ls = "-"
         elif "rotY" in key:
             base = key.replace("rotY", "")
-            ls = "--"
-            continue
+            ls = "--"       
         # Only change color when we encounter a new base (first time we see either X or Y)
         if base != last_base:
             current_color_index = (current_color_index + 1) % len(colours)
@@ -329,7 +362,6 @@ def main():
     #     elif "rotY" in key:
     #         base = key.replace("rotY", "")
     #         ls = "--"
-                # continue
     #     # Only change color when we encounter a new base (first time we see either X or Y)
     #     if base != last_base:
     #         current_color_index = (current_color_index + 1) % len(colours)
@@ -358,8 +390,7 @@ def main():
     #         ls = "-"
     #     elif "rotY" in key:
     #         base = key.replace("rotY", "")
-    #         ls = "--"
-            #   continue
+    #         ls = "--"  
     #     # Only change color when we encounter a new base (first time we see either X or Y)
     #     if base != last_base:
     #         current_color_index = (current_color_index + 1) % len(colours)
@@ -387,10 +418,9 @@ def main():
             base = key.replace("rotX", "")
             ls = "-"
         elif "rotY" in key:
-            # continue
+            #
             base = key.replace("rotY", "")
-            ls = "--"
-            continue
+            ls = "--"        
         # Only change color when we encounter a new base (first time we see either X or Y)
         if base != last_base:
             current_color_index = (current_color_index + 1) % len(colours)
@@ -423,8 +453,7 @@ def main():
             ls = "-"
         elif "rotY" in key:
             base = key.replace("rotY", "")
-            ls = "--"
-            continue
+            ls = "--"        
         # Only change color when we encounter a new base (first time we see either X or Y)
         if base != last_base:
             current_color_index = (current_color_index + 1) % len(colours)
@@ -454,12 +483,11 @@ def main():
         elif "rotY" in key:
             base = key.replace("rotY", "")
             ls = "--"
-            continue
+        
         # Only change color when we encounter a new base (first time we see either X or Y)
         if base != last_base:
             current_color_index = (current_color_index + 1) % len(colours)
             last_base = base
-
         colour = colours[current_color_index]
         ax.plot(np.log10(domains["r"]/au)[:-1], value[-1, :], linestyle=ls, color=colour, label=folders_labels[key])   # -1 corresponds to last iteration
 
@@ -484,8 +512,7 @@ def main():
             ls = "-"
         elif "rotY" in key:
             base = key.replace("rotY", "")
-            ls = "--"
-            continue
+            ls = "--"        
         # Only change color when we encounter a new base (first time we see either X or Y)
         if base != last_base:
             current_color_index = (current_color_index + 1) % len(colours)
@@ -516,7 +543,6 @@ def main():
         elif "rotY" in key:
             base = key.replace("rotY", "")
             ls = "--"
-            continue
         # Only change color when we encounter a new base (first time we see either X or Y)
         if base != last_base:
             current_color_index = (current_color_index + 1) % len(colours)
@@ -546,7 +572,6 @@ def main():
         elif "rotY" in key:
             base = key.replace("rotY", "")
             ls = "--"
-            continue
         # Only change color when we encounter a new base (first time we see either X or Y)
         if base != last_base:
             current_color_index = (current_color_index + 1) % len(colours)
@@ -577,7 +602,6 @@ def main():
     #         elif "rotY" in key:
     #             base = key.replace("rotY", "")
     #             ls = "--"
-                # continue
     #         # Only change color when we encounter a new base (first time we see either X or Y)
     #         if base != last_base:
     #             current_color_index = (current_color_index + 1) % len(colours)

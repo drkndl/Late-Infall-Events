@@ -63,3 +63,7 @@ Adding title
 1. Go to Sources -> Annotation -> Text
 2. Add the required text in the provided textbox (the default is just "text"). 
 3. Adjust title orientation and size as necessary.
+
+ParaView python:
+---------------
+/Applications/ParaView-5.13.3.app/Contents/bin/pvpython Desktop/thesis/paraview_python.py
