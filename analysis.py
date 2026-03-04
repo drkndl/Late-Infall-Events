@@ -626,9 +626,9 @@ def calc_whirl(Lx_tot, Ly_tot, Lz_tot, ini_cloud_phi):
 
 def main():
 
-    folder = Path("../cloud_disk_it450_b09_cmass10_rotX45/")                        # Folder with the output files
-    # folder = Path("../fargo3d/outputs/cloud_disk_it450_b09_cmass10_rotX45")         # Folder with the output files (BinAC2)
-    fig_imgs = Path("cloud_disk_it450_b09_cmass10_rotX45/imgs/")                    # Folder to save images
+    folder = Path("../cloud_disk_it450_cmass5_rotX45/")                        # Folder with the output files
+    # folder = Path("../fargo3d/outputs/cloud_disk_it450_cmass5_rotX45")         # Folder with the output files (BinAC2)
+    fig_imgs = Path("cloud_disk_it450_cmass5_rotX45/imgs/")                    # Folder to save images
     it = 450                                                       # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                         # Simulation name (for plot labels)
     
@@ -728,7 +728,7 @@ def main():
     # XY_2D_plot(vrad * 1e-5, X, Y, irad, itheta, vmin=-0.5, vmax=0.5, title=rf'{sim_name}: X-Y Radial Velocity $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$v_{rad} (km/s)$", savefig=True, figfolder=f'{fig_imgs}/vrad_xy_phi{iphi}_rad{irad}_it{it}.png', showfig=True)
 
     # Radial velocity RZ plot (multiplying vrad by 1e-5 to convert cm/s to km/s)
-    vel_cyl_2D(vrad * 1e-5, rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Radial Velocities R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\mathrm{v_{rad} (\rm km/s)}$", savefig=True, figfolder=f'{fig_imgs}/radvel_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, acc=False, data_phiavg=False)
+    # vel_cyl_2D(vrad * 1e-5, rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Radial Velocities R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\mathrm{v_{rad} (\rm km/s)}$", savefig=True, figfolder=f'{fig_imgs}/radvel_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, acc=False, data_phiavg=False)
     # edjwfk
  
     # Rho * Radial velocity RZ plot (multiplying vrad by 1e-5 to convert cm/s to km/s)
@@ -750,7 +750,7 @@ def main():
     # vrad / cs RZ plot 
     # vel_cyl_2D(vrad / cs, rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: $v_{{rad}} / c_s$ R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\mathrm{v_{rad} / c_s}$", savefig=True, figfolder=f'{fig_imgs}/radvelbycs_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, acc=False, data_phiavg=False)
 
-    # XY_2D_plot(rho, X, Y, irad, itheta, title=rf'{sim_name}: Density X-Y Plane $\theta = $ {itheta_deg}$^{{\circ}}$', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=f'{fig_imgs}/dens_xy_theta{itheta}_rad{irad}_it{it}.png', showfig=True)
+    XY_2D_plot(rho, X, Y, irad, itheta, vmin=-17, vmax=-11, title=rf'{sim_name}: Density X-Y Plane $\theta = $ {itheta_deg}$^{{\circ}}$', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=f'{fig_imgs}/dens_xy_theta{itheta}_rad{irad}_it{it}.png', showfig=True)
 
     # Plotting the 3D warp/disk densities 
     contours_3D(X_c/au, Y_c/au, Z_c/au, np.log10(rho_c_warp), r_select, plot_args, colorbarlabel=r'$\log(\rho) [g/cm^3]$', title=rf'{sim_name}: Initial & Outer Disks: $\log(\rho)$', savefig=True, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=True)
@@ -848,19 +848,64 @@ def main():
     # plot_surf_dens(X_c, Y_c, Z_c, surf_dens, warp_ids, domains["r"], savefig=False, figfolder=f'../warp_L_thresh{warp_thresh}_it{it}.png', showfig=True)
 
     # Plotting warp Laplace-Runge-Lenz vector
-    quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Ax[warp_ids], Ay[warp_ids], Az[warp_ids], stagger=500, length=10, title=rf'Warp LRL', colorbarlabel=r'$\log(A [g^2cm^3/s^2])$', savefig=True, figfolder=f'{fig_imgs}/warp_{it}_LRL.png', logmag=True)
+    # quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, Ax[warp_ids], Ay[warp_ids], Az[warp_ids], stagger=500, length=10, title=rf'Warp LRL', colorbarlabel=r'$\log(A [g^2cm^3/s^2])$', savefig=True, figfolder=f'{fig_imgs}/warp_{it}_LRL.png', logmag=True)
 
     # Plotting warp eccentricity
     # quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, ex[warp_ids], ey[warp_ids], ez[warp_ids], stagger=70, length=30, title=rf'Warp Eccentricity', colorbarlabel=r'$e$', savefig=True, figfolder=f'../warp_{it}_ecc.png', logmag=False)
 
     # print(X)
-    XY_2D_plot(e, X_c, Y_c, irad, itheta, vmin=0, vmax=0.2, title=rf'{sim_name}: X-Y Eccentricity $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$e$", savefig=True, figfolder=f'{fig_imgs}/e_xy_phi{iphi}_rad{irad}_it{it}.png', showfig=True)
+    irad_e = np.where(domains["r"]/au < 250)[0][-1]
+    XY_2D_plot(e, X_c, Y_c, irad_e, itheta, vmin=0, vmax=0.2, title=rf'{sim_name}: X-Y Eccentricity $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$e$", savefig=True, figfolder=f'{fig_imgs}/e_xy_phi{iphi}_rad{irad_e}_it{it}.png', showfig=True)
+
+    # Plotting eccentricities at different heights
+    targets = np.array([60, 70, 80, 90, 100, 110])   
+    ithetas = [np.abs(np.rad2deg(domains["theta"]) - t).argmin() for t in targets]
+    # fig, axes = plt.subplots(2, 3, figsize=(8,6), sharex=True, sharey=True)
+    # axes = axes.flatten()
+
+    # for i in range(len(ithetas)):
+
+    #     # Original curvilinear coordinates
+    #     Xc = X_c[ithetas[i], :irad_e, ...]/au
+    #     Yc = Y_c[ithetas[i], :irad_e, ...]/au
+
+    #     Uc = vx_c_warp[ithetas[i], :irad_e, ...]
+    #     Vc = vy_c_warp[ithetas[i], :irad_e, ...]
+
+    #     # Make uniform grid
+    #     x_reg = np.linspace(Xc.min(), Xc.max(), 300)
+    #     y_reg = np.linspace(Yc.min(), Yc.max(), 300)
+    #     Xg, Yg = np.meshgrid(x_reg, y_reg)
+
+    #     # Interpolate onto regular grid
+    #     Ugrid = griddata((Xc.ravel(), Yc.ravel()), Uc.ravel(), (Xg, Yg))
+    #     Vgrid = griddata((Xc.ravel(), Yc.ravel()), Vc.ravel(), (Xg, Yg))
+    #     RHOgrid = griddata((Xc.ravel(), Yc.ravel()), rho_c_warp[ithetas[i], :irad_e, ...].ravel(), (Xg, Yg))
+
+    #     map = axes[i].pcolormesh(Xg, Yg, np.log10(RHOgrid), cmap="Spectral_r", vmin=-19, vmax=-11)
+    #     axes[i].streamplot(Xg, Yg, Ugrid, Vgrid, color="black")
+    #     axes[i].set_aspect("equal")
+    #     axes[i].set_title(rf"$\theta$ = {ithetas[i]}$\degree$")
+    
+    # fig.subplots_adjust(right=0.8)
+    # cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
+    # fig.colorbar(map, ax=axes, orientation="horizontal", shrink=0.8) #, cax=cbar_ax)
+    # fig.supxlabel(r"X [AU]")  
+    # fig.supylabel(r"Y [AU]")
+    # fig.tight_layout()
+
+    # plt.tight_layout(rect=[0, 0, 0.85, 1])   # leave space on the right
+
+    # dedicated colorbar axis
+    # cax = fig.add_axes([0.87, 0.15, 0.02, 0.7])  # (left, bottom, width, height)
+    # cbar = fig.colorbar(map, cax=cax)
+    # cbar.set_label(r"$\log(\rho)$")
 
     labels = [r'$\pi - \theta$ [deg]',r'$\log r$ [AU]',r'$\phi$ [deg]']
     # labels_allit = [r"Time"] + labels
 
     # iphi = 50
-    # cyl_2D_plot(10**e, R_c, Z_c, irad, iphi, vmin=0, vmax=1, title=rf'{sim_name}: Eccentricity R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$e$", savefig=True, figfolder=f'{fig_imgs}/e_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, data_phiavg=False)
+    cyl_2D_plot(10**e, R_c, Z_c, irad_e, iphi, vmin=0, vmax=1, title=rf'{sim_name}: Eccentricity R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$e$", savefig=True, figfolder=f'{fig_imgs}/e_cyl_phi{iphi}_rad{irad_e}_it{it}.png', showfig=True, data_phiavg=False)
 
     # Characterizing warp eccentricity 
     # print("Min Warp eccentricity: ", np.min(e[warp_ids]))
@@ -869,6 +914,7 @@ def main():
    
 
     ############################### Loading / calculating companion properties #####################################
+
 
 
     # Loading central coordinates of the companion for the given iteration it in the simulation

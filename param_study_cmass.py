@@ -26,10 +26,10 @@ plt.rcParams['ytick.labelsize'] = 12     # y-tick label size
 plt.rcParams['legend.fontsize'] = 15     # legend font size
 
 
-cmap = cmaps.discrete_vaneyck
-clrs = cmap(np.linspace(0, 1, 4))
-colours = clrs[[0, 2, 3]]
-colours = ['dodgerblue', 'orange', 'purple']
+# cmap = cmaps.discrete_vaneyck
+# clrs = cmap(np.linspace(0, 1, 4))
+# colours = clrs[[0, 2, 3]]
+colours = ['crimson', 'royalblue', 'limegreen']
 
 def main():
 
@@ -37,17 +37,17 @@ def main():
     # folders = [Path("../fargo3d/outputs/cloud_disk_it450_rotX45"), Path("../fargo3d/outputs/cloud_disk_it450_rotY45"), Path("../fargo3d/outputs/cloud_disk_it450_Rout30_rotX45"), Path("../fargo3d/outputs/cloud_disk_it450_Rout30_rotY45"), Path("../fargo3d/outputs/cloud_disk_it450_cmass10_rotX45"), Path("../fargo3d/outputs/cloud_disk_it450_cmass10_rotY45"), Path("../fargo3d/outputs/cloud_disk_it450_cmass10_Rout30_rotX45"), Path("../fargo3d/outputs/cloud_disk_it450_cmass10_Rout30_rotY45")]
 
     # Simulation data locally
-    folders = [Path("../cloud_disk_it450_rotX45"), Path("../cloud_disk_it450_cmass10_rotX45"), Path("../cloud_disk_it450_b01_rotX45"), Path("../cloud_disk_it450_b01_cmass10_rotX45"), Path("../cloud_disk_it450_b09_rotX45"), Path("../cloud_disk_it450_b09_cmass10_rotX45")] #, Path("../cloud_disk_it450_cmass10_Rout30_rotX45"), Path("../cloud_disk_it450_cmass10_Rout30_rotY45")] #, Path("../cloud_disk_it450_retro_rotX45"), Path("../cloud_disk_it450_retro_rotY45")]
+    folders = [Path("../cloud_disk_it450_rotX45"), Path("../cloud_disk_it450_cmass5_rotX45"), Path("../cloud_disk_it450_cmass10_rotX45")] #, Path("../cloud_disk_it450_b01_cmass10_rotX45"), Path("../cloud_disk_it450_b09_rotX45"), Path("../cloud_disk_it450_b09_cmass10_rotX45")] #, Path("../cloud_disk_it450_cmass10_Rout30_rotX45"), Path("../cloud_disk_it450_cmass10_Rout30_rotY45")] #, Path("../cloud_disk_it450_retro_rotX45"), Path("../cloud_disk_it450_retro_rotY45")]
 
     # Simulation data locally (prograde vs retrograde comparison)
     # folders = [Path("../cloud_disk_it450_rotX45"), Path("../cloud_disk_it450_rotY45"), Path("../cloud_disk_it450_retro_rotX45"), Path("../cloud_disk_it450_retro_rotY45")]
 
-    folders_labels = {"cloud_disk_it450_rotX45": r"$\mathrm{M_{c} / M_{d}=0.45, b=0.5}$",
-    "cloud_disk_it450_cmass10_rotX45": r"$\mathrm{M_{c} / M_{d}=4.5, b=0.5}$",
-    "cloud_disk_it450_b01_rotX45": r"$\mathrm{M_{c} / M_{d}=0.45, b=0.1}$", 
-    "cloud_disk_it450_b01_cmass10_rotX45": r"$\mathrm{M_{c} / M_{d}=4.5, b=0.1}$",
-    "cloud_disk_it450_b09_rotX45": r"$\mathrm{M_{c} / M_{d}=0.45, b=0.9}$", 
-    "cloud_disk_it450_b09_cmass10_rotX45": r"$\mathrm{M_{c} / M_{d}=4.5, b=0.9}$"}
+    folders_labels = {"cloud_disk_it450_rotX45": r"$\mathrm{M_{c} / M_{d}=0.45}$",
+    "cloud_disk_it450_cmass5_rotX45": r"$\mathrm{M_{c} / M_{d}=1.5}$",
+    "cloud_disk_it450_cmass10_rotX45": r"$\mathrm{M_{c} / M_{d}=4.5}$"} 
+    # "cloud_disk_it450_b01_cmass10_rotX45": r"$\mathrm{M_{c} / M_{d}=4.5}$",
+    # "cloud_disk_it450_b09_rotX45": r"$\mathrm{M_{c} / M_{d}=0.45, b=0.9}$", 
+    # "cloud_disk_it450_b09_cmass10_rotX45": r"$\mathrm{M_{c} / M_{d}=4.5, b=0.9}$"}
     # "cloud_disk_it450_cmass10_Rout30_rotX45": r"$\mathrm{X_{45}, M_{c} / M_{d}=4.5, R_{out} = 30}$",
     # "cloud_disk_it450_cmass10_Rout30_rotY45": r"$\mathrm{Y_{45}, M_{c} / M_{d}=4.5, R_{out} = 30}$"} #,
     # "cloud_disk_it450_retro_rotX45": r"$\mathrm{X_{45, retro}, M_{c} / M_{d}=0.45, R_{out} = 100}$",
@@ -274,21 +274,10 @@ def main():
     fig, ax = plt.subplots(figsize=(11, 6))
     current_color_index = -1
     last_base = None
+    ls = "-"
     for key, value in disk_inc_avg_folder.items():
 
-        # Plotting Mc/Md=4.5 values in dashed lines and Mc/Md=0.45 values in solid lines for easy comparison between different impact parameters
-        if "cmass10" in key:
-            base = key.replace("cmass10_", "")
-            ls = "--"
-        else:
-            base = key
-            ls = "-"   
-
-        # Only change color when we encounter a new base (first time we see either X or Y)
-        if base != last_base:
-            current_color_index = (current_color_index + 1) % len(colours)
-            last_base = base
-
+        current_color_index = (current_color_index + 1) % len(colours)
         colour = colours[current_color_index]
         ax.plot(allit_years, value, linestyle=ls, color=colour, label=folders_labels[key])
         
@@ -297,7 +286,7 @@ def main():
     ax.set_title(fr"Time Evolution of Average Inclinations $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left',
     plt.tight_layout() 
-    plt.savefig(f'nice_plots_b/param_study_inc_avg_vs_t_warp{warp_thresh}.png')
+    plt.savefig(f'nice_plots_cmass/param_study_inc_avg_vs_t_warp{warp_thresh}.png')
     plt.show()
 
 
@@ -307,19 +296,7 @@ def main():
     last_base = None
     for key, value in disk_twist_avg_folder.items():
 
-        # Plotting Mc/Md=4.5 values in dashed lines and Mc/Md=0.45 values in solid lines for easy comparison between different impact parameters
-        if "cmass10" in key:
-            base = key.replace("cmass10_", "")
-            ls = "--"
-        else:
-            base = key
-            ls = "-"   
-
-        # Only change color when we encounter a new base (first time we see either X or Y)
-        if base != last_base:
-            current_color_index = (current_color_index + 1) % len(colours)
-            last_base = base
-
+        current_color_index = (current_color_index + 1) % len(colours)
         colour = colours[current_color_index]
         ax.plot(allit_years, value, linestyle=ls, color=colour, label=folders_labels[key])
         
@@ -328,7 +305,7 @@ def main():
     ax.set_title(fr"Time Evolution of Average Twist $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left',
     plt.tight_layout() 
-    plt.savefig(f'nice_plots_b/param_study_twist_avg_vs_t_warp{warp_thresh}.png')
+    plt.savefig(f'nice_plots_cmass/param_study_twist_avg_vs_t_warp{warp_thresh}.png')
     plt.show()
 
 
@@ -338,19 +315,7 @@ def main():
     last_base = None
     for key, value in Mcloud_acc_folder.items():
 
-        # Plotting Mc/Md=4.5 values in dashed lines and Mc/Md=0.45 values in solid lines for easy comparison between different impact parameters
-        if "cmass10" in key:
-            base = key.replace("cmass10_", "")
-            ls = "--"
-        else:
-            base = key
-            ls = "-"   
-
-        # Only change color when we encounter a new base (first time we see either X or Y)
-        if base != last_base:
-            current_color_index = (current_color_index + 1) % len(colours)
-            last_base = base
-
+        current_color_index = (current_color_index + 1) % len(colours)
         colour = colours[current_color_index]
         ax.plot(allit_years, value, linestyle=ls, color=colour, label=folders_labels[key])
         
@@ -359,7 +324,7 @@ def main():
     ax.set_title(fr"Cloud mass accreted $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left',
     plt.tight_layout() 
-    plt.savefig(f'nice_plots_b/param_study_Mcloudacc_vs_t_warp{warp_thresh}.png')
+    plt.savefig(f'nice_plots_cmass/param_study_Mcloudacc_vs_t_warp{warp_thresh}.png')
     plt.show()
 
 
@@ -369,19 +334,7 @@ def main():
     last_base = None
     for key, value in cloud_acc_eff_folder.items():
 
-        # Plotting Mc/Md=4.5 values in dashed lines and Mc/Md=0.45 values in solid lines for easy comparison between different impact parameters
-        if "cmass10" in key:
-            base = key.replace("cmass10_", "")
-            ls = "--"
-        else:
-            base = key
-            ls = "-"   
-
-        # Only change color when we encounter a new base (first time we see either X or Y)
-        if base != last_base:
-            current_color_index = (current_color_index + 1) % len(colours)
-            last_base = base
-
+        current_color_index = (current_color_index + 1) % len(colours)
         colour = colours[current_color_index]
         ax.plot(allit_years, value, linestyle=ls, color=colour, label=folders_labels[key])
         
@@ -390,7 +343,7 @@ def main():
     ax.set_title(fr"Cloud accretion efficiency $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left',
     plt.tight_layout() 
-    plt.savefig(f'nice_plots_b/param_study_cloudacceff_vs_t_warp{warp_thresh}.png')
+    plt.savefig(f'nice_plots_cmass/param_study_cloudacceff_vs_t_warp{warp_thresh}.png')
     plt.show()
 
     # Plotting whirl vs time
@@ -399,19 +352,7 @@ def main():
     last_base = None
     for key, value in disk_whirl_folder.items():
 
-        # Plotting Mc/Md=4.5 values in dashed lines and Mc/Md=0.45 values in solid lines for easy comparison between different impact parameters
-        if "cmass10" in key:
-            base = key.replace("cmass10_", "")
-            ls = "--"
-        else:
-            base = key
-            ls = "-"   
-
-        # Only change color when we encounter a new base (first time we see either X or Y)
-        if base != last_base:
-            current_color_index = (current_color_index + 1) % len(colours)
-            last_base = base
-
+        current_color_index = (current_color_index + 1) % len(colours)
         colour = colours[current_color_index]
         ax.plot(allit_years[5:], value[5:], linestyle=ls, color=colour, label=folders_labels[key])
         
@@ -420,7 +361,7 @@ def main():
     ax.set_title(fr"Time Evolution of Whirl $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left',
     plt.tight_layout() 
-    plt.savefig(f'nice_plots_b/param_study_whirl_vs_t_warp{warp_thresh}.png')
+    plt.savefig(f'nice_plots_cmass/param_study_whirl_vs_t_warp{warp_thresh}.png')
     plt.show()
 
     # Plotting absolute values of twist_avg vs time 
@@ -429,19 +370,7 @@ def main():
     last_base = None
     for key, value in disk_twist_avg_folder.items():
 
-        # Plotting Mc/Md=4.5 values in dashed lines and Mc/Md=0.45 values in solid lines for easy comparison between different impact parameters
-        if "cmass10" in key:
-            base = key.replace("cmass10_", "")
-            ls = "--"
-        else:
-            base = key
-            ls = "-"  
-
-        # Only change color when we encounter a new base (first time we see either X or Y)
-        if base != last_base:
-            current_color_index = (current_color_index + 1) % len(colours)
-            last_base = base
-
+        current_color_index = (current_color_index + 1) % len(colours)
         colour = colours[current_color_index]
         ax.plot(allit_years, np.abs(value), linestyle=ls, color=colour, label=folders_labels[key])
         
@@ -450,7 +379,7 @@ def main():
     ax.set_title(fr"Time Evolution of Absolute Values of Average Twist $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left',
     plt.tight_layout() 
-    plt.savefig(f'nice_plots_b/param_study_absolute_twist_avg_vs_t_warp{warp_thresh}.png')
+    plt.savefig(f'nice_plots_cmass/param_study_absolute_twist_avg_vs_t_warp{warp_thresh}.png')
     plt.show()
 
     # Plotting the mass accretion rate onto star vs time
@@ -459,19 +388,7 @@ def main():
     last_base = None
     for key, value in disk_Mdot_folder.items():
 
-        # Plotting Mc/Md=4.5 values in dashed lines and Mc/Md=0.45 values in solid lines for easy comparison between different impact parameters
-        if "cmass10" in key:
-            base = key.replace("cmass10_", "")
-            ls = "--"
-        else:
-            base = key
-            ls = "-"  
-
-        # Only change color when we encounter a new base (first time we see either X or Y)
-        if base != last_base:
-            current_color_index = (current_color_index + 1) % len(colours)
-            last_base = base
-
+        current_color_index = (current_color_index + 1) % len(colours)
         colour = colours[current_color_index]
         ax.plot(allit_years, np.log10(-value), linestyle=ls, color=colour, label=folders_labels[key])
         
@@ -480,7 +397,7 @@ def main():
     ax.set_title(fr"Time Evolution of Mass Accretion Rate onto Star $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
     plt.tight_layout()
-    plt.savefig(f'nice_plots_b/param_study_clean_Mdot_vs_t_warp{warp_thresh}.png')
+    plt.savefig(f'nice_plots_cmass/param_study_clean_Mdot_vs_t_warp{warp_thresh}.png')
     plt.show()
 
 
@@ -493,19 +410,7 @@ def main():
     last_base = None
     for key, value in disk_inc_folder.items():
 
-        # Plotting Mc/Md=4.5 values in dashed lines and Mc/Md=0.45 values in solid lines for easy comparison between different impact parameters
-        if "cmass10" in key:
-            base = key.replace("cmass10_", "")
-            ls = "--"
-        else:
-            base = key
-            ls = "-"  
-
-        # Only change color when we encounter a new base (first time we see either X or Y)
-        if base != last_base:
-            current_color_index = (current_color_index + 1) % len(colours)
-            last_base = base
-
+        current_color_index = (current_color_index + 1) % len(colours)
         colour = colours[current_color_index]
         ax.plot(np.log10(domains["r"]/au)[:-1], value[-1, :], linestyle=ls, color=colour, label=folders_labels[key])   # -1 corresponds to last iteration
 
@@ -514,7 +419,7 @@ def main():
     ax.set_title(fr"Disk Inclination vs logr (53 kyr) $(\mathrm{{\rho \geq 10^{{{warp_thresh}}}}})$")
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
     plt.tight_layout()
-    plt.savefig(f'nice_plots_b/param_study_inc_final_iter_vs_r_warp{warp_thresh}.png')
+    plt.savefig(f'nice_plots_cmass/param_study_inc_final_iter_vs_r_warp{warp_thresh}.png')
     plt.show()
 
     # Plotting twist_final vs R
@@ -523,19 +428,8 @@ def main():
     last_base = None
     for key, value in disk_twist_folder.items():
 
-        # Plotting Mc/Md=4.5 values in dashed lines and Mc/Md=0.45 values in solid lines for easy comparison between different impact parameters
-        if "cmass10" in key:
-            base = key.replace("cmass10_", "")
-            ls = "--"
-        else:
-            base = key
-            ls = "-"  
-        
-        # Only change color when we encounter a new base (first time we see either X or Y)
-        if base != last_base:
-            current_color_index = (current_color_index + 1) % len(colours)
-            last_base = base
         colour = colours[current_color_index]
+        current_color_index = (current_color_index + 1) % len(colours)
         ax.plot(np.log10(domains["r"]/au)[:-1], value[-1, :], linestyle=ls, color=colour, label=folders_labels[key])   # -1 corresponds to last iteration
 
     ax.set_xlabel(r"$\log(r)$ [AU]")
@@ -543,7 +437,7 @@ def main():
     ax.set_title(fr"Twist vs logr (53 kyr) $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
     plt.tight_layout()
-    plt.savefig(f'nice_plots_b/param_study_twist_final_iter_vs_r_warp{warp_thresh}.png')
+    plt.savefig(f'nice_plots_cmass/param_study_twist_final_iter_vs_r_warp{warp_thresh}.png')
     plt.show()
 
 
@@ -553,19 +447,7 @@ def main():
     last_base = None
     for key, value in disk_twist_folder.items():
 
-        # Plotting Mc/Md=4.5 values in dashed lines and Mc/Md=0.45 values in solid lines for easy comparison between different impact parameters
-        if "cmass10" in key:
-            base = key.replace("cmass10_", "")
-            ls = "--"
-        else:
-            base = key
-            ls = "-"  
-
-        # Only change color when we encounter a new base (first time we see either X or Y)
-        if base != last_base:
-            current_color_index = (current_color_index + 1) % len(colours)
-            last_base = base
-
+        current_color_index = (current_color_index + 1) % len(colours)
         colour = colours[current_color_index]
         ax.plot(np.log10(domains["r"]/au)[:-1], np.abs(value[-1, :]), linestyle=ls, color=colour, label=folders_labels[key])   # -1 corresponds to last iteration
 
@@ -574,7 +456,7 @@ def main():
     ax.set_title(fr"Absolute twist vs logr (53 kyr) $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
     plt.tight_layout()
-    plt.savefig(f'nice_plots_b/param_study_absolute_twist_final_iter_vs_r_warp{warp_thresh}.png')
+    plt.savefig(f'nice_plots_cmass/param_study_absolute_twist_final_iter_vs_r_warp{warp_thresh}.png')
     plt.show()
 
 
@@ -584,19 +466,7 @@ def main():
     last_base = None
     for key, value in Mcumsum_folder.items():
 
-        # Plotting Mc/Md=4.5 values in dashed lines and Mc/Md=0.45 values in solid lines for easy comparison between different impact parameters
-        if "cmass10" in key:
-            base = key.replace("cmass10_", "")
-            ls = "--"
-        else:
-            base = key
-            ls = "-"  
-
-        # Only change color when we encounter a new base (first time we see either X or Y)
-        if base != last_base:
-            current_color_index = (current_color_index + 1) % len(colours)
-            last_base = base
-
+        current_color_index = (current_color_index + 1) % len(colours)
         colour = colours[current_color_index]
         ax.plot(np.log10(domains["r"]/au)[:-1], np.log10(value[-1, :]), linestyle=ls, color=colour, label=folders_labels[key])   # -1 corresponds to last iteration
 
@@ -605,7 +475,7 @@ def main():
     ax.set_title(fr"$\mathrm{{\log(M_{{cum}}(r))}}$ vs logr (53 kyr) $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
     plt.tight_layout()
-    plt.savefig(f'nice_plots_b/param_study_Mcumsum_final_iter_vs_r_warp{warp_thresh}.png')
+    plt.savefig(f'nice_plots_cmass/param_study_Mcumsum_final_iter_vs_r_warp{warp_thresh}.png')
     plt.show()
 
     # Plotting dMcumdlogr_final vs R
@@ -614,19 +484,7 @@ def main():
     last_base = None
     for key, value in dMcumdlogr_folder.items():
 
-        # Plotting Mc/Md=4.5 values in dashed lines and Mc/Md=0.45 values in solid lines for easy comparison between different impact parameters
-        if "cmass10" in key:
-            base = key.replace("cmass10_", "")
-            ls = "--"
-        else:
-            base = key
-            ls = "-"  
-
-        # Only change color when we encounter a new base (first time we see either X or Y)
-        if base != last_base:
-            current_color_index = (current_color_index + 1) % len(colours)
-            last_base = base
-
+        current_color_index = (current_color_index + 1) % len(colours)
         colour = colours[current_color_index]
         ax.plot(np.log10(domains["r"]/au)[:-2], value[-1, :], linestyle=ls, color=colour, label=folders_labels[key])   # -1 corresponds to last iteration
 
@@ -635,7 +493,7 @@ def main():
     ax.set_title(fr"$\mathrm{{\log(dM_{{cum}}(r)/d\log(r))}}$ vs logr (53 kyr) $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
     plt.tight_layout()
-    plt.savefig(f'nice_plots_b/param_study_dMcumdlogr_final_iter_vs_r_warp{warp_thresh}.png')
+    plt.savefig(f'nice_plots_cmass/param_study_dMcumdlogr_final_iter_vs_r_warp{warp_thresh}.png')
     plt.show()
 
     # Making a GIF to show time evolution of dMcumdlogr vs logR
@@ -654,10 +512,11 @@ def main():
     #             ls = "--"
     #         # Only change color when we encounter a new base (first time we see either X or Y)
     #         if base != last_base:
-    #             current_color_index = (current_color_index + 1) % len(colours)
+    #             
     #             last_base = base
 
-    #         colour = colours[current_color_index]
+    # current_color_index = (current_color_index + 1) % len(colours)        
+    # colour = colours[current_color_index]
     #         ax.plot(np.log10(domains["r"]/au)[:-2], value[t, :], linestyle=ls, color=colour, label=folders_labels[key])   # -1 corresponds to last iteration
 
     #     ax.set_xlabel(r"$\log(r)$ [AU]")
@@ -666,7 +525,7 @@ def main():
     #     ax.set_ylim(26, 33)
     #     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
     #     plt.tight_layout()
-    #     plt.savefig(f'nice_plots_b/param_study_dMcumdlogr_it{t}.png')
+    #     plt.savefig(f'nice_plots_cmass/param_study_dMcumdlogr_it{t}.png')
     #     plt.close()
 
     # make_evol_GIF(".", "param_study_dMcumdlogr_it", f"param_study_dMcumdlogr_warp{warp_thresh}_movie")
