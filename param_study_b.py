@@ -37,7 +37,7 @@ def main():
     # folders = [Path("../fargo3d/outputs/cloud_disk_it450_rotX45"), Path("../fargo3d/outputs/cloud_disk_it450_rotY45"), Path("../fargo3d/outputs/cloud_disk_it450_Rout30_rotX45"), Path("../fargo3d/outputs/cloud_disk_it450_Rout30_rotY45"), Path("../fargo3d/outputs/cloud_disk_it450_cmass10_rotX45"), Path("../fargo3d/outputs/cloud_disk_it450_cmass10_rotY45"), Path("../fargo3d/outputs/cloud_disk_it450_cmass10_Rout30_rotX45"), Path("../fargo3d/outputs/cloud_disk_it450_cmass10_Rout30_rotY45")]
 
     # Simulation data locally
-    folders = [Path("../cloud_disk_it450_rotX45"), Path("../cloud_disk_it450_cmass10_rotX45"), Path("../cloud_disk_it450_b01_rotX45"), Path("../cloud_disk_it450_b01_cmass10_rotX45"), Path("../cloud_disk_it450_b09_rotX45"), Path("../cloud_disk_it450_b09_cmass10_rotX45")] #, Path("../cloud_disk_it450_cmass10_Rout30_rotX45"), Path("../cloud_disk_it450_cmass10_Rout30_rotY45")] #, Path("../cloud_disk_it450_retro_rotX45"), Path("../cloud_disk_it450_retro_rotY45")]
+    folders = [Path("../cloud_disk_it450_b01_rotX45"), Path("../cloud_disk_it450_b01_cmass10_rotX45"), Path("../cloud_disk_it450_rotX45"), Path("../cloud_disk_it450_cmass10_rotX45"), Path("../cloud_disk_it450_b09_rotX45"), Path("../cloud_disk_it450_b09_cmass10_rotX45")] #, Path("../cloud_disk_it450_cmass10_Rout30_rotX45"), Path("../cloud_disk_it450_cmass10_Rout30_rotY45")] #, Path("../cloud_disk_it450_retro_rotX45"), Path("../cloud_disk_it450_retro_rotY45")]
 
     # Simulation data locally (prograde vs retrograde comparison)
     # folders = [Path("../cloud_disk_it450_rotX45"), Path("../cloud_disk_it450_rotY45"), Path("../cloud_disk_it450_retro_rotX45"), Path("../cloud_disk_it450_retro_rotY45")]
@@ -386,7 +386,7 @@ def main():
         ax.plot(allit_years, value, linestyle=ls, color=colour, label=folders_labels[key])
         
     ax.set_xlabel(r"Time [kyr]")
-    ax.set_ylabel(r"$\frac{M_{cloud,acc}}{M_{cloud}}$")
+    ax.set_ylabel(r"$\frac{M_{cloud,acc}}{M_{cloud} x 100} [%]$")
     ax.set_title(fr"Cloud accretion efficiency $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
     ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left',
     plt.tight_layout() 

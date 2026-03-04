@@ -83,11 +83,11 @@ def sph_cell_area_2D(r, theta, phi):
     Theta_c, R_c, Phi_c = np.meshgrid(theta_c, r_c, phi_c, indexing='ij')
 
     # Finding cell surface elements
-    cell_vol = (R_c**2) * np.sin(Theta_c) * dR * dTheta * dPhi
-    # cell_area = 2 * np.pi * np.sin(Theta_c) * R_c * dR 
+    # cell_vol = (R_c**2) * np.sin(Theta_c) * dR * dTheta * dPhi
+    cell_area = 2 * np.pi * np.sin(Theta_c) * R_c * dR 
 
-    # return cell_area
-    return cell_vol
+    return cell_area
+    # return cell_vol
 
 
 ###################################### Numerically integrating for the disk mass ##########################################
