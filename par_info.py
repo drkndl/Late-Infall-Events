@@ -29,7 +29,7 @@ def b_crit(v_inf):
     bcrit:      Critical impact parameter [cm]
     """
 
-    bcrit = G * Mstar / v_inf**2
+    bcrit = np.sqrt(G * Mstar / v_inf**2)
     return bcrit
 
 
@@ -70,9 +70,9 @@ def periapsis(bcrit, b):
 
 def main():
 
-    folder = Path("../cloud_disk_it450_rotX45/")                        # Folder with the output files
-    # folder = Path("../fargo3d/outputs/cloud_disk_it450_rotX45")         # Folder with the output files (BinAC2)
-    fig_imgs = Path("cloud_disk_it450_rotX45/imgs/")                    # Folder to save images
+    folder = Path("../cloud_disk_it450_b09_rotX45/")                        # Folder with the output files
+    # folder = Path("../fargo3d/outputs/cloud_disk_it450_b09_rotX45")         # Folder with the output files (BinAC2)
+    fig_imgs = Path("cloud_disk_it450_b09_rotX45/imgs/")                    # Folder to save images
     sim_name = str(fig_imgs).split('/')[0]                         # Simulation name (for plot labels)
     
     # Load some simulation parameters
@@ -84,7 +84,9 @@ def main():
     bcrit = b_crit(vinf) 
     rp = periapsis(bcrit, b)
 
-    print(f"Distance of closest approach: {(rp/au):.2f} AU")
+    print(f"Impact parameter b: {b}")
+    print(f"Critical impact parameter: {(bcrit * 1e-5):.3f} km")
+    print(f"Distance of closest approach: {(rp * 1e-5):.3f} km")
     print(f"Cloudlet radius: {(Rcloud/au):.2f}")
     print(f"Eccentricity: {e:.2f}")
 

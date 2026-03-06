@@ -697,13 +697,14 @@ def param_study_plot(fig, ax, param_dict, x_arr, folders_labels, colours, xlabel
 
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
-    ax.set_title(title)
-    ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
+    # ax.set_title(title)
+    # ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=4, frameon=False)
     plt.tight_layout()
 
     # Save the figure?
     if savefig == True:
-        plt.savefig(figfolder)
+        plt.savefig(figfolder, bbox_inches="tight")
 
     # Display the figure?
     if showfig:
