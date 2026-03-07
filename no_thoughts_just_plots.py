@@ -3,6 +3,7 @@ import numpy as np
 from viewarr import *
 from matplotlib import cm
 from matplotlib import colors
+from matplotlib.lines import Line2D
 from mpl_toolkits.mplot3d import axes3d
 from matplotlib.cm import ScalarMappable
 from matplotlib.colors import Normalize
@@ -676,6 +677,16 @@ def param_study_plot(fig, ax, param_dict, x_arr, folders_labels, colours, xlabel
     Creates plots to compare values across parametric study of simulations
     """
 
+    style_legend = [
+    Line2D([0], [0], color='black', lw=3.5, linestyle='-', label=r"$X_{45}$"),
+    Line2D([0], [0], color='black', lw=3.5, linestyle='--', label=r"$Y_{45}$")]
+
+    color_legend = [
+    Line2D([0], [0], color=colours[0], lw=3.5, label=r"$M_c/M_d=0.45,\ R_{out}=100$"),
+    Line2D([0], [0], color=colours[1], lw=3.5, label=r"$M_c/M_d=0.45,\ R_{out}=30$"),
+    Line2D([0], [0], color=colours[2], lw=3.5, label=r"$M_c/M_d=4.5,\ R_{out}=100$"),
+    Line2D([0], [0], color=colours[3], lw=3.5, label=r"$M_c/M_d=4.5,\ R_{out}=30$")]
+
     current_color_index = -1
     last_base = None
     for key, value in param_dict.items():
@@ -698,8 +709,9 @@ def param_study_plot(fig, ax, param_dict, x_arr, folders_labels, colours, xlabel
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     # ax.set_title(title)
-    # ax.legend(loc='upper left', bbox_to_anchor=(1.05, 1), borderaxespad=0.)   # loc='upper left', 
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=4, frameon=False)
+    leg1 = ax.legend(handles=style_legend, loc="upper left", frameon=False)
+    ax.add_artist(leg1)
+    ax.legend(handles=color_legend, loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=2, frameon=False)
     plt.tight_layout()
 
     # Save the figure?
