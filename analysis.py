@@ -626,9 +626,9 @@ def calc_whirl(Lx_tot, Ly_tot, Lz_tot, ini_cloud_phi):
 
 def main():
 
-    folder = Path("../cloud_disk_it450_b01_cmass10_rotX45/")                        # Folder with the output files
-    # folder = Path("../fargo3d/outputs/cloud_disk_it450_b01_cmass10_rotX45")         # Folder with the output files (BinAC2)
-    fig_imgs = Path("cloud_disk_it450_b01_cmass10_rotX45/imgs/")                    # Folder to save images
+    folder = Path("../cloud_disk_it450_rotX45/")                        # Folder with the output files
+    # folder = Path("../fargo3d/outputs/cloud_disk_it450_rotX45")         # Folder with the output files (BinAC2)
+    fig_imgs = Path("cloud_disk_it450_rotX45/imgs/")                    # Folder to save images
     it = 450                                                       # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                         # Simulation name (for plot labels)
     
@@ -700,6 +700,8 @@ def main():
     r_warp_extent = np.sqrt(X_c[warp_ids]**2 +  Y_c[warp_ids]**2 + Z_c[warp_ids]**2) / au
     mask = (domains["r"]/au >= r_warp_extent.min()) & (domains["r"]/au <= r_warp_extent.max())
     r_select = domains["r"][mask]
+    print(sim_name, r_select/au)
+    ekrjgkg
 
     plot_args[r"$\mathrm{Box}_{\mathrm{prim}}$"] = f"{2 * warp_buffer} AU"
     plot_args[r"$\rho_{\mathrm{prim}} \geq$"] = fr"$10^{{{warp_thresh}}} g/cm^3$"

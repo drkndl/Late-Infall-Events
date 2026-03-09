@@ -19,11 +19,18 @@ dt = 1.87e7               # Timestep length of simulations in sec
 ninterm = 200             # Total number of timesteps between outputs in FARGO simulations
 stoky = 3.156e7 * 1e3     # 1 kyr in sec
 
+# Global plot formatting 
+plt.rcParams['lines.linewidth'] = 2.5
+plt.rcParams['axes.labelsize'] = 14     # x/y label size
+plt.rcParams['xtick.labelsize'] = 12     # x-tick label size
+plt.rcParams['ytick.labelsize'] = 12     # y-tick label size
+plt.rcParams['legend.fontsize'] = 11     # legend font size
+
 def main():
 
-    folder = Path("../cloud_disk_it450_cmass5_rotX45/")                        # Folder with the FARGO output files
-    # folder = Path("../fargo3d/outputs/cloud_disk_it450_cmass5_rotX45/")      # Folder with the FARGO output files (Binac2)
-    fig_imgs = Path("cloud_disk_it450_cmass5_rotX45/imgs/")                    # Folder to save images    
+    folder = Path("../cloud_disk_it450_rotX45/")                        # Folder with the FARGO output files
+    # folder = Path("../fargo3d/outputs/cloud_disk_it450_rotX45/")      # Folder with the FARGO output files (Binac2)
+    fig_imgs = Path("cloud_disk_it450_rotX45/imgs/")                    # Folder to save images    
     iter_total = 450                                     # FARGO snapshot
 
     first_it = 0
@@ -111,21 +118,23 @@ def main():
     disk_mass_initial = disk_mass_allit[0]
     cloud_mass_accreted = disk_mass_allit - disk_mass_initial
     cloud_acc_eff = cloud_mass_accreted / cloud_mass_ini * 100
-    print(cloud_mass_ini)
+    print(cloud_mass_ini/Msun)
 
     fig, ax = plt.subplots()
-    ax.plot(dt_years, cloud_mass_accreted/Msun)
-    ax.axhline(cloud_mass_ini/Msun, color='black', ls=":")
+    ax.plot(dt_years, cloud_mass_accreted/Msun, lw=2.5)
+    ax.axvline(8, ls="--", lw=2, color="black")
+    # ax.axhline(cloud_mass_ini/Msun, color='black', ls=":")
     ax.set_xlabel(r"Time t [kyr]")
     ax.set_ylabel(r"$\log(M_{cloud,acc})$ [$M_\odot$]")
     # ax.set_title("Disk surface density profile")
     fig.tight_layout()
-    plt.savefig(f'{fig_imgs}/cloud_mass_accreted.png')
+    plt.savefig(f'{fig_imgs}/cloud_mass_accreted1.png')
     plt.show()
 
     fig, ax = plt.subplots()
-    ax.plot(dt_years, cloud_acc_eff)
-    ax.set_xlabel(r"$Time [kyr]$")
+    ax.plot(dt_years, cloud_acc_eff, lw=2.5)
+    ax.axvline(8, ls="--", lw=2, color="black")
+    ax.set_xlabel(r"Time [kyr]")
     ax.set_ylabel(r"Cloud Accretion Efficiency [%] $\frac{M_{cloud,acc}}{M_{cloud}}$")
     # ax.set_title("Disk surface density profile")
     fig.tight_layout()

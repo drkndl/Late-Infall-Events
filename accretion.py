@@ -110,9 +110,9 @@ def calc_accretion_theoretical(sigma, H, ok, alpha):
 def main():
 
 
-    folder = Path("../cloud_disk_it450_cmass5_rotX45/")                    # Folder with the output files
-    # folder = Path("../fargo3d/outputs/cloud_disk_it450_cmass5_rotX45")       # Folder with the output files (BinAC2)
-    fig_imgs = Path("cloud_disk_it450_cmass5_rotX45/imgs/")                  # Folder to save images
+    folder = Path("../cloud_disk_it450_rotX45/")                    # Folder with the output files
+    # folder = Path("../fargo3d/outputs/cloud_disk_it450_rotX45")       # Folder with the output files (BinAC2)
+    fig_imgs = Path("cloud_disk_it450_rotX45/imgs/")                  # Folder to save images
     it = 450                                                             # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                               # Simulation name (for plot labels)
 
@@ -184,15 +184,15 @@ def main():
     # Plotting the logarithmic mass fluxes 
     fig, ax = plt.subplots()
     # plt.plot(allit_years, np.abs(dotM_tot_allit), label="Total flux")
-    plt.plot(allit_years, np.log10(-dotM_in_allit), label="Log Inward flux")
-    plt.plot(allit_years, dotM_out_allit, label="Outward flux")
+    plt.plot(allit_years, np.log10(-dotM_in_allit), lw=2.5, label="Log Inward flux")
+    ax.axvline(8, ls="--", lw=2, color="black")
+    # plt.plot(allit_years, dotM_out_allit, label="Outward flux")
     ax.set_xlabel(r"Time [kyr]")
     ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
-    ax.set_title(fr"{sim_name}: $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
-    plt.legend(loc="center right")
-    plt.savefig(f'{fig_imgs}/logMdot_vs_t_it{it}.png')
+    # ax.set_title(fr"{sim_name}: $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
+    # plt.legend(loc="center right")
+    plt.savefig(f'{fig_imgs}/logMdot_vs_t.png')
     plt.show()
-
 
 
     ########################### Check accretion for different max heights #############################
@@ -209,7 +209,7 @@ def main():
         theta_sel = domains["theta"][theta_mask]
         theta_sel_min, theta_sel_max = np.min(np.round(np.degrees(theta_sel), 1)), np.max(np.round(np.degrees(theta_sel), 1))
         # zmax_labels[zmax] = f"{int(zmax/Hc)}Hc ({theta_sel_min}$\degree$ - {theta_sel_max}$\degree$)"
-        zmax_labels[zmax] = f"{int(zmax/Hc)}Hc"
+        zmax_labels[zmax] = fr"{int(zmax/Hc)}Hc ({theta_sel_max}$\degree$)"
 
     Mdot_in_allzmax = {}
     Mdot_out_allzmax = {}
@@ -240,12 +240,12 @@ def main():
         i+=1
     ax.set_xlabel(r"Time [kyr]")
     ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
-    ax.set_title(fr"{sim_name}: Inward $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
+    # ax.set_title(fr"{sim_name}: Inward $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
     fig.tight_layout()
     ax.legend(loc="upper right")   # loc='upper left', 
     plt.savefig(f'{fig_imgs}/logMdot_vs_t_all_zmax.png')
     plt.show()
-
+    refeknk
     # Plotting the outward mass fluxes for all max heights as a sanity check (SHOULD BE ZERO!)
     # fig, ax = plt.subplots()
     # for key, value in Mdot_in_allzmax.items():
