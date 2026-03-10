@@ -29,7 +29,7 @@ plt.rcParams['legend.fontsize'] = 15     # legend font size
 # cmap = cmaps.discrete_vaneyck
 # clrs = cmap(np.linspace(0, 1, 4))
 # colours = clrs[[0, 2, 3]]
-colours = ['crimson', 'royalblue', 'limegreen']
+colours = ['crimson', 'royalblue', 'limegreen', 'darkorange', 'teal']
 
 def main():
 
@@ -37,14 +37,16 @@ def main():
     # folders = [Path("../fargo3d/outputs/cloud_disk_it450_rotX45"), Path("../fargo3d/outputs/cloud_disk_it450_rotY45"), Path("../fargo3d/outputs/cloud_disk_it450_Rout30_rotX45"), Path("../fargo3d/outputs/cloud_disk_it450_Rout30_rotY45"), Path("../fargo3d/outputs/cloud_disk_it450_cmass10_rotX45"), Path("../fargo3d/outputs/cloud_disk_it450_cmass10_rotY45"), Path("../fargo3d/outputs/cloud_disk_it450_cmass10_Rout30_rotX45"), Path("../fargo3d/outputs/cloud_disk_it450_cmass10_Rout30_rotY45")]
 
     # Simulation data locally
-    folders = [Path("../cloud_disk_it450_rotX45"), Path("../cloud_disk_it450_cmass5_rotX45"), Path("../cloud_disk_it450_cmass10_rotX45")] #, Path("../cloud_disk_it450_b01_cmass10_rotX45"), Path("../cloud_disk_it450_b09_rotX45"), Path("../cloud_disk_it450_b09_cmass10_rotX45")] #, Path("../cloud_disk_it450_cmass10_Rout30_rotX45"), Path("../cloud_disk_it450_cmass10_Rout30_rotY45")] #, Path("../cloud_disk_it450_retro_rotX45"), Path("../cloud_disk_it450_retro_rotY45")]
+    folders = [Path("../cloud_disk_it450_rotX45"), Path("../cloud_disk_it450_cmass5_rotX45"), Path("../cloud_disk_it450_cmass7_rotX45"), Path("../cloud_disk_it450_cmass10_rotX45"), Path("../cloud_disk_it450_cmass15_rotX45")] #, Path("../cloud_disk_it450_b01_cmass10_rotX45"), Path("../cloud_disk_it450_b09_rotX45"), Path("../cloud_disk_it450_b09_cmass10_rotX45")] #, Path("../cloud_disk_it450_cmass10_Rout30_rotX45"), Path("../cloud_disk_it450_cmass10_Rout30_rotY45")] #, Path("../cloud_disk_it450_retro_rotX45"), Path("../cloud_disk_it450_retro_rotY45")]
 
     # Simulation data locally (prograde vs retrograde comparison)
     # folders = [Path("../cloud_disk_it450_rotX45"), Path("../cloud_disk_it450_rotY45"), Path("../cloud_disk_it450_retro_rotX45"), Path("../cloud_disk_it450_retro_rotY45")]
 
     folders_labels = {"cloud_disk_it450_rotX45": r"$\mathrm{M_{c} / M_{d}=0.45}$",
     "cloud_disk_it450_cmass5_rotX45": r"$\mathrm{M_{c} / M_{d}=1.5}$",
-    "cloud_disk_it450_cmass10_rotX45": r"$\mathrm{M_{c} / M_{d}=4.5}$"} 
+    "cloud_disk_it450_cmass7_rotX45": r"$\mathrm{M_{c} / M_{d}=3}$",
+    "cloud_disk_it450_cmass10_rotX45": r"$\mathrm{M_{c} / M_{d}=4.5}$",
+    "cloud_disk_it450_cmass15_rotX45": r"$\mathrm{M_{c} / M_{d}=8}$"} 
     # "cloud_disk_it450_b01_cmass10_rotX45": r"$\mathrm{M_{c} / M_{d}=4.5}$",
     # "cloud_disk_it450_b09_rotX45": r"$\mathrm{M_{c} / M_{d}=0.45, b=0.9}$", 
     # "cloud_disk_it450_b09_cmass10_rotX45": r"$\mathrm{M_{c} / M_{d}=4.5, b=0.9}$"}
@@ -283,8 +285,8 @@ def main():
         
     ax.set_xlabel(r"Time [kyr]")
     ax.set_ylabel(r"$\mathrm{inc_{avg} [deg]}$")
-    ax.set_title(fr"Time Evolution of Average Inclinations $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
-    # ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=3, frameon=False)
+    # ax.set_title(fr"Time Evolution of Average Inclinations $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=5, frameon=False)
     plt.tight_layout() 
     plt.savefig(f'nice_plots_cmass/param_study_inc_avg_vs_t_warp{warp_thresh}.png')
     plt.show()
@@ -303,7 +305,7 @@ def main():
     ax.set_xlabel(r"Time [kyr]")
     ax.set_ylabel(r"$\mathrm{twist_{avg} [deg]}$")
     # ax.set_title(fr"Time Evolution of Average Twist $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=3, frameon=False)
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=5, frameon=False)
     plt.tight_layout() 
     plt.savefig(f'nice_plots_cmass/param_study_twist_avg_vs_t_warp{warp_thresh}.png')
     plt.show()
@@ -322,7 +324,7 @@ def main():
     ax.set_xlabel(r"Time [kyr]")
     ax.set_ylabel(r"$\log(M_{cloud,acc})$ [$M_\odot$]")
     # ax.set_title(fr"Cloud mass accreted $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=3, frameon=False)
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=5, frameon=False)
     plt.tight_layout() 
     plt.savefig(f'nice_plots_cmass/param_study_Mcloudacc_vs_t_warp{warp_thresh}.png')
     plt.show()
@@ -341,7 +343,7 @@ def main():
     ax.set_xlabel(r"Time [kyr]")
     ax.set_ylabel(r"$\mathrm{\frac{M_{cloud,acc}}{M_{cloud}} x 100}$ [%]")
     # ax.set_title(fr"Cloud accretion efficiency $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=3, frameon=False)
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=5, frameon=False)
     plt.tight_layout() 
     plt.savefig(f'nice_plots_cmass/param_study_cloudacceff_vs_t_warp{warp_thresh}.png')
     plt.show()
@@ -359,7 +361,7 @@ def main():
     ax.set_xlabel(r"Time [kyr]")
     ax.set_ylabel(r"Whirl [deg]")
     # ax.set_title(fr"Time Evolution of Whirl $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=3, frameon=False)
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=5, frameon=False)
     plt.tight_layout() 
     plt.savefig(f'nice_plots_cmass/param_study_whirl_vs_t_warp{warp_thresh}.png')
     plt.show()
@@ -377,7 +379,7 @@ def main():
     ax.set_xlabel(r"Time [kyr]")
     ax.set_ylabel(r"$\mathrm{\vert twist_{avg}\vert [deg]}$")
     # ax.set_title(fr"Time Evolution of Absolute Values of Average Twist $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=3, frameon=False)
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=5, frameon=False)
     plt.tight_layout() 
     plt.savefig(f'nice_plots_cmass/param_study_absolute_twist_avg_vs_t_warp{warp_thresh}.png')
     plt.show()
@@ -395,7 +397,7 @@ def main():
     ax.set_xlabel(r"Time [kyr]")
     ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
     # ax.set_title(fr"Time Evolution of Mass Accretion Rate onto Star $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=3, frameon=False) 
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=5, frameon=False) 
     plt.tight_layout()
     plt.savefig(f'nice_plots_cmass/param_study_clean_Mdot_vs_t_warp{warp_thresh}.png')
     plt.show()
@@ -417,7 +419,7 @@ def main():
     ax.set_xlabel(r"$\log(r)$ [AU]")
     ax.set_ylabel(r"Disk Inclination $(\degree)$")
     # ax.set_title(fr"Disk Inclination vs logr (53 kyr) $(\mathrm{{\rho \geq 10^{{{warp_thresh}}}}})$")
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=3, frameon=False) 
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=5, frameon=False) 
     plt.tight_layout()
     plt.savefig(f'nice_plots_cmass/param_study_inc_final_iter_vs_r_warp{warp_thresh}.png')
     plt.show()
@@ -427,15 +429,15 @@ def main():
     current_color_index = -1
     last_base = None
     for key, value in disk_twist_folder.items():
-
-        colour = colours[current_color_index]
+        
         current_color_index = (current_color_index + 1) % len(colours)
+        colour = colours[current_color_index]
         ax.plot(np.log10(domains["r"]/au)[:-1], value[-1, :], linestyle=ls, color=colour, label=folders_labels[key])   # -1 corresponds to last iteration
 
     ax.set_xlabel(r"$\log(r)$ [AU]")
     ax.set_ylabel(r"Disk Twist $(\degree)$")
     # ax.set_title(fr"Twist vs logr (53 kyr) $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=3, frameon=False) 
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=5, frameon=False) 
     plt.tight_layout()
     plt.savefig(f'nice_plots_cmass/param_study_twist_final_iter_vs_r_warp{warp_thresh}.png')
     plt.show()
@@ -454,7 +456,7 @@ def main():
     ax.set_xlabel(r"$\log(r)$ [AU]")
     ax.set_ylabel(r"Absolute Disk Twist $(\vert\degree\vert)$")
     # ax.set_title(fr"Absolute twist vs logr (53 kyr) $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=3, frameon=False) 
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=5, frameon=False) 
     plt.tight_layout()
     plt.savefig(f'nice_plots_cmass/param_study_absolute_twist_final_iter_vs_r_warp{warp_thresh}.png')
     plt.show()
@@ -473,7 +475,7 @@ def main():
     ax.set_xlabel(r"$\log(r)$ [AU]")
     ax.set_ylabel(r"$\mathrm{\log(M_{cum}(r))}$")
     # ax.set_title(fr"$\mathrm{{\log(M_{{cum}}(r))}}$ vs logr (53 kyr) $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=3, frameon=False) 
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=5, frameon=False) 
     plt.tight_layout()
     plt.savefig(f'nice_plots_cmass/param_study_Mcumsum_final_iter_vs_r_warp{warp_thresh}.png')
     plt.show()
@@ -491,7 +493,7 @@ def main():
     ax.set_xlabel(r"$\log(r)$ [AU]")
     ax.set_ylabel(r"$\mathrm{\log(dM_{cum}(r)/d\log(r))}$")
     # ax.set_title(fr"$\mathrm{{\log(dM_{{cum}}(r)/d\log(r))}}$ vs logr (53 kyr) $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
-    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=3, frameon=False) 
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=5, frameon=False) 
     plt.tight_layout()
     plt.savefig(f'nice_plots_cmass/param_study_dMcumdlogr_final_iter_vs_r_warp{warp_thresh}.png')
     plt.show()
@@ -523,7 +525,7 @@ def main():
     #     ax.set_ylabel(r"$\mathrm{\log(dM_{cum}(r)/d\log(r))}$")
         # ax.set_title(fr"$\mathrm{{\log(dM_{{cum}}(r)/d\log(r))}}$ vs logr ({int(allit_years[t])} kyr) $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
     #     ax.set_ylim(26, 33)
-    #     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=3, frameon=False) 
+    #     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=5, frameon=False) 
     #     plt.tight_layout()
     #     plt.savefig(f'nice_plots_cmass/param_study_dMcumdlogr_it{t}.png')
     #     plt.close()
