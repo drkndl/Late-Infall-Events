@@ -448,10 +448,10 @@ def calc_L_average(Lx, Ly, Lz, mass):
 
     Inputs:
     ------
-    Lx:       Angular momentum array in x-direction with size (theta, r, phi)
-    Ly:       Angular momentum array in y-direction with size (theta, r, phi)
-    Lz:       Angular momentum array in z-direction with size (theta, r, phi)
-    mass:     3D mass array (theta, r, phi)
+    Lx:       Angular momentum array in x-direction with size (theta-1, r-1, phi-1)
+    Ly:       Angular momentum array in y-direction with size (theta-1, r-1, phi-1)
+    Lz:       Angular momentum array in z-direction with size (theta-1, r-1, phi-1)
+    mass:     3D mass array (theta-1, r-1, phi-1)
 
     Outputs:
     -------
@@ -466,6 +466,55 @@ def calc_L_average(Lx, Ly, Lz, mass):
     Lz_avg = np.nansum(Lz * mass, axis=(0,2)) / np.sum(mass, axis=(0,2))
 
     return Lx_avg, Ly_avg, Lz_avg
+
+
+# def calc_theta_mask(theta, r, max_height, min_height=None):
+#     """
+#     Mask theta values only up to a certain height. Useful to calculate accretion rates and eccentricities at different heights, or filter out non-disk material
+
+#     Inputs:
+#     ------
+#     max_height:      1D array of len (nr) of maximum heights to be considered at each radial point (default value is 4 scale heights to capture the disk)
+#     """
+
+#     z = r * np.cos(theta)                          # 2D array of disk heights at all radii
+
+#     # Boolean mask selecting only polar angles within max_height so that we ignore cloudlet
+#     if min_height == None:
+#         theta_mask = np.abs(z) <= max_height
+#         theta_sel = theta[theta_mask]
+#         # print(np.round(np.degrees(theta_sel), 1))
+
+#     elif min_height != None:
+#         theta_mask = (np.abs(z) >= min_height) & (np.abs(z) <= max_height)
+#         theta_sel = theta[theta_mask]
+
+#     return theta_mask
+
+
+def calc_e_average(ex, ey, ez, mass):
+    """
+    Calculates the mass-averaged eccentricities averaged across 4Hc in theta and (-pi, pi) in phi to get the radial profile of eccentricities
+    Then masks the eccentricities only up to disk radii 
+
+    Inputs:
+    ------
+    ex:       Eccentricity in x-direction with size (theta-1, r-1, phi-1)
+    ey:       Eccentricity in y-direction with size (theta-1, r-1, phi-1)
+    ez:       Eccentricity in z-direction with size (theta-1, r-1, phi-1)
+    mass:     3D mass array (theta-1, r-1, phi-1)
+    r_mask:   1D Boolean mask array for radii only up to the extent of the disk i.e. True if 
+    """ 
+
+    # Mass-weighted average in ([-4Hc,4Hc], [-pi,pi]) of eccentricities
+    ex_avg = np.nansum(ex * mass, axis=(0,2)) / np.sum(mass, axis=(0,2))
+    ey_avg = np.nansum(ey * mass, axis=(0,2)) / np.sum(mass, axis=(0,2))
+    ez_avg = np.nansum(ez * mass, axis=(0,2)) / np.sum(mass, axis=(0,2))
+    eavg_disk = np.sqrt(ex_avg**2 + ey_avg**2 + ez_avg**2)
+
+    # eavg_disk = eavg[r_mask[:-1]]
+
+    return eavg_disk
 
 
 def ini_cloudlet_pos(distIni, dens, dens_thresh, r, phi):
@@ -626,9 +675,9 @@ def calc_whirl(Lx_tot, Ly_tot, Lz_tot, ini_cloud_phi):
 
 def main():
 
-    folder = Path("../cloud_disk_it450_cmass15_rotX45/")                        # Folder with the output files
-    # folder = Path("../fargo3d/outputs/cloud_disk_it450_cmass15_rotX45")         # Folder with the output files (BinAC2)
-    fig_imgs = Path("cloud_disk_it450_cmass15_rotX45/imgs/")                    # Folder to save images
+    folder = Path("../cloud_disk_it450_rotX45/")                        # Folder with the output files
+    # folder = Path("../fargo3d/outputs/cloud_disk_it450_rotX45")         # Folder with the output files (BinAC2)
+    fig_imgs = Path("cloud_disk_it450_rotX45/imgs/")                    # Folder to save images
     it = 450                                                       # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                         # Simulation name (for plot labels)
     
@@ -742,10 +791,10 @@ def main():
     omega_k = omega_kepler(Mstar, RCYL)             # Array of Keplerian velocities (s^-1)
     Hc_arr = scale_height(RCYL, h0, R0, f)          # Array of pressure scale heights (cm)
     cs = omega_k * Hc_arr                             # Array of local isothermal speed of sound (cm/s)
-    print(np.mean(cs), np.mean(omega_k), np.mean(Hc_arr))
-    print(np.shape(omega_k), np.shape(Hc_arr))
-    print(np.max(vrad / cs), np.min(vrad / cs), np.mean(vrad / cs))
-    print(vrad / cs)
+    # print(np.mean(cs), np.mean(omega_k), np.mean(Hc_arr))
+    # print(np.shape(omega_k), np.shape(Hc_arr))
+    # print(np.max(vrad / cs), np.min(vrad / cs), np.mean(vrad / cs))
+    # print(vrad / cs)
 
     # vrad / cs RZ plot 
     # vel_cyl_2D(vrad / cs, rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: $v_{{rad}} / c_s$ R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\mathrm{v_{rad} / c_s}$", savefig=True, figfolder=f'{fig_imgs}/radvelbycs_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, acc=False, data_phiavg=False)
@@ -800,26 +849,39 @@ def main():
 
     ############### Plotting azimuthally and polar averaged eccentricity (of the disk only, not the whole sim space!) as a radial profile
     # Mass averaged angular momentum vectors for each shell L(r)
-    ex_avg = np.nansum(ex * mass, axis=(0,2)) / np.sum(mass, axis=(0,2))
-    ey_avg = np.nansum(ey * mass, axis=(0,2)) / np.sum(mass, axis=(0,2))
-    ez_avg = np.nansum(ez * mass, axis=(0,2)) / np.sum(mass, axis=(0,2))
-    eavg = np.sqrt(ex_avg**2 + ey_avg**2 + ez_avg**2)
+    # ex_avg = np.nansum(ex * mass, axis=(0,2)) / np.sum(mass, axis=(0,2))
+    # ey_avg = np.nansum(ey * mass, axis=(0,2)) / np.sum(mass, axis=(0,2))
+    # ez_avg = np.nansum(ez * mass, axis=(0,2)) / np.sum(mass, axis=(0,2))
+    # eavg = np.sqrt(ex_avg**2 + ey_avg**2 + ez_avg**2)
+
+    print(np.isnan(Lx_c_warp), np.isnan(Ly_c_warp), np.isnan(Lz_c_warp))
+    print(np.sum(np.isnan(Lx_c_warp)), np.sum(np.isnan(Ly_c_warp)), np.sum(np.isnan(Lz_c_warp)))
+    print(np.shape(Lx_c_warp), np.shape(Ly_c_warp), np.shape(Lz_c_warp))
+    
+    Ax_warp, Ay_warp, Az_warp = calc_LRL(mass, Mstar, vx_c_warp, vy_c_warp, vz_c_warp, Lx_c_warp, Ly_c_warp, Lz_c_warp, X_c, Y_c, Z_c)
+    ex_warp, ey_warp, ez_warp = calc_eccen(Ax_warp, Ay_warp, Az_warp, mass, Mstar)
+    eavg_disk = calc_e_average(ex_warp, ey_warp, ez_warp, mass)
+    print(eavg_disk)
+    print(eavg_disk.shape)
+    print(np.isnan(eavg_disk))
 
     # Radial profile of mass-averaged eccentricities
     fig, ax = plt.subplots()
-    ax.plot(np.log10(r_select/au), eavg[mask[:-1]], lw=2.5)
+    ax.plot(np.log10(r_select/au), eavg_disk[mask[:-1]], lw=2.5)
+    # ax.plot(np.log10(domains["r"][:-1]/au), eavg_disk)
     ax.set_xlabel("log(R [AU])")
     ax.set_ylabel("e")
     fig.tight_layout()
-    plt.savefig(f"{fig_imgs}/{sim_name}_e_vs_r.png")
+    plt.savefig(f"{fig_imgs}/e_vs_r_it{it}.png")
     plt.show()
+
 
     ###################################### Isolating the outer disk ############################################
     
 
     # Finding the radial separation between the inner and outer disks at the discontinuity of dinc/dr
     r_break = plot_disk_sep(domains["r"], inc, title=rf"{sim_name}: Inclination Gradient", savefig=True, figfolder=f'{fig_imgs}/dinc_dr.png', showfig=True)
-    print("r_break:", r_break/au)
+    # print("r_break:", r_break/au)
 
     # Isolating the outer disk using r_break and a density threshold
     R_c = centering(R)
@@ -849,10 +911,10 @@ def main():
     # print("CLOUD_PHI:", cloud_phi)
 
     whirl = calc_whirl(Lx_disk, Ly_disk, Lz_disk, cloud_phi)
-    print("TOTAL DISK WHIRL: ", whirl)
+    # print("TOTAL DISK WHIRL: ", whirl)
 
     # Calculating and plotting the radial profile of warp/disk precession as a quiver plot
-    plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, plot_args, title=f"{sim_name}: Disk Twist", savefig=True, figfolder=f'{fig_imgs}/warp_twist_arrows_it{it}_dens{warp_thresh}.png', showfig=True)
+    # plot_twist_arrows(Lx_warp_avg, Ly_warp_avg, Lz_warp_avg, domains["r"], r_select, plot_args, title=f"{sim_name}: Disk Twist", savefig=True, figfolder=f'{fig_imgs}/warp_twist_arrows_it{it}_dens{warp_thresh}.png', showfig=True)
     
     ######### Outer disk properties 
 
@@ -863,7 +925,7 @@ def main():
     # Total outer disk momenta
     Lx_outer_disk, Ly_outer_disk, Lz_outer_disk = calc_total_L(Lx_outer_avg, Ly_outer_avg, Lz_outer_avg)
     outer_whirl = calc_whirl(Lx_outer_disk, Ly_outer_disk, Lz_outer_disk, cloud_phi)
-    print("OUTER DISK WHIRL: ", outer_whirl)
+    # print("OUTER DISK WHIRL: ", outer_whirl)
 
     # plotly_quiver3D(np.logspace(1, np.log10(r_select.max()/au), len(Lx_warp_avg)), np.zeros(len(Lx_warp_avg)), np.zeros(len(Lx_warp_avg)), Lx_warp_avg/Lx_disk, Ly_warp_avg/Ly_disk, Lz_warp_avg/Lz_disk, savefig=False, figfolder=f'{fig_imgs}/plotly_vel_thresh{warp_thresh}_it{it}.png', showfig=True)
 

@@ -5,7 +5,7 @@ from pathlib import Path
 from read import get_domain_spherical, get_data, load_par_file, get_param_value
 import matplotlib.pyplot as plt
 import colormaps as cmaps
-from analysis import calc_cell_volume, calc_mass, sph_to_cart, calc_simtime, vel_sph_to_cart, centering, calc_angular_momentum, isolate_disk, calc_L_average, calc_inc_twist, calc_whirl, calc_total_L, ini_cloudlet_pos, isolate_outer_disk
+from analysis import calc_cell_volume, calc_mass, sph_to_cart, calc_simtime, calc_LRL, calc_eccen, vel_sph_to_cart, centering, calc_angular_momentum, isolate_disk, calc_L_average, calc_inc_twist, calc_whirl, calc_total_L, ini_cloudlet_pos, isolate_outer_disk
 from accretion import scale_height, calc_accretion
 from no_thoughts_just_plots import param_study_plot, make_evol_GIF, load_sciviscolor_colormaps
 import astropy.constants as c
@@ -80,6 +80,7 @@ def main():
     dMcumdlogr_folder ={}              # log(dM_cumsum/dlogr)(r, t) for all sims
     Mcloud_acc_folder = {}             # M_cloud,acc(t) for all sims
     cloud_acc_eff_folder = {}          # Cloud accretion efficiency(t) for all sims
+    e_folder = {}                      # Radial profile of eccentricities for all sims
 
     N = 10                                             # Load data for every N iterations
 
@@ -123,7 +124,8 @@ def main():
         twist_allit = []
         di_dr_allit = []
         whirl_allit = []
-        disk_mass_allit = []                             
+        disk_mass_allit = []  
+        e_allit = []                           
 
 
         ######################## Calculating mass, inc, twist values ####################################
@@ -153,6 +155,8 @@ def main():
             mass_i = calc_mass(rho_i, cell_volume)
             mass_allit.append(mass_i)
             Lx_i, Ly_i, Lz_i = calc_angular_momentum(mass_i, X, Y, ZCYL, vx_i, vy_i, vz_i)
+            Ax_i, Ay_i, Az_i = calc_LRL(mass_i, Mstar, vx_c_i, vy_c_i, vz_c_i, Lx_i, Ly_i, Lz_i, X_c, Y_c, Z_c)
+            ex_i, ey_i, ez_i = calc_eccen(Ax_i, Ay_i, Az_i, mass_i, Mstar) 
 
             # Isolating the warped/broken disk
             warp_thresh = -17   # log of density threshold for which we can see the warp in the primary
@@ -166,6 +170,12 @@ def main():
             disk_mass_i = np.sum(disk_mass_radial_i)
             # print(f"Disk mass: {disk_mass_i/Msun:.4f} Msun, {disk_mass_i:.2e} g")
             disk_mass_allit.append(disk_mass_i)
+
+            ex_avg_i = np.nansum(ex_i * mass_i, axis=(0,2)) / np.sum(mass_i, axis=(0,2))
+            ey_avg_i = np.nansum(ey_i * mass_i, axis=(0,2)) / np.sum(mass_i, axis=(0,2))
+            ez_avg_i = np.nansum(ez_i * mass_i, axis=(0,2)) / np.sum(mass_i, axis=(0,2))
+            eavg_i = np.sqrt(ex_avg_i**2 + ey_avg_i**2 + ez_avg_i**2)
+            e_allit.append(eavg_i)
 
             # Calculating inclination, twist in the disk and saving the radial averages
             Lx_warp_avg_i, Ly_warp_avg_i, Lz_warp_avg_i = calc_L_average(Lx_c_warp_i, Ly_c_warp_i, Lz_c_warp_i, mass_i)
@@ -215,6 +225,7 @@ def main():
         twist_allit = np.asarray(twist_allit)
         whirl_allit = np.asarray(whirl_allit)
         disk_mass_allit = np.asarray(disk_mass_allit)
+        e_allit = np.asarray(e_allit)
 
         disk_mass_initial = disk_mass_allit[0]
         cloud_mass_accreted = disk_mass_allit - disk_mass_initial
@@ -228,6 +239,7 @@ def main():
         disk_whirl_folder[f_sim_name] = whirl_allit
         Mcloud_acc_folder[f_sim_name] = cloud_mass_accreted/Msun
         cloud_acc_eff_folder[f_sim_name] = cloud_acc_eff
+        e_folder[f_sim_name] = e_allit
 
         allit_years = calc_simtime(np.asarray(range(0, it+1, N)))       # Convert iterations to kyrs
 
@@ -496,6 +508,24 @@ def main():
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=5, frameon=False) 
     plt.tight_layout()
     plt.savefig(f'nice_plots_cmass/param_study_dMcumdlogr_final_iter_vs_r_warp{warp_thresh}.png')
+    plt.show()
+
+    # Plotting eccentricity_final vs R
+    fig, ax = plt.subplots(figsize=(11, 7))
+    current_color_index = -1
+    last_base = None
+    for key, value in e_folder.items():
+
+        current_color_index = (current_color_index + 1) % len(colours)
+        colour = colours[current_color_index]
+        ax.plot(np.log10(domains["r"]/au)[:-1], value[-1, :], linestyle=ls, color=colour, label=folders_labels[key])   # -1 corresponds to last iteration
+
+    ax.set_xlabel(r"$\log(r)$ [AU]")
+    ax.set_ylabel(r"e")
+    # ax.set_title(fr"$\mathrm{e}$ vs logr (53 kyr) $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=5, frameon=False) 
+    plt.tight_layout()
+    plt.savefig(f'nice_plots_cmass/param_study_e_final_iter_vs_r_warp{warp_thresh}.png')
     plt.show()
 
     # Making a GIF to show time evolution of dMcumdlogr vs logR

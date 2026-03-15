@@ -3,7 +3,7 @@
 import numpy as np
 from pathlib import Path
 from read import get_domain_spherical, get_data, load_par_file, get_param_value
-from analysis import sph_to_cart, vel_sph_to_cart, centering, calc_angular_momentum, calc_cell_volume, calc_eccen, calc_LRL, calc_mass, calc_surfdens, isolate_disk, calc_L_average, calc_simtime, calc_inc_twist, calc_whirl, calc_total_L, ini_cloudlet_pos, isolate_outer_disk
+from analysis import sph_to_cart, vel_sph_to_cart, centering, calc_angular_momentum, calc_cell_volume, calc_eccen, calc_LRL, calc_mass, calc_surfdens, isolate_disk, calc_L_average, calc_simtime, calc_inc_twist, calc_whirl, calc_total_L, ini_cloudlet_pos, isolate_outer_disk, calc_e_average
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from matplotlib import cm
@@ -34,9 +34,9 @@ plt.rcParams['legend.fontsize'] = 12     # legend font size
 def main():
 
 
-    folder = Path("../cloud_disk_it450_b01_rotX45/")                        # Folder with the FARGO output files
-    # folder = Path("../fargo3d/outputs/cloud_disk_it450_b01_rotX45/")          # Folder with the FARGO output files (Binac2)
-    fig_imgs = Path("cloud_disk_it450_b01_rotX45/imgs/")                      # Folder to save images    
+    folder = Path("../cloud_disk_it450_b09_rotX45/")                        # Folder with the FARGO output files
+    # folder = Path("../fargo3d/outputs/cloud_disk_it450_b09_rotX45/")          # Folder with the FARGO output files (Binac2)
+    fig_imgs = Path("cloud_disk_it450_b09_rotX45/imgs/")                      # Folder to save images    
     iter_total = 450                                     # FARGO snapshot
 
     first_it = 100
@@ -52,6 +52,7 @@ def main():
     outer_whirl_it = []                                       # List to save outer disk whirl at each iteration
     di_dr_it = []                                             # List to save d(inc)/dr at each iteration
     L_angle_it = []                                           # List to save L angle between primary and companion at each iteration
+    r_disk_it = []                                            # List to save disk radii at each iteration
     surf_dens_iter = []                                       # List to save surface density at each iter_check
     r_surf_dens_iter = []                                     # List to save surface density radii at each iter_check
     inc_itercheck = []                                        # List to save disk inclination at each iter_check
@@ -107,10 +108,6 @@ def main():
         Ax, Ay, Az = calc_LRL(mass, Mstar, vx_c, vy_c, vz_c, Lx, Ly, Lz, X_c, Y_c, Z_c)         # Laplace-Runge-Lenz vector 3D
         ex, ey, ez = calc_eccen(Ax, Ay, Az, mass, Mstar)                                        # Eccentricity 3D
         e = np.sqrt(ex**2 + ey**2 + ez**2)                                                      # Absolute eccentricity 3D 
-        ex_avg = np.nansum(ex * mass, axis=(0,2)) / np.sum(mass, axis=(0,2))
-        ey_avg = np.nansum(ey * mass, axis=(0,2)) / np.sum(mass, axis=(0,2))
-        ez_avg = np.nansum(ez * mass, axis=(0,2)) / np.sum(mass, axis=(0,2))
-        eavg = np.sqrt(ex_avg**2 + ey_avg**2 + ez_avg**2)
 
 
         ########################### Isolating the warp in the primary disk #####################
@@ -128,8 +125,11 @@ def main():
         r_select = domains["r"][mask]
         print(r_select[-1]/au)
         surf_dens_select = surf_dens[mask]
-        eavg = eavg[mask[:-1]]
-        e_it.append(eavg)
+
+        Ax_warp, Ay_warp, Az_warp = calc_LRL(mass, Mstar, vx_c_warp, vy_c_warp, vz_c_warp, Lx_c_warp, Ly_c_warp, Lz_c_warp, X_c, Y_c, Z_c)
+        ex_warp, ey_warp, ez_warp = calc_eccen(Ax_warp, Ay_warp, Az_warp, mass, Mstar)
+        eavg_disk = calc_e_average(ex_warp, ey_warp, ez_warp, mass)
+        e_it.append(eavg_disk)
 
         # Load some simulation parameters for plot labelling
         b = get_param_value('ImpactParameter', sim_name)
@@ -291,7 +291,7 @@ def main():
         # L_angle = np.arccos((Lx_disk * Lx_comp_disk + Ly_disk * Ly_comp_disk + Lz_disk * Lz_comp_disk) / (np.abs(L_prim_mag) * np.abs(L_comp_mag)))
         # L_angle_it.append(np.degrees(L_angle))
 
-    
+
     # Plot time evolution of warp inclination in 2D for some specific iters in iter_check
     fig = plt.figure(figsize=(8, 6))
     cols = cm.get_cmap('viridis', len(iter_check))
@@ -389,26 +389,17 @@ def main():
 
 
     # Contour plot of time evolution of radial profile of mass-averaged eccentricity of the disk only (not the whole sim space) 
-    disk_end = np.where(mask)[0][-1]
-
-    # Padding the 2D eccentricity array because the disk mask is of different lengths at each timestep
-    max_len = max(len(row) for row in e_it)
-    e_padded = np.full((len(e_it), max_len), np.nan)
-    for i, row in enumerate(e_it):
-        e_padded[i, :len(row)] = row
-    e_it = e_padded
     e_it = np.array(e_it, dtype=float)
-    print(np.shape(e_it))
-    print(f"Max eccentricity: {np.nanmax(e_it)}")
+    print(f"Max eccentricity: {np.max(e_it)}")
 
     fig, ax = plt.subplots(figsize=(8, 6))
-    ee = ax.imshow(e_it[:, :disk_end], cmap='jet', aspect='auto', origin='lower', extent=[(r_select[:disk_end]/au).min(), (r_select[:disk_end]/au).max(), dt_years.min(), dt_years.max()])
+    ee = ax.imshow(e_it, cmap=cmaps.haline, aspect='auto', origin='lower', extent=[(np.log10(domains["r"]/au)).min(), (np.log10(domains["r"]/au)).max(), dt_years.min(), dt_years.max()], vmin=0.0, vmax=1.0)
     cbar = fig.colorbar(ee, ax=ax)
     cbar.set_label("e")
-    plt.xlabel("R [AU]")
+    plt.xlabel("log(R \ AU)")
     plt.ylabel("Time [kyr]")
     fig.tight_layout()
-    plt.savefig(f"{fig_imgs}/e_time_evol.png")
+    plt.savefig(f"{fig_imgs}/e_time_evol_diskonly.png")
     plt.show()
 
 
