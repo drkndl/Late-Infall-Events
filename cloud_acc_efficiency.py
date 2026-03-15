@@ -28,9 +28,9 @@ plt.rcParams['legend.fontsize'] = 11     # legend font size
 
 def main():
 
-    folder = Path("../cloud_disk_it450_cmass7_rotX45/")                        # Folder with the FARGO output files
-    # folder = Path("../fargo3d/outputs/cloud_disk_it450_cmass7_rotX45/")      # Folder with the FARGO output files (Binac2)
-    fig_imgs = Path("cloud_disk_it450_cmass7_rotX45/imgs/")                    # Folder to save images    
+    folder = Path("../cloud_disk_it450_retro_rotY45/")                        # Folder with the FARGO output files
+    # folder = Path("../fargo3d/outputs/cloud_disk_it450_retro_rotY45/")      # Folder with the FARGO output files (Binac2)
+    fig_imgs = Path("cloud_disk_it450_retro_rotY45/imgs/")                    # Folder to save images    
     iter_total = 450                                     # FARGO snapshot
 
     first_it = 0

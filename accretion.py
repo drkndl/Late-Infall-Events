@@ -110,9 +110,9 @@ def calc_accretion_theoretical(sigma, H, ok, alpha):
 def main():
 
 
-    folder = Path("../cloud_disk_it450_cmass15_rotX45/")                    # Folder with the output files
-    # folder = Path("../fargo3d/outputs/cloud_disk_it450_cmass15_rotX45")       # Folder with the output files (BinAC2)
-    fig_imgs = Path("cloud_disk_it450_cmass15_rotX45/imgs/")                  # Folder to save images
+    folder = Path("../cloud_disk_it450_retro_rotY45/")                    # Folder with the output files
+    # folder = Path("../fargo3d/outputs/cloud_disk_it450_retro_rotY45")       # Folder with the output files (BinAC2)
+    fig_imgs = Path("cloud_disk_it450_retro_rotY45/imgs/")                  # Folder to save images
     it = 450                                                             # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                               # Simulation name (for plot labels)
 
