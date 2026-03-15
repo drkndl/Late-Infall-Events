@@ -5,7 +5,7 @@ from pathlib import Path
 from read import get_domain_spherical, get_data, load_par_file, get_param_value
 import matplotlib.pyplot as plt
 import colormaps as cmaps
-from analysis import calc_cell_volume, calc_mass, sph_to_cart, calc_simtime, calc_LRL, calc_eccen, vel_sph_to_cart, centering, calc_angular_momentum, isolate_disk, calc_L_average, calc_inc_twist, calc_whirl, calc_total_L, ini_cloudlet_pos, isolate_outer_disk
+from analysis import calc_cell_volume, calc_mass, sph_to_cart, calc_simtime, calc_LRL, calc_eccen, vel_sph_to_cart, centering, calc_angular_momentum, isolate_disk, calc_L_average, calc_e_average, calc_inc_twist, calc_whirl, calc_total_L, ini_cloudlet_pos, isolate_outer_disk
 from accretion import scale_height, calc_accretion
 from no_thoughts_just_plots import param_study_plot, make_evol_GIF, load_sciviscolor_colormaps
 import astropy.constants as c
@@ -155,13 +155,11 @@ def main():
             mass_i = calc_mass(rho_i, cell_volume)
             mass_allit.append(mass_i)
             Lx_i, Ly_i, Lz_i = calc_angular_momentum(mass_i, X, Y, ZCYL, vx_i, vy_i, vz_i)
-            Ax_i, Ay_i, Az_i = calc_LRL(mass_i, Mstar, vx_c_i, vy_c_i, vz_c_i, Lx_i, Ly_i, Lz_i, X_c, Y_c, Z_c)
-            ex_i, ey_i, ez_i = calc_eccen(Ax_i, Ay_i, Az_i, mass_i, Mstar) 
 
             # Isolating the warped/broken disk
             warp_thresh = -17   # log of density threshold for which we can see the warp in the primary
             warp_buffer = 500   # Isolates a box of 2 * warp_buffer around the star (AU)
-            rho_c_warp_i, _, _, _, Lx_c_warp_i, Ly_c_warp_i, Lz_c_warp_i, _ = isolate_disk(X_c, Y_c, Z_c, Px * au, Py * au, Pz * au, warp_buffer * au, rho_c_i, vx_c_i, vy_c_i, vz_c_i, Lx_i, Ly_i, Lz_i, warp_thresh) 
+            rho_c_warp_i, vx_c_warp_i, vy_c_warp_i, vz_c_warp_i, Lx_c_warp_i, Ly_c_warp_i, Lz_c_warp_i, _ = isolate_disk(X_c, Y_c, Z_c, Px * au, Py * au, Pz * au, warp_buffer * au, rho_c_i, vx_c_i, vy_c_i, vz_c_i, Lx_i, Ly_i, Lz_i, warp_thresh) 
 
             # Calculating the warped/broken disk mass 
             disk_mass_radial_i = np.nansum(rho_c_warp_i * cell_volume, axis=(0,2))
@@ -171,11 +169,10 @@ def main():
             # print(f"Disk mass: {disk_mass_i/Msun:.4f} Msun, {disk_mass_i:.2e} g")
             disk_mass_allit.append(disk_mass_i)
 
-            ex_avg_i = np.nansum(ex_i * mass_i, axis=(0,2)) / np.sum(mass_i, axis=(0,2))
-            ey_avg_i = np.nansum(ey_i * mass_i, axis=(0,2)) / np.sum(mass_i, axis=(0,2))
-            ez_avg_i = np.nansum(ez_i * mass_i, axis=(0,2)) / np.sum(mass_i, axis=(0,2))
-            eavg_i = np.sqrt(ex_avg_i**2 + ey_avg_i**2 + ez_avg_i**2)
-            e_allit.append(eavg_i)
+            Ax_warp_i, Ay_warp_i, Az_warp_i = calc_LRL(mass_i, Mstar, vx_c_warp_i, vy_c_warp_i, vz_c_warp_i, Lx_c_warp_i, Ly_c_warp_i, Lz_c_warp_i, X_c, Y_c, Z_c)
+            ex_warp_i, ey_warp_i, ez_warp_i = calc_eccen(Ax_warp_i, Ay_warp_i, Az_warp_i, mass_i, Mstar)
+            eavg_disk_i = calc_e_average(ex_warp_i, ey_warp_i, ez_warp_i, mass_i)
+            e_allit.append(eavg_disk_i)
 
             # Calculating inclination, twist in the disk and saving the radial averages
             Lx_warp_avg_i, Ly_warp_avg_i, Lz_warp_avg_i = calc_L_average(Lx_c_warp_i, Ly_c_warp_i, Lz_c_warp_i, mass_i)
