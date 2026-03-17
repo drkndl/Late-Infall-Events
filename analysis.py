@@ -675,9 +675,9 @@ def calc_whirl(Lx_tot, Ly_tot, Lz_tot, ini_cloud_phi):
 
 def main():
 
-    folder = Path("../cloud_disk_it450_retro_rotY45/")                        # Folder with the output files
-    # folder = Path("../fargo3d/outputs/cloud_disk_it450_retro_rotY45")         # Folder with the output files (BinAC2)
-    fig_imgs = Path("cloud_disk_it450_retro_rotY45/imgs/")                    # Folder to save images
+    folder = Path("../cloud_disk_it450_rotX45/")                        # Folder with the output files
+    # folder = Path("../fargo3d/outputs/cloud_disk_it450_rotX45")         # Folder with the output files (BinAC2)
+    fig_imgs = Path("cloud_disk_it450_rotX45/imgs/")                    # Folder to save images
     it = 450                                                       # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                         # Simulation name (for plot labels)
     
@@ -759,7 +759,7 @@ def main():
 
     # 2D visualizations
     # irad = -1
-    irad = np.where(domains["r"]/au < 350)[0][-1]
+    irad = np.where(domains["r"]/au < 200)[0][-1]
     iphi = 0
     itheta = int(7*len(domains["theta"])/15)
     # print(itheta)
@@ -817,9 +817,9 @@ def main():
     # plotly_quiver3D(X_c[warp_ids][stagger_ids]/au, Y_c[warp_ids][stagger_ids]/au, Z_c[warp_ids][stagger_ids]/au, (vx_c[warp_ids]/vsph.mean())[stagger_ids], (vy_c[warp_ids]/vsph.mean())[stagger_ids], (vz_c[warp_ids]/vsph.mean())[stagger_ids], savefig=False, figfolder=f'{fig_imgs}/plotly_vel_thresh{warp_thresh}_it{it}.png', showfig=True)
 
     # Disk velocity streamline plots at different theta values
-    # targets = np.array([60, 70, 80, 90, 100, 110])   
-    # ithetas = [np.abs(np.rad2deg(domains["theta"]) - t).argmin() for t in targets]
-    # velocity_streamlines(X_c, Y_c, vx_c_warp, vy_c_warp, rho_c_warp, ithetas, irad, savefig=True, figfolder=f'{fig_imgs}/vel_streamlines_thresh{warp_thresh}_it{it}.png', showfig=True)
+    targets = np.array([60, 70, 80, 90, 100, 110])   
+    ithetas = [np.abs(np.rad2deg(domains["theta"]) - t).argmin() for t in targets]
+    velocity_streamlines(X_c, Y_c, vx_c_warp, vy_c_warp, rho_c_warp, ithetas, irad, savefig=True, figfolder=f'{fig_imgs}/vel_streamlines_thresh{warp_thresh}_it{it}.png', showfig=True)
 
     # quiver_plot_3d(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, vx_c[warp_ids], vy_c[warp_ids], vz_c[warp_ids], stagger=10, length=30, title=f"{sim_name}: velocities {int(calc_simtime(it))} kyr", colorbarlabel="velocities", savefig=False, figfolder=f'../warp_vel_thresh{warp_thresh}_it{it}.png', azim=-90, elev=-178, logmag=True, ignorecol=False)
 
