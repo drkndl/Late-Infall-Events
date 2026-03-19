@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import colormaps as cmaps
 from analysis import calc_cell_volume, calc_mass, sph_to_cart, calc_simtime, calc_LRL, calc_eccen, vel_sph_to_cart, centering, calc_angular_momentum, isolate_disk, calc_L_average, calc_e_average, calc_inc_twist, calc_whirl, calc_total_L, ini_cloudlet_pos, isolate_outer_disk
 from accretion import scale_height, calc_accretion
+from cloud_acc_efficiency import stellar_accretion_mass
 from no_thoughts_just_plots import param_study_plot, make_evol_GIF, load_sciviscolor_colormaps
 import astropy.constants as c
 import pandas as pd
@@ -75,7 +76,9 @@ def main():
     Mcumsum_folder ={}                 # Cumulative mass values M_cumsum(r, t) for all sims
     dMcumdlogr_folder ={}              # log(dM_cumsum/dlogr)(r, t) for all sims
     Mcloud_acc_folder = {}             # M_cloud,acc(t) for all sims
+    abs_Mcloud_acc_folder = {}         # Absolute M_cloud,acc(t) for all sims
     cloud_acc_eff_folder = {}          # Cloud accretion efficiency(t) for all sims
+    abs_cloud_acc_eff_folder = {}      # Absolute cloud accretion efficiency(t) for all sims
     e_folder = {}                      # Radial profile of eccentricities for all sims
 
     N = 10                                             # Load data for every N iterations
@@ -273,6 +276,14 @@ def main():
         disk_Mdot_folder[f_sim_name] = dotM_in_allit
         # Mdot_out_allincs_nodisk[f_sim_name] = dotM_out_allit
 
+        # Calculating absolute cloud mass accreted and absolute cloud accretion efficiency
+        M_stellar_acc = stellar_accretion_mass(np.abs(dotM_in_allit), allit_years)
+        abs_cloud_mass_acc = cloud_mass_accreted + M_stellar_acc
+        abs_cloud_acc_eff = abs_cloud_mass_acc / cloud_mass_ini * 100
+
+        abs_Mcloud_acc_folder[f_sim_name] = abs_cloud_mass_acc / Msun
+        abs_cloud_acc_eff_folder[f_sim_name] = abs_cloud_acc_eff
+
     
     ############################################ Time evolution plots ############################################
 
@@ -362,7 +373,7 @@ def main():
         ax.plot(allit_years, value, linestyle=ls, color=colour, label=folders_labels[key])
         
     ax.set_xlabel(r"Time [kyr]")
-    ax.set_ylabel(r"$\log(M_{cloud,acc})$ [$M_\odot$]")
+    ax.set_ylabel(r"Net $M_{cloud,acc}$ [$M_\odot$]")
     # ax.set_title(fr"Cloud mass accreted $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=4, frameon=False)
     plt.tight_layout() 
@@ -393,11 +404,72 @@ def main():
         ax.plot(allit_years, value, linestyle=ls, color=colour, label=folders_labels[key])
         
     ax.set_xlabel(r"Time [kyr]")
-    ax.set_ylabel(r"$\mathrm{\frac{M_{cloud,acc}}{M_{cloud}} x 100}$ [%]")
+    ax.set_ylabel(r"Net $\mathrm{\frac{M_{cloud,acc}}{M_{cloud}} x 100}$ [%]")
     # ax.set_title(fr"Cloud accretion efficiency $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=4, frameon=False)
     plt.tight_layout() 
     plt.savefig(f'nice_plots_proretro/param_study_cloudacceff_vs_t_warp{warp_thresh}.png')
+    plt.show()
+
+    # Plotting Mcloud_acc vs time
+    fig, ax = plt.subplots(figsize=(11, 7))
+    current_color_index = -1
+    last_base = None
+    for key, value in abs_Mcloud_acc_folder.items():
+
+        # Plotting retrograde values in dashed lines and prograde values in solid lines for easy comparison
+        if "retro" in key:
+            base = key.replace("retro_", "")
+            ls = "--"
+        else:
+            base = key
+            ls = "-"   
+
+        # Only change color when we encounter a new base (first time we see either X or Y)
+        if base != last_base:
+            current_color_index = (current_color_index + 1) % len(colours)
+            last_base = base
+
+        colour = colours[current_color_index]
+        ax.plot(allit_years, value, linestyle=ls, color=colour, label=folders_labels[key])
+        
+    ax.set_xlabel(r"Time [kyr]")
+    ax.set_ylabel(r"Absolute $M_{cloud,acc}$ [$M_\odot$]")
+    # ax.set_title(fr"Cloud mass accreted $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=4, frameon=False)
+    plt.tight_layout() 
+    plt.savefig(f'nice_plots_proretro/param_study_abs_Mcloudacc_vs_t_warp{warp_thresh}.png')
+    plt.show()
+
+
+    # Plotting absolute cloud_accretion efficiency vs time
+    fig, ax = plt.subplots(figsize=(11, 7))
+    current_color_index = -1
+    last_base = None
+    for key, value in abs_cloud_acc_eff_folder.items():
+
+        # Plotting retrograde values in dashed lines and prograde values in solid lines for easy comparison
+        if "retro" in key:
+            base = key.replace("retro_", "")
+            ls = "--"
+        else:
+            base = key
+            ls = "-"   
+
+        # Only change color when we encounter a new base (first time we see either X or Y)
+        if base != last_base:
+            current_color_index = (current_color_index + 1) % len(colours)
+            last_base = base
+
+        colour = colours[current_color_index]
+        ax.plot(allit_years, value, linestyle=ls, color=colour, label=folders_labels[key])
+        
+    ax.set_xlabel(r"Time [kyr]")
+    ax.set_ylabel(r"Absolute $\mathrm{\frac{M_{cloud,acc}}{M_{cloud}} x 100}$ [%]")
+    # ax.set_title(fr"Cloud accretion efficiency $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=4, frameon=False)
+    plt.tight_layout() 
+    plt.savefig(f'nice_plots_proretro/param_study_abs_cloudacceff_vs_t_warp{warp_thresh}.png')
     plt.show()
 
     # Plotting whirl vs time
