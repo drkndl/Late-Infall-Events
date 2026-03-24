@@ -47,14 +47,14 @@ def cyl_2D_plot(data, RCYL, ZCYL, irad, iphi, vmin, vmax, title, colorbarlabel, 
 
     plt.figure()
     if data_phiavg:
-        plt.pcolormesh(RCYL[..., :irad, iphi]/au, ZCYL[..., :irad, iphi]/RCYL[..., :irad, iphi], np.log10(data[...,:irad]), cmap="Spectral_r", vmin=vmin, vmax=vmax, rasterized=True)
+        plt.pcolormesh(RCYL[..., :irad, iphi]/au, ZCYL[..., :irad, iphi]/RCYL[..., :irad, iphi], np.log10(data[...,:irad]), cmap="hot", vmin=vmin, vmax=vmax, rasterized=True)
     else:
-        plt.pcolormesh(RCYL[..., :irad, iphi]/au, ZCYL[..., :irad, iphi]/RCYL[..., :irad, iphi], np.log10(data[...,:irad, iphi]), cmap="Spectral_r", vmin=vmin, vmax=vmax, rasterized=True)
+        plt.pcolormesh(RCYL[..., :irad, iphi]/au, ZCYL[..., :irad, iphi]/RCYL[..., :irad, iphi], np.log10(data[...,:irad, iphi]), cmap="hot", vmin=vmin, vmax=vmax, rasterized=True)
     plt.xlabel("rcyl / AU")
     plt.ylabel("z / r")
     plt.xscale("log")
     plt.ylim(-1,1)
-    plt.title(title)
+    # plt.title(title)
     plt.colorbar(label = colorbarlabel)
 
     # Save the figure?
@@ -139,7 +139,7 @@ def vel_cyl_2D(vel, rho, RCYL, ZCYL, irad, iphi, title, colorbarlabel, savefig, 
     plt.ylabel("z / r")
     plt.xscale("log")
     plt.ylim(-1,1)
-    plt.title(title)
+    # plt.title(title)
     plt.tight_layout()
 
     # Save the figure?

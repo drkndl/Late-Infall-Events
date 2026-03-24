@@ -110,9 +110,9 @@ def calc_accretion_theoretical(sigma, H, ok, alpha):
 def main():
 
 
-    folder = Path("../cloud_disk_it450_retro_rotY45/")                    # Folder with the output files
-    # folder = Path("../fargo3d/outputs/cloud_disk_it450_retro_rotY45")       # Folder with the output files (BinAC2)
-    fig_imgs = Path("cloud_disk_it450_retro_rotY45/imgs/")                  # Folder to save images
+    folder = Path("../cloud_disk_it450_rotX45/")                    # Folder with the output files
+    # folder = Path("../fargo3d/outputs/cloud_disk_it450_rotX45")       # Folder with the output files (BinAC2)
+    fig_imgs = Path("cloud_disk_it450_rotX45/imgs/")                  # Folder to save images
     it = 450                                                             # FARGO snapshot of interest
     sim_name = str(fig_imgs).split('/')[0]                               # Simulation name (for plot labels)
 
@@ -191,6 +191,7 @@ def main():
     ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
     # ax.set_title(fr"{sim_name}: $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
     # plt.legend(loc="center right")
+    fig.tight_layout()
     plt.savefig(f'{fig_imgs}/logMdot_vs_t.png')
     plt.show()
 
@@ -459,7 +460,7 @@ def main():
     fig.legend(handles, labels, loc="upper center", ncol=6, frameon=False)
     fig.supxlabel(r"Time [kyr]")  
     fig.supylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
-    fig.suptitle(f"{sim_name}: Net flux", fontsize=10, y=0.95)  
+    fig.suptitle(f"  ", fontsize=10, y=0.95)  
     fig.tight_layout()
     plt.savefig(f'{fig_imgs}/logMnetdot_vs_t_all_radii_all_zmax.png')
     plt.show()
@@ -634,7 +635,8 @@ def main():
     fig.legend(handles, labels, loc="upper center", ncol=6, frameon=False)
     fig.supxlabel(r"Time [kyr]")  
     fig.supylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
-    fig.suptitle(f"{sim_name}: Net flux between diff heights", fontsize=10, y=0.95)  
+    # fig.suptitle(f"{sim_name}: Net flux between diff heights", fontsize=10, y=0.95)
+    fig.suptitle(f"  ", fontsize=10, y=0.95)  
     fig.tight_layout()
     plt.savefig(f'{fig_imgs}/logMnetdot_vs_t_all_radii_all_zrange.png')
     plt.show()
@@ -653,7 +655,7 @@ def main():
 
             # Calculating scale height and maximum height at which to calculate accretion at given radius
             Hc_j = scale_height(domains["r"][j], h0, R0, f)
-            zmax_j = 4 * Hc_j
+            zmax_j = 8 * Hc_j
 
             # Calculating accretion
             dotM_net, dotM_in, dotM_out = calc_accretion(rho_allit[i], vrad_allit[i], domains["theta"], domains["r"][j], j, domains["phi"], zmax_j, Msun)
@@ -664,7 +666,7 @@ def main():
 
     # Plotting just the net accretion as a 2D contour plot
     fig, ax = plt.subplots(1, 1, figsize=(5,4))
-    c3 = ax.imshow(np.sign(Mdot_net_2D) * np.log10(np.abs(Mdot_net_2D)), extent=[np.log10(domains["r"].min()/au), np.log10(domains["r"].max()/au), allit_years.min(), allit_years.max()], origin="lower", cmap=cmaps.BlueRed, aspect='auto', vmin=-10, vmax=10)
+    c3 = ax.imshow(np.sign(Mdot_net_2D) * np.log10(np.abs(Mdot_net_2D)), extent=[np.log10(domains["r"].min()/au), np.log10(domains["r"].max()/au), allit_years.min(), allit_years.max()], origin="lower", cmap=cmaps.BlueRed_r, aspect='auto', vmin=-10, vmax=10)
     cbar = fig.colorbar(c3, ax=ax)
     #Adjusting colorbar tick labels
     exponents = np.arange(-10, -1, 2)   
@@ -677,12 +679,13 @@ def main():
     )
     cbar.set_ticks(ticks)
     cbar.set_ticklabels(ticklabels)
-    cbar.set_label(r"Accretion rate [$M_\odot/\mathrm{yr}$]")
+    cbar.set_label(r"Mass flux [$M_\odot/\mathrm{yr}$]")
+    cbar.ax.invert_yaxis()
     ax.set_title(f"Net accretion: {int(zmax_j/Hc_j)}Hc")
     ax.set_xlabel("log(R) [AU]")
     ax.set_ylabel("Time [kyr]")
     fig.tight_layout()
-    plt.savefig(f'{fig_imgs}/logMnetdot_2D.png', bbox_inches="tight")
+    plt.savefig(f'{fig_imgs}/logMnetdot_2D_8H.png', bbox_inches="tight")
     plt.show()
 
     # Plotting heat maps of the 2D accretion values for inward, outward and net accretion 
