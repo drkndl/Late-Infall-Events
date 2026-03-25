@@ -189,6 +189,7 @@ def main():
     # plt.plot(allit_years, dotM_out_allit, label="Outward flux")
     ax.set_xlabel(r"Time [kyr]")
     ax.set_ylabel(r"$\mathrm{\log\dot{M}}$ [$M_{sun}$/yr]")
+    ax.set_ylim(-9.5, -6)
     # ax.set_title(fr"{sim_name}: $\mathrm{{\log\dot{{M}}}}$ vs t (R = 10 AU)")
     # plt.legend(loc="center right")
     fig.tight_layout()
