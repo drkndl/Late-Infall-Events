@@ -238,7 +238,7 @@ def main():
 
         disk_mass_initial = disk_mass_allit[0]
         cloud_mass_accreted = disk_mass_allit - disk_mass_initial
-        cloud_acc_eff = cloud_mass_accreted / cloud_mass_ini * 100
+        cloud_acc_eff = cloud_mass_accreted / disk_mass_initial * 100
 
         disk_mass_folder[f_sim_name] = mass_allit
         disk_inc_avg_folder[f_sim_name] = inc_avg_allit
@@ -316,7 +316,7 @@ def main():
 
     # Plotting net cloud accretion efficiency vs time
     fig, ax = plt.subplots(figsize=(11, 7))
-    param_study_plot(fig, ax, cloud_acc_eff_folder, allit_years, folders_labels, colours, xlabel=r"Time [kyr]", ylabel=r"Net $\mathrm{\frac{M_{cloud,acc}}{M_{cloud}} x 100}$ [%]", title=fr"Cloud accretion efficiency $(\mathrm{{\rho \geq 10^{warp_thresh}}})$", figfolder=f'nice_plots_correct/param_study_cloudacceff_vs_t_warp{warp_thresh}.png', savefig=True, showfig=True)
+    param_study_plot(fig, ax, cloud_acc_eff_folder, allit_years, folders_labels, colours, xlabel=r"Time [kyr]", ylabel=r"Net $\mathrm{\epsilon \frac{M_{cloud,acc}}{M_{disk}} x 100}$ [%]", title=fr"Cloud accretion efficiency $(\mathrm{{\rho \geq 10^{warp_thresh}}})$", figfolder=f'nice_plots_correct/param_study_cloudacceff_vs_t_warp{warp_thresh}.png', savefig=True, showfig=True)
 
     # Plotting absolute Mcloud,acc vs time
     fig, ax = plt.subplots(figsize=(11, 7))

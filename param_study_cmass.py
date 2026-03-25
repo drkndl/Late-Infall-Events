@@ -229,7 +229,7 @@ def main():
 
         disk_mass_initial = disk_mass_allit[0]
         cloud_mass_accreted = disk_mass_allit - disk_mass_initial
-        cloud_acc_eff = cloud_mass_accreted / cloud_mass_ini * 100
+        cloud_acc_eff = cloud_mass_accreted / disk_mass_initial * 100
 
         disk_mass_folder[f_sim_name] = mass_allit
         disk_inc_avg_folder[f_sim_name] = inc_avg_allit
@@ -361,7 +361,7 @@ def main():
         ax.plot(allit_years, value, linestyle=ls, color=colour, label=folders_labels[key])
         
     ax.set_xlabel(r"Time [kyr]")
-    ax.set_ylabel(r"Net $\mathrm{\frac{M_{cloud,acc}}{M_{cloud}} x 100}$ [%]")
+    ax.set_ylabel(r"Net $\mathrm{\frac{M_{cloud,acc}}{M_{disk}} x 100}$ [%]")
     # ax.set_title(fr"Cloud accretion efficiency $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), ncol=5, frameon=False)
     plt.tight_layout() 
