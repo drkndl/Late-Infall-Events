@@ -53,9 +53,9 @@ def stellar_accretion_mass(Mdot, t_arr):
 
 def main():
 
-    folder = Path("../cloud_disk_it450_retro_rotX45/")                        # Folder with the FARGO output files
-    # folder = Path("../fargo3d/outputs/cloud_disk_it450_retro_rotX45/")      # Folder with the FARGO output files (Binac2)
-    fig_imgs = Path("cloud_disk_it450_retro_rotX45/imgs/")                    # Folder to save images    
+    folder = Path("../cloud_disk_it450_b01_rotX45/")                        # Folder with the FARGO output files
+    # folder = Path("../fargo3d/outputs/cloud_disk_it450_b01_rotX45/")      # Folder with the FARGO output files (Binac2)
+    fig_imgs = Path("cloud_disk_it450_b01_rotX45/imgs/")                    # Folder to save images    
     iter_total = 450                                     # FARGO snapshot
 
     first_it = 0
@@ -180,7 +180,7 @@ def main():
 
     disk_mass_initial = disk_mass_allit[0]
     cloud_mass_accreted = disk_mass_allit - disk_mass_initial
-    cloud_acc_eff = cloud_mass_accreted / cloud_mass_ini * 100
+    cloud_acc_eff = cloud_mass_accreted / disk_mass_initial * 100
     print(cloud_mass_ini/Msun)
 
     ############################## Calculate absolute Mc accreted, abs cloud accretion efficiency ##############################
@@ -191,7 +191,7 @@ def main():
 
     fig, ax = plt.subplots()
     ax.plot(dt_years, cloud_mass_accreted/Msun, lw=2.5, color="red", label=r"Net $\mathrm{M_{c,acc,it}}$")
-    ax.plot(dt_years, abs_cloud_mass_acc/Msun, lw=2.5, color="blue", label=r"Absolute $\mathrm{M_{c,acc,it}}$")
+    ax.plot(dt_years, abs_cloud_mass_acc/Msun, lw=2.5, color="blue", label=r"Absolute $\mathrm{M_{c,abs,it}}$")
     ax.axvline(8, ls="--", lw=2, color="black")
     ax.set_xlabel(r"Time t [kyr]")
     ax.set_ylabel(r"$\log(M_{cloud,acc})$ [$M_\odot$]")
@@ -201,11 +201,11 @@ def main():
     plt.show()
 
     fig, ax = plt.subplots()
-    ax.plot(dt_years, cloud_acc_eff, lw=2.5, color="red", label=r"Net $\mathrm{\epsilon_{c,acc,it}}$")
-    ax.plot(dt_years, abs_cloud_acc_eff, lw=2.5, color="blue", label=r"Absolute $\mathrm{\epsilon_{c,acc,it}}$")
+    ax.plot(dt_years, cloud_acc_eff, lw=2.5, color="red", label=r"Net $\mathrm{\epsilon_{acc,it}}$")
+    ax.plot(dt_years, abs_cloud_acc_eff, lw=2.5, color="blue", label=r"Absolute $\mathrm{\epsilon_{abs,it}}$")
     ax.axvline(8, ls="--", lw=2, color="black")
     ax.set_xlabel(r"Time t [kyr]")
-    ax.set_ylabel(r"Cloud Accretion Efficiency [%] $\frac{M_{cloud,acc}}{M_{cloud}}$")
+    ax.set_ylabel(r"Cloud Accretion Efficiency [%]")
     ax.legend()
     fig.tight_layout()
     plt.savefig(f'{fig_imgs}/cloud_accretion_efficiency2.png')
