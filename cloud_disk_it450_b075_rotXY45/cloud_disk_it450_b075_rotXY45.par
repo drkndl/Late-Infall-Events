@@ -1,0 +1,30 @@
+Setup       cloud_disk
+
+RhoFloorGas     1.0e-24
+RhoFloorDust    1.0e-24
+
+### Cloudlet parameters
+
+ImpactParameter   0.75               Impact parameter in terms of the critical impact parameter
+CloudletRadius    7.47989355e+15    Radius of cloudlet
+CloudletMass      3.18256e+31       Mass of cloudlet
+Prograde          1                 Trajectory is prograde for 1 and retrograde for 0
+RotAngleX         45.0               Rotation angle around x-axis
+RotAngleY         45.0               Rotation angle around y-axis
+RotAxFirst        0                 Determines around which axis the trajectory is rotated first: 0 is x-axis and 1 is y-axis
+
+### Planet parameters
+
+PlanetConfig        planets/zero.cfg    Choice of planet config (zero.cfg puts an invisbile massless planet)
+Inclination         1.0471975511965976
+
+### Mesh parameters
+
+Nx        100                         Azimuthal number of zones 
+Ny        150                         Radial number of zones
+Nz        175                        Number of zones in colatitude
+
+### Output control parameters
+
+OutputDir     @outputs/cloud_disk_it450_b075_rotXY45          Output directory
+Ntot          90000                                    Total number of time steps

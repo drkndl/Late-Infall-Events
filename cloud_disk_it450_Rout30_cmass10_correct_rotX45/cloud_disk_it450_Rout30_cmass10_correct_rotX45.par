@@ -1,0 +1,39 @@
+Setup       cloud_disk
+
+### Disk parameters
+
+Sigma0          310.547                 Surface Density at R0 (=5.2AU in CGS unit system)
+Alpha           1.0e-3                  Uniform kinematic viscosity
+SigmaSlope      1.5                     Slope of surface
+Rin             0.0                     Inner radius of exponential cutoff (0 disables inner cutoff)
+Rout            4.488e+14               Outer radius of exponential cutoff
+RhoFloorGas     1.0e-21                 Floor density (gas)
+RhoFloorDust    1.0e-21                 Floor density (dust)
+AspectRatio     0.03799                 Aspect ratio at R0 (sets temperature at R0)
+FlaringIndex    0.25                    Flaring index (sets the slope of the temperature, 0.25 = passive irradiation)
+
+### Cloudlet parameters
+
+ImpactParameter   0.5               Impact parameter in terms of the critical impact parameter
+CloudletRadius    7.47989355e+15    Radius of cloudlet
+CloudletMass      1.053e+32       Mass of cloudlet
+Prograde          1                 Trajectory is prograde for 1 and retrograde for 0
+RotAngleX         45.0               Rotation angle around x-axis
+RotAngleY         0.0               Rotation angle around y-axis
+RotAxFirst        0                 Determines around which axis the trajectory is rotated first: 0 is x-axis and 1 is y-axis
+
+### Planet parameters
+
+PlanetConfig        planets/zero.cfg    Choice of planet config (zero.cfg puts an invisbile massless planet)
+Inclination         1.0471975511965976
+
+### Mesh parameters
+
+Nx        100                         Azimuthal number of zones 
+Ny        150                         Radial number of zones
+Nz        175                        Number of zones in colatitude
+
+### Output control parameters
+
+OutputDir     @outputs/cloud_disk_it450_Rout30_cmass10_correct_rotX45          Output directory
+Ntot          90000                                    Total number of time steps
