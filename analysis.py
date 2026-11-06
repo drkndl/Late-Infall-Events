@@ -576,8 +576,8 @@ def calc_inc_twist(Lx_avg, Ly_avg, Lz_avg, R, savefig, plot=True):
     # Calculating warped disk twist
     # twist_rad = np.arccos(Lx_avg / Lxy_proj)
     twist_abs = np.arctan2(Ly_avg, Lx_avg)
-    twist_rad = twist_abs - twist_abs[0]
-    twist_deg = np.degrees(twist_rad)
+    # twist_rad = twist_abs - twist_abs[0]
+    twist_deg = np.degrees(twist_abs)
 
     # Calculating warped disk inclination (Kimmig & Dullemond 2024)
     inc = np.arccos(Lz_avg / Lavg_mag)
