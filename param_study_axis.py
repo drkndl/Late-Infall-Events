@@ -8,6 +8,7 @@ import colormaps as cmaps
 from analysis import calc_cell_volume, calc_mass, sph_to_cart, calc_simtime, calc_LRL, calc_eccen, vel_sph_to_cart, centering, calc_angular_momentum, isolate_disk, calc_L_average, calc_e_average, calc_inc_twist, calc_whirl, calc_total_L, ini_cloudlet_pos, isolate_outer_disk
 from accretion import scale_height, calc_accretion
 from cloud_acc_efficiency import stellar_accretion_mass
+from paper_plots_twist import find_twist_cutoff
 from no_thoughts_just_plots import param_study_plot, make_evol_GIF, load_sciviscolor_colormaps
 import astropy.constants as c
 import pandas as pd
@@ -291,6 +292,7 @@ def main():
         elif "rotY" in key:
             base = key.replace("rotY", "")
             ls = "--" 
+
         ax.plot(allit_years, value, linestyle=ls, color='black', label=folders_labels[key])
         
     ax.set_xlabel(r"Time [kyr]")
@@ -470,6 +472,7 @@ def main():
 
     # Plotting twist_final vs R
     fig, ax = plt.subplots(figsize=(11, 7))
+    r_plot = np.log10(domains["r"]/au)[:-1]
     for key, value in disk_twist_folder.items():
         
         if "rotX" in key:
@@ -478,10 +481,13 @@ def main():
         elif "rotY" in key:
             base = key.replace("rotY", "")
             ls = "--" 
-        ax.plot(np.log10(domains["r"]/au)[:-1], value[-1, :], linestyle=ls, color='black', label=folders_labels[key])   # -1 corresponds to last iteration
+
+        twist_final = value[-1, :]
+        cutoff = find_twist_cutoff(twist_final)
+        ax.plot(r_plot[:cutoff], twist_final[:cutoff], linestyle=ls, color='black', label=folders_labels[key])   # -1 corresponds to last iteration
 
     ax.set_xlabel(r"$\log(r)$ [AU]")
-    ax.set_ylabel(r"Disk Twist $(\degree)$")
+    ax.set_ylabel(r"$\gamma$ $(\degree)$")
     # ax.set_title(fr"Twist vs logr (53 kyr) $(\mathrm{{\rho \geq 10^{warp_thresh}}})$")
     ax.legend() 
     plt.tight_layout()

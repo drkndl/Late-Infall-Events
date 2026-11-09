@@ -442,6 +442,56 @@ def isolate_disk(X, Y, Z, cenX, cenY, cenZ, buffer, dens, vx, vy, vz, Lx, Ly, Lz
     return disk_dens, disk_vx, disk_vy, disk_vz, disk_Lx, disk_Ly, disk_Lz, ids
 
 
+def isolate_disk_spherical(X, Y, Z, cenX, cenY, cenZ, radius, dens,
+                           vx, vy, vz, Lx, Ly, Lz, threshold):
+    """
+    Isolate a disk using a spherical region around the star plus a density threshold.
+ 
+    A sphere of the given radius is centered on the star (cenX, cenY, cenZ), and
+    only cells inside it with density above 10**threshold are kept. Everything
+    else is set to NaN.
+ 
+    Inputs:
+    ------
+    X, Y, Z:      3D Cartesian coordinates of each cell, shape (n_theta-1, n_r-1, n_phi-1)
+    cenX, cenY, cenZ: Cartesian position of the star (floats)
+    radius:       Radius of the sphere around the star (same units as X, Y, Z)
+    dens:         3D density array in g/cm^3
+    vx, vy, vz:   3D Cartesian velocity arrays in cm/s
+    Lx, Ly, Lz:   3D angular momentum arrays (CGS)
+    threshold:    log10 of the density threshold in g/cm^3
+ 
+    Outputs:
+    -------
+    disk_dens, disk_vx, disk_vy, disk_vz, disk_Lx, disk_Ly, disk_Lz:
+                  filtered arrays, NaN outside the disk
+    ids:          boolean 3D array, True where a cell belongs to the disk
+    """
+ 
+    # Distance of every cell from the star. Using the Cartesian distance
+    # (rather than the grid's r coordinate) is correct even when the star is
+    # not at the origin, e.g. for a secondary disk, and it has no problem with
+    # the phi wrap-around.
+    R = np.sqrt((X - cenX)**2 + (Y - cenY)**2 + (Z - cenZ)**2)
+ 
+    # Spherical mask combined with the density threshold in a single step
+    sphere_mask = R <= radius
+    dens_mask = dens > 10**threshold
+    disk_mask = sphere_mask & dens_mask
+ 
+    disk_dens = np.where(disk_mask, dens, np.nan)
+    disk_vx = np.where(disk_mask, vx, np.nan)
+    disk_vy = np.where(disk_mask, vy, np.nan)
+    disk_vz = np.where(disk_mask, vz, np.nan)
+    disk_Lx = np.where(disk_mask, Lx, np.nan)
+    disk_Ly = np.where(disk_mask, Ly, np.nan)
+    disk_Lz = np.where(disk_mask, Lz, np.nan)
+ 
+    ids = disk_mask  # boolean array, same as ~np.isnan(disk_dens) unless dens has NaNs
+ 
+    return disk_dens, disk_vx, disk_vy, disk_vz, disk_Lx, disk_Ly, disk_Lz, ids 
+
+
 def calc_L_average(Lx, Ly, Lz, mass):
     """
     Calculates the mass-averaged angular momentum averaged across the theta and phi directions to find the radial Ls
