@@ -442,8 +442,7 @@ def isolate_disk(X, Y, Z, cenX, cenY, cenZ, buffer, dens, vx, vy, vz, Lx, Ly, Lz
     return disk_dens, disk_vx, disk_vy, disk_vz, disk_Lx, disk_Ly, disk_Lz, ids
 
 
-def isolate_disk_spherical(X, Y, Z, cenX, cenY, cenZ, radius, dens,
-                           vx, vy, vz, Lx, Ly, Lz, threshold):
+def isolate_disk_spherical(X, Y, Z, cenX, cenY, cenZ, radius, dens, vx, vy, vz, Lx, Ly, Lz, threshold):
     """
     Isolate a disk using a spherical region around the star plus a density threshold.
  
@@ -463,8 +462,7 @@ def isolate_disk_spherical(X, Y, Z, cenX, cenY, cenZ, radius, dens,
  
     Outputs:
     -------
-    disk_dens, disk_vx, disk_vy, disk_vz, disk_Lx, disk_Ly, disk_Lz:
-                  filtered arrays, NaN outside the disk
+    disk_dens, disk_vx, disk_vy, disk_vz, disk_Lx, disk_Ly, disk_Lz: filtered arrays, NaN outside the disk
     ids:          boolean 3D array, True where a cell belongs to the disk
     """
  
@@ -725,11 +723,11 @@ def calc_whirl(Lx_tot, Ly_tot, Lz_tot, ini_cloud_phi):
 
 def main():
 
-    folder = Path("../cloud_disk_it450_rotX45/")                        # Folder with the output files
+    folder = Path("F:/cloud_disk_it450_retro_rotX45/")                        # Folder with the output files
     # folder = Path("../fargo3d/outputs/cloud_disk_it450_rotX45")         # Folder with the output files (BinAC2)
-    fig_imgs = Path("cloud_disk_it450_rotX45/imgs/")                    # Folder to save images
+    fig_imgs = Path("cloud_disk_it450_retro_rotX45\\imgs\\")                    # Folder to save images
     it = 450                                                       # FARGO snapshot of interest
-    sim_name = str(fig_imgs).split('/')[0]                         # Simulation name (for plot labels)
+    sim_name = str(fig_imgs).split('\\')[0]                         # Simulation name (for plot labels)
     
     # Load some simulation parameters
     b = get_param_value('ImpactParameter', sim_name)
@@ -792,7 +790,8 @@ def main():
     # Note 2: The warp_ids itself is a 3D Boolean array, but when applied to another array such as x[warp_ids], the latter array becomes 1D
     warp_thresh = -17   # log of density threshold for which we can see the warp in the primary
     warp_buffer = 500   # Isolates a box of 2 * warp_buffer around the star (AU)
-    rho_c_warp, vx_c_warp, vy_c_warp, vz_c_warp, Lx_c_warp, Ly_c_warp, Lz_c_warp, warp_ids = isolate_disk(X_c, Y_c, Z_c, Px * au, Py * au, Pz * au, warp_buffer * au, rho_c, vx_c, vy_c, vz_c, Lx, Ly, Lz, warp_thresh) 
+    # rho_c_warp, vx_c_warp, vy_c_warp, vz_c_warp, Lx_c_warp, Ly_c_warp, Lz_c_warp, warp_ids = isolate_disk(X_c, Y_c, Z_c, Px * au, Py * au, Pz * au, warp_buffer * au, rho_c, vx_c, vy_c, vz_c, Lx, Ly, Lz, warp_thresh)
+    rho_c_warp, vx_c_warp, vy_c_warp, vz_c_warp, Lx_c_warp, Ly_c_warp, Lz_c_warp, warp_ids = isolate_disk_spherical(X_c, Y_c, Z_c, Px * au, Py * au, Pz * au, warp_buffer * au, rho_c, vx_c, vy_c, vz_c, Lx, Ly, Lz, warp_thresh) 
 
     # Find the radial extent of the warp
     r_warp_extent = np.sqrt(X_c[warp_ids]**2 +  Y_c[warp_ids]**2 + Z_c[warp_ids]**2) / au
@@ -828,8 +827,8 @@ def main():
     # XY_2D_plot(vrad * 1e-5, X, Y, irad, itheta, vmin=-0.5, vmax=0.5, title=rf'{sim_name}: X-Y Radial Velocity $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$v_{rad} (km/s)$", savefig=True, figfolder=f'{fig_imgs}/vrad_xy_phi{iphi}_rad{irad}_it{it}.png', showfig=True)
 
     # Radial velocity RZ plot (multiplying vrad by 1e-5 to convert cm/s to km/s)
-    vel_cyl_2D(vrad * 1e-5, rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Radial Velocities R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\mathrm{v_{rad} (\rm km/s)}$", savefig=True, figfolder=f'{fig_imgs}/radvel_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, acc=False, data_phiavg=False)
-    edjwfk
+    # vel_cyl_2D(vrad * 1e-5, rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: Radial Velocities R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\mathrm{v_{rad} (\rm km/s)}$", savefig=True, figfolder=f'{fig_imgs}/radvel_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, acc=False, data_phiavg=False)
+    # edjwfk
  
     # Rho * Radial velocity RZ plot (multiplying vrad by 1e-5 to convert cm/s to km/s)
     # vel_cyl_2D(vrad, rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: $\rho v_{{rad}}$ R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\mathrm{\rho v_{rad} (\rm g \rm km/s)}$", savefig=True, figfolder=f'{fig_imgs}/rhoradvel_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, acc=True, data_phiavg=False)
@@ -850,10 +849,11 @@ def main():
     # vrad / cs RZ plot 
     # vel_cyl_2D(vrad / cs, rho, RCYL, ZCYL, irad, iphi, title=rf'{sim_name}: $v_{{rad}} / c_s$ R-Z Plane $\phi$ = {np.round(np.degrees(domains["phi"][iphi]), 2)}$^{{\circ}}$', colorbarlabel=r"$\mathrm{v_{rad} / c_s}$", savefig=True, figfolder=f'{fig_imgs}/radvelbycs_cyl_phi{iphi}_rad{irad}_it{it}.png', showfig=True, acc=False, data_phiavg=False)
 
-    XY_2D_plot(rho, X, Y, irad, itheta, vmin=-17, vmax=-11, title=rf'{sim_name}: Density X-Y Plane $\theta = $ {itheta_deg}$^{{\circ}}$', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=f'{fig_imgs}/dens_xy_theta{itheta}_rad{irad}_it{it}.png', showfig=True)
+    XY_2D_plot(rho, X, Y, irad, itheta, vmin=-17, vmax=-11, title=rf'{sim_name}: Density X-Y Plane $\theta = $ {itheta_deg}$^{{\circ}}$', colorbarlabel=r"$\log(\rho)$", savefig=True, figfolder=f'{fig_imgs}/dens_xy_theta{itheta}_rad{irad}_it{it}_sphmask.png', showfig=True)
 
     # Plotting the 3D warp/disk densities 
-    contours_3D(X_c/au, Y_c/au, Z_c/au, np.log10(rho_c_warp), r_select, plot_args, colorbarlabel=r'$\log(\rho) [g/cm^3]$', title=rf'{sim_name}: Initial & Outer Disks: $\log(\rho)$', savefig=True, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}.png', showfig=True)
+    contours_3D(X_c/au, Y_c/au, Z_c/au, np.log10(rho_c_warp), r_select, plot_args, colorbarlabel=r'$\log(\rho) [g/cm^3]$', title=rf'{sim_name}: Initial & Outer Disks: $\log(\rho)$', savefig=True, figfolder=f'{fig_imgs}/warp_dens_thresh{warp_thresh}_it{it}_sphmask.png', showfig=True)
+    fdjjkd
     
     # Another way to plot the warp/disk densities
     # contours_3D(X_c[warp_ids]/au, Y_c[warp_ids]/au, Z_c[warp_ids]/au, rho_c[warp_ids], fig, colorbarlabel=r'$\rho [g/cm^3]$', title=rf'$\log(\rho)$ above $\rho = 10^{{{threshold}}} g/cm^3$')

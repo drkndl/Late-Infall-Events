@@ -92,7 +92,7 @@ def get_param_value(param_name, sim_name):
     Obtains the value of a simulation parameter by parsing through {sim_name}/{sim_name}.par and setup_{setup_name}/{setup_name}.par files. {sim_name}.par corresponds to parameter file present in fargo3d/in whereas {setup_name}.par corresponds to parameter file present in fargo3d/setups. If a parameter name is present in both files, the value in {sim_name}.par takes precedence over the value in {setup_name}.par
     """
 
-    sim_params = load_par_file(f"{sim_name}\\{sim_name}.par")
+    sim_params = load_par_file(f"{sim_name}/{sim_name}.par")
     setup_name = sim_params['Setup']
     setup_params = load_par_file(f"setup_{setup_name}/{setup_name}.par")
     param_value = setup_params[param_name]
